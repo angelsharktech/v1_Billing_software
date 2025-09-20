@@ -1,0 +1,131 @@
+/* :root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+} */
+:root {
+  --app-width: 100vw;
+  --app-height: 100vh;
+}
+
+body {
+  width: var(--app-width);
+  height: var(--app-height);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  height: 100%;
+}
+
+/* Hide from screen, but show on print */
+/* By default hide barcode and bill print containers */
+.barcode-print {
+  display: none;
+}
+
+/* Show only specific sections while printing */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .barcode-print,
+  .barcode-print * {
+    visibility: visible !important;
+    display: block !important;
+  }
+
+  /* Barcode print styles (for thermal printer) */
+  .barcode-print {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80mm; /* Thermal printer width */
+    height:45mm; /* Adjust height as needed */
+    padding: 10px;
+    text-align: center;
+    background: white;
+  }
+
+  /* Sale bill print styles */
+  .print-only,
+  .print-only * {
+    visibility: visible !important;
+  }
+  .print-only {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+}
