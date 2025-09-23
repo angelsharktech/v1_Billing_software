@@ -119,14 +119,12 @@ const AddVendor = ({ open, handleClose, refresh }) => {
 
   const handleSubmit = async () => {
     try {
-      console.log(roles)
       const vendorRole = roles.find(
         (role) => role.name.toLowerCase() === "vendor"
       );
       const vendorposition = positions.find(
         (pos) => pos.name.toLowerCase() === "vendor"
       );
-      console.log("vendorRole:",vendorRole,"vendorposition:",vendorposition)
       const phoneExists = users.find(
         (u) => u.phone_number === formData.phone_number
       );
@@ -157,7 +155,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
         position_id: vendorposition._id,
         // gstRegistered: isGstApplicable
       };      
-      console.log("user payload:",payload)
+    
       const result = await createUser(payload);
       if (result) {
         //  if (result) {
@@ -178,7 +176,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
           forPayment : "purchase",
           closingAmount : result.data.data.openingAmount
         }
-        console.log("payment payload:",paymentPayload)
+        
         const res = await addPayment(paymentPayload);
         
         setSnackbarMessage("Supplier Added successful!");
