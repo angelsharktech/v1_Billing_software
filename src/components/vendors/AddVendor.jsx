@@ -125,7 +125,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
       const vendorposition = positions.find(
         (pos) => pos.name.toLowerCase() === "vendor"
       );
-
+      console.log("vendorRole:",vendorRole,"vendorposition:",vendorposition)
       const phoneExists = users.find(
         (u) => u.phone_number === formData.phone_number
       );
@@ -144,6 +144,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
         setSnackbarOpen(true);
         return;
       }
+      console.log("role:",vendorRole._id, "position:",vendorposition._id)
       const payload = {
         ...formData,
         bankDetails,
