@@ -41,6 +41,7 @@ import CustomerDetails from "./CustomerDetails";
 import { addPayment } from "../../services/PaymentModeService";
 import { useNavigate } from "react-router-dom";
 import { updatePurchaseBill } from "../../services/PurchaseBillService";
+import { useFormNavigation } from "../shared/Navigation";
 
 const SaleBillForm = ({
   setShowPrint,
@@ -52,6 +53,11 @@ const SaleBillForm = ({
   refresh,
 }) => {
   const { webuser } = useAuth();
+  // const { getRef, handleKeyDown } = useFormNavigation();
+  const totalFields = 50; // sum of all focusable inputs
+const { getRef, handleKeyDown } = useFormNavigation();
+// const getRef = (i) => refs[i];
+
   const navigate = useNavigate();
   const [customer, setCustomer] = useState({
     _id: "",
@@ -88,8 +94,6 @@ const SaleBillForm = ({
   const [isWithinState, setIsWithinState] = useState("");
   const [advanceAmount, setAdvanceAmount] = useState(0);
   const [paymentDetails, setPaymentDetails] = useState({
-    // advance: 0,
-    // balance: 0,
     advpaymode: "",
     transactionNumber: "",
     bankName: "",
@@ -202,86 +206,6 @@ const SaleBillForm = ({
       console.error("Error fetching product data", error);
     }
   };
-
-  // const handleMobile = (phone) => {
-  //   const phoneRegex = /^[6-9]\d{9}$/;
-
-  //   // If input is empty, clear all customer info
-  //   if (!phone) {
-  //     setCustomer({
-  //       _id: "",
-  //       first_name: "",
-  //       address: "",
-  //       phone_number: "",
-  //       openingAmount: 0,
-  //     });
-  //     setGstDetails({
-  //       gstNumber: "",
-  //       legalName: "",
-  //       state: "",
-  //       stateCode: "",
-  //     });
-  //     setErrors((prev) => ({ ...prev, phone_number: "" }));
-  //     setIsExistingCustomer(false);
-  //     return;
-  //   }
-
-  //   // If invalid, show error and clear name/address
-  //   if (!phoneRegex.test(phone)) {
-  //     setCustomer((prev) => ({
-  //       ...prev,
-  //       phone_number: phone,
-  //       first_name: "",
-  //       address: "",
-  //       _id: "",
-  //       openingAmount: 0,
-  //     }));
-  //     setErrors((prev) => ({ ...prev, phone_number: "Invalid mobile number" }));
-  //     setIsExistingCustomer(false);
-  //     return;
-  //   }
-
-  //   // If valid, search for customer
-  //   setErrors((prev) => ({ ...prev, phone_number: "" }));
-
-  //   const phoneExists = users.find(
-  //     (u) =>
-  //       u.phone_number === phone &&
-  //       u.role_id?.name?.toLowerCase() === "customer"
-  //   );
-
-  //   if (phoneExists) {
-  //     setCustomer({
-  //       _id: phoneExists._id,
-  //       first_name: phoneExists.first_name,
-  //       address: phoneExists.address,
-  //       phone_number: phone,
-  //       openingAmount: phoneExists?.openingAmount,
-  //     });
-  //     setGstDetails({
-  //       gstNumber: phoneExists.gstDetails.gstNumber,
-  //       legalName: phoneExists.gstDetails.legalName,
-  //       state: phoneExists.gstDetails.state,
-  //       stateCode: phoneExists.gstDetails.stateCode,
-  //     });
-  //     setIsExistingCustomer(true);
-  //   } else {
-  //     setCustomer({
-  //       _id: "",
-  //       first_name: "",
-  //       address: "",
-  //       phone_number: phone,
-  //       openingAmount: 0,
-  //     });
-  //     setGstDetails({
-  //       gstNumber: "",
-  //       legalName: "",
-  //       state: "",
-  //       stateCode: "",
-  //     });
-  //     setIsExistingCustomer(false);
-  //   }
-  // };
 
   const handleCustomerSelection = (value, type) => {
     let selectedCustomer = null;
@@ -562,31 +486,6 @@ const SaleBillForm = ({
         return;
       }
 
-      // for (let prod of selectedProducts) {
-      //   console.log(prod.productName, "****", prod.isExisting);
-      //   if (!prod.isExisting) {
-      //     const newProductPayload = {
-      //       name: prod.productName,
-      //       category: prod.category,
-      //       hsnCode: prod.hsnCode,
-      //       price: prod.discountedPrice,
-      //       compareAtPrice: prod.price,
-      //       quantity: prod.qty,
-      //       organization_id: mainUser.organization_id?._id,
-      //       status: "active",
-      //     };
-      //     const res = await addProducts(newProductPayload);
-      //     prod._id = res.data._id;
-      //     prod.isExisting = true;
-      //   } else {
-      //     const updatePayload = {
-      //       quantity: Number(prod.qty) || 0,
-      // action: "add",
-      //     };
-      //     await updateInventory(prod._id, updatePayload);
-      //   }
-      // }
-
       // ---------- compute finalProducts & totals (replace your existing block) ----------
       const finalProducts = selectedProducts.map((product) => {
         const qty = Number(product.qty) || 0;
@@ -802,13 +701,16 @@ const SaleBillForm = ({
         totals={totals}
         billDate={billDate}
         setBillDate={setBillDate}
+         getRef={getRef}
+        handleKeyDown={handleKeyDown}
+        totalFields={totalFields}
       />
       {/* Step 2: Product Details */}
 
       <CustomerDetails
         customer={customer}
         isExistingCustomer={isExistingCustomer}
-        // handleMobile={handleMobile}
+        billType={billType}
         handleCustomerSelection={handleCustomerSelection}
         setCustomer={setCustomer}
         errors={errors}
@@ -821,6 +723,9 @@ const SaleBillForm = ({
             u.organization_id?._id === mainUser?.organization_id?._id &&
             u.status === "active"
         )}
+        getRef={getRef}
+        handleKeyDown={handleKeyDown}
+        totalFields={totalFields}
       />
 
       {/* Step 3: Bill Type */}
@@ -838,6 +743,9 @@ const SaleBillForm = ({
         advanceAmount={advanceAmount}
         setPaymentMode={setPaymentMode}
         paymentMode={paymentMode}
+        getRef={getRef}
+        handleKeyDown={handleKeyDown}
+        totalFields={totalFields}
       />
 
       {/* Step 4: Payment Type */}

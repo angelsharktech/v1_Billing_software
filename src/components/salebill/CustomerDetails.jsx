@@ -1,65 +1,78 @@
-import React from 'react';
-import { Box, Grid, TextField, Typography, Divider, Autocomplete } from '@mui/material';
+import React from "react";
+import {
+  Box,
+  Grid,
+  TextField,
+  Typography,
+  Divider,
+  Autocomplete,
+} from "@mui/material";
 
 const CustomerDetails = ({
   customer,
   isExistingCustomer,
   handleMobile,
   handleCustomerSelection,
-  errors,setErrors,
+  errors,
+  setErrors,
   setCustomer,
   gstDetails,
-  setGstDetails ,
+  billType,
+  setGstDetails,
   customerList = [],
+  getRef, // ✅ from parent
+  handleKeyDown,
+  // totalFields
 }) => {
   return (
     <Box mt={3}>
       <Typography variant="h6">Customer Details</Typography>
       <Divider />
       <Grid container spacing={2} mt={4}>
-          <Autocomplete
-            freeSolo // allows typing values not in list
-            options={customerList}
-            getOptionLabel={(option) =>
-              typeof option === "string"
-                ? option
-                : option.first_name + " " + (option.last_name || "")
+        <Autocomplete
+          freeSolo // allows typing values not in list
+          options={customerList}
+          getOptionLabel={(option) =>
+            typeof option === "string"
+              ? option
+              : option.first_name + " " + (option.last_name || "")
+          }
+          value={
+            customerList.find((s) => s.first_name === customer.first_name) ||
+            customer.first_name ||
+            "" // keep typed value for new customer
+          }
+          onChange={(event, newValue) => {
+            if (typeof newValue === "string") {
+              // User typed a new vendor name
+              handleCustomerSelection(newValue, "name");
+            } else if (newValue && newValue.first_name) {
+              // Selected existing vendor
+              handleCustomerSelection(newValue.first_name, "name");
             }
-            value={
-              customerList.find((s) => s.first_name === customer.first_name) ||
-              customer.first_name ||
-              "" // keep typed value for new customer
+          }}
+          onInputChange={(event, newInputValue) => {
+            // This handles typing live into the field
+            if (event && event.type === "change") {
+              handleCustomerSelection(newInputValue, "name");
             }
-            onChange={(event, newValue) => {
-              if (typeof newValue === "string") {
-                // User typed a new vendor name
-                handleCustomerSelection(newValue, "name");
-              } else if (newValue && newValue.first_name) {
-                // Selected existing vendor
-                handleCustomerSelection(newValue.first_name, "name");
-              }
-            }}
-            onInputChange={(event, newInputValue) => {
-              // This handles typing live into the field
-              if (event && event.type === "change") {
-                handleCustomerSelection(newInputValue, "name");
-              }
-            }}
-            ListboxProps={{
-              style: {
-                maxHeight: 300,
-                overflowY: "auto",
-              },
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Customer Name"
-                sx={{ width: "200px" }}
-              />
-            )}
-          />
-
+          }}
+          ListboxProps={{
+            style: {
+              maxHeight: 300,
+              overflowY: "auto",
+            },
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Customer Name"
+              sx={{ width: "200px" }}
+              inputRef={getRef(5)} // ✅ index 5
+              onKeyDown={(e) => handleKeyDown(e, 5, totalFields)} // 20 = total fields across all components
+            />
+          )}
+        />
 
         <Grid item xs={12} sm={4} width={200}>
           <TextField
@@ -69,10 +82,12 @@ const CustomerDetails = ({
             onChange={(e) => handleCustomerSelection(e.target.value, "phone")}
             error={Boolean(errors.phone_number)}
             helperText={errors.phone_number}
+            inputRef={getRef(6)} // ✅ index 5
+            onKeyDown={(e) => handleKeyDown(e, 6, totalFields)}
           />
         </Grid>
-       
-        <Grid item xs={12} sm={4}width={200}>
+
+        <Grid item xs={12} sm={4} width={200}>
           <TextField
             label="Address"
             fullWidth
@@ -81,9 +96,11 @@ const CustomerDetails = ({
               setCustomer({ ...customer, address: e.target.value })
             }
             disabled={isExistingCustomer}
+            inputRef={getRef(7)} // ✅ index 7
+            onKeyDown={(e) => handleKeyDown(e, 7, totalFields)}
           />
         </Grid>
-        <Grid item xs={12} sm={4}width={200}>
+        <Grid item xs={12} sm={4} width={200}>
           <TextField
             label="Opening Amount"
             fullWidth
@@ -92,45 +109,58 @@ const CustomerDetails = ({
               setCustomer({ ...customer, openingAmount: e.target.value })
             }
             disabled={isExistingCustomer}
+            inputRef={getRef(8)} // ✅ index 8
+            onKeyDown={(e) => handleKeyDown(e, 8, totalFields)}
           />
         </Grid>
         <Grid container spacing={2} mt={1}>
-         {Object.entries(gstDetails).map(([key, value]) => (
-  <Grid item xs={12} sm={6} key={key} width={200}>
-    <TextField
-      fullWidth
-      label={key
-        .replace(/([A-Z])/g, " $1")
-        .replace(/^./, (s) => s.toUpperCase())}
-      name={key}
-      value={value}
-      onChange={(e) => {
-        const newValue = e.target.value;
+          {billType === "gst" && (
+            <>
+              {Object.entries(gstDetails).map(([key, value],i) => (
+                <Grid item xs={12} sm={6} key={key} width={200}>
+                  <TextField
+                    fullWidth
+                    label={
+                      key === "legalName"
+                        ? "Business Name"
+                        : key
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^./, (s) => s.toUpperCase())
+                    }
+                    name={key}
+                    value={value}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
 
-        setGstDetails((prev) => ({
-          ...prev,
-          [key]: newValue,
-        }));
+                      setGstDetails((prev) => ({
+                        ...prev,
+                        [key]: newValue,
+                      }));
 
-        // validate only stateCode here
-        if (key === "stateCode") {
-          const stateCodeRegex = /^\d{2}$/; // GST state code = 2 digits
-          if (!stateCodeRegex.test(newValue)) {
-            setErrors((prev) => ({
-              ...prev,
-              stateCode: "Invalid State Code",
-            }));
-          } else {
-            setErrors((prev) => ({ ...prev, stateCode: "" }));
-          }
-        }
-      }}
-      error={key === "stateCode" ? Boolean(errors.stateCode) : false}
-      helperText={key === "stateCode" ? errors.stateCode : ""}
-/>
-  </Grid>
-))}
-
+                      // validate only stateCode here
+                      if (key === "stateCode") {
+                        const stateCodeRegex = /^\d{2}$/; // GST state code = 2 digits
+                        if (!stateCodeRegex.test(newValue)) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            stateCode: "Invalid State Code",
+                          }));
+                        } else {
+                          setErrors((prev) => ({ ...prev, stateCode: "" }));
+                        }
+                      }
+                    }}
+                    error={
+                      key === "stateCode" ? Boolean(errors.stateCode) : false
+                    }
+                    helperText={key === "stateCode" ? errors.stateCode : ""}
+                    inputRef={getRef(9 + i)} // ✅ start index 9, increment for each GST field
+                    onKeyDown={(e) => handleKeyDown(e, 9 + i, totalFields)}
+                  />
+                </Grid>
+              ))}
+            </>
+          )}
         </Grid>
       </Grid>
     </Box>

@@ -172,7 +172,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
         const paymentPayload = {
            organization: mainUser.organization_id?._id,
           narration : "Opening Balance",
-          client_id : result.data.data._id,
+          client_id : result.data.data?._id,
           forPayment : "purchase",
           closingAmount : result.data.data.openingAmount
         }
@@ -212,9 +212,8 @@ const AddVendor = ({ open, handleClose, refresh }) => {
       setErrors({ phone_number: "" });
     } catch (error) {
       console.log("Error adding vendor:", error);
-      
-      setSnackbarMessage(error);
-      setSnackbarOpen(true);
+       setSnackbarMessage(error?.message || "Something went wrong");
+  setSnackbarOpen(true);
     }
    
     

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   Drawer,
@@ -37,12 +37,8 @@ const navItems = [
   {
     label: "Bills",
     icon: <ReceiptLongIcon />,
-    subItems: [ "Sale Bill","Purchase Bill","Sale Return","Purchase Return"],
+    subItems: ["ALT+S:Sale Bill","ALT+P:Purchase Bill","Sale Return","Purchase Return"],
   },
-  // { label: "Sale Bill", icon: <ReceiptLongIcon /> },
-  // { label: "Sale Bill Return", icon: <ReceiptLongIcon /> },
-  // { label: "Purchase Bill", icon: <AccountBalanceWalletIcon /> },
-  // { label: "Purchase Bill Return", icon: <AccountBalanceWalletIcon /> },
   { label: "Suppliers", icon: <StoreIcon /> },
   { label: "Customer", icon: <PeopleIcon /> },
   { label: "Category", icon: <CategoryIcon /> },
@@ -55,23 +51,15 @@ const navItems = [
   {
     label: "Payment",
     icon: <CurrencyRupeeIcon />,
-    subItems: [ "Payment Given","Payment Received"],
+    subItems: ["Payment Given","Payment Received"],
   },
-  // { label: "Payment Given", icon: <ReceiptLongIcon /> },
-  // { label: "Payment Received", icon: <ReceiptLongIcon /> },
-  
   {
     label: "Ledger",
     icon: <CreditScoreIcon />,
-    subItems: [ "Supplier Ledger","Customer Ledger"],
+    subItems: ["Supplier Ledger","Customer Ledger"],
   },
   { label: "Quotation", icon: <Inventory2Icon /> },
-  
 ];
-
-const billReportsSubItems = ["Sale Report", "Purchase Report"];
-const ledgerSubItem = ["Customer Ledger", "Supplier Ledger"];
-// const billReportsSubItems = ["Sale Bill Report", "Purchase Bill Report","HSN Report"];  
 
 const selectedStyle = {
   background: "#fff !important",
@@ -95,15 +83,16 @@ const unselectedStyle = {
   },
 };
 
-
 const Sidebar = ({ selectedTab, setSelectedTab }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null); // track which dropdown is open
+  const [openDropdown, setOpenDropdown] = useState(null);
   const { webuser, logoutUser } = useAuth();
   const navigate = useNavigate();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const refs = useRef([]); // Refs for focusable items
 
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
 
@@ -119,6 +108,37 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
 
   const handleDropdownClick = (label) => {
     setOpenDropdown(openDropdown === label ? null : label);
+  };
+
+  // Build a "visible items" list based on dropdown state
+  const getVisibleItems = () => {
+    const visible = [];
+    navItems.forEach((item) => {
+      visible.push(item.label);
+      if (item.subItems && openDropdown === item.label) {
+        item.subItems.forEach((sub) => visible.push(sub));
+      }
+    });
+    return visible;
+  };
+
+  const handleKeyDown = (e, label) => {
+    const visibleItems = getVisibleItems();
+    const index = visibleItems.indexOf(label);
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const nextIndex = (index + 1) % visibleItems.length;
+      const nextLabel = visibleItems[nextIndex];
+      const nextRef = refs.current[nextLabel];
+      nextRef?.focus();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const prevIndex = (index - 1 + visibleItems.length) % visibleItems.length;
+      const prevLabel = visibleItems[prevIndex];
+      const prevRef = refs.current[prevLabel];
+      prevRef?.focus();
+    }
   };
 
   const renderSidebarContent = () => (
@@ -138,7 +158,6 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
         position: "fixed",
       }}
     >
-      {/* User Info */}
       <Box textAlign="center">
         <Avatar sx={{ width: 60, height: 60, mx: "auto", mb: 1 }} />
         <Typography fontWeight="bold" fontSize={14}>
@@ -149,14 +168,15 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
         </Typography>
       </Box>
 
-      {/* Navigation */}
-      <Box>
-        <List>
-          {navItems.map((item) =>
-            item.subItems ? (
+      <List>
+        {navItems.map((item) => {
+          if (item.subItems) {
+            return (
               <Box key={item.label}>
                 <ListItemButton
+                  ref={(el) => (refs.current[item.label] = el)}
                   onClick={() => handleDropdownClick(item.label)}
+                  onKeyDown={(e) => handleKeyDown(e, item.label)}
                   sx={selectedTab === item.label ? selectedStyle : unselectedStyle}
                 >
                   <ListItemIcon sx={{ color: selectedTab === item.label ? "#182848" : "white" }}>
@@ -171,12 +191,10 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                     {item.subItems.map((subLabel) => (
                       <ListItemButton
                         key={subLabel}
+                        ref={(el) => (refs.current[subLabel] = el)}
                         onClick={() => handleNavClick(subLabel)}
-                        sx={
-                          selectedTab === subLabel
-                            ? selectedStyle
-                            : { pl: 4, ...unselectedStyle }
-                        }
+                        onKeyDown={(e) => handleKeyDown(e, subLabel)}
+                        sx={selectedTab === subLabel ? selectedStyle : { pl: 4, ...unselectedStyle }}
                       >
                         <ListItemText primary={subLabel} />
                       </ListItemButton>
@@ -184,11 +202,14 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                   </List>
                 </Collapse>
               </Box>
-            ) : (
+            );
+          } else {
+            return (
               <ListItemButton
                 key={item.label}
-                selected={selectedTab === item.label}
+                ref={(el) => (refs.current[item.label] = el)}
                 onClick={() => handleNavClick(item.label)}
+                onKeyDown={(e) => handleKeyDown(e, item.label)}
                 sx={selectedTab === item.label ? selectedStyle : unselectedStyle}
               >
                 <ListItemIcon sx={{ color: selectedTab === item.label ? "#182848" : "white" }}>
@@ -196,10 +217,10 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                 </ListItemIcon>
                 <ListItemText primary={item.label} />
               </ListItemButton>
-            )
-          )}
-        </List>
-      </Box>
+            );
+          }
+        })}
+      </List>
     </Box>
   );
 
@@ -221,5 +242,6 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
     </>
   );
 };
+
 
 export default Sidebar;
