@@ -119,6 +119,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
 
   const handleSubmit = async () => {
     try {
+      console.log(roles)
       const vendorRole = roles.find(
         (role) => role.name.toLowerCase() === "vendor"
       );
