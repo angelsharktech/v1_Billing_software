@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -45,7 +45,13 @@ const QuotationList = () => {
   const [deletedQuotation, setDeletedQuotation] = useState(null);
   const [showPrint, setShowPrint] = useState(false);
   const [printData, setPrintData] = useState();
+const quoteInputRef = useRef(null);
 
+useEffect(() => {
+  if (quoteInputRef.current) {
+    quoteInputRef.current.focus();
+  }
+}, []);
   useEffect(() => {
     const fetchUser = async () => {
       const user = await getUserById(webuser?.id);
@@ -153,6 +159,7 @@ const QuotationList = () => {
           startIcon={<AddIcon />}
           onClick={() => setOpenAddDialog(true)}
           sx={{ backgroundColor: "#182848", color: "#fff" }}
+          inputRef={quoteInputRef}
         >
           Add Quotation (Alt + Q)
         </Button>

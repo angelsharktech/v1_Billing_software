@@ -278,20 +278,13 @@ const ProductList = () => {
             gap={1} 
             width={isSmallMobile ? "100%" : "auto"}
           >
-            <TextField
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              size="small"
-              fullWidth={isSmallMobile}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
+            
+            <FilterData 
+                value={searchQuery} 
+                onChange={handleSearchChange} 
+                fullWidth={isSmallMobile}
+                autoFocusOnMount
+              />
             
             <Box display="flex" gap={1} ml={isSmallMobile ? 0 : 1}>
               <Button
@@ -299,7 +292,8 @@ const ProductList = () => {
                 sx={{ 
                  background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff",
                   whiteSpace: 'nowrap',
-                  minWidth: 'auto'
+                  minWidth: 'auto',
+                  height:'40px'
                 }}
                 onClick={handleOpen}
                 fullWidth={isSmallMobile}
@@ -311,7 +305,7 @@ const ProductList = () => {
                 variant="outlined"
                 onClick={handleExportClick}
                 fullWidth={isSmallMobile}
-                sx={{ whiteSpace: 'nowrap', minWidth: 'auto' }}
+                sx={{ whiteSpace: 'nowrap', minWidth: 'auto' ,height:'40px'}}
               >
                 <GetAppOutlinedIcon titleAccess="Download As" />
                 {isSmallMobile && ' Export'}
@@ -324,6 +318,7 @@ const ProductList = () => {
           anchorEl={anchorEl}
           open={openExportMenu}
           onClose={handleExportClose}
+          
         >
           <MenuItem
             onClick={() => {

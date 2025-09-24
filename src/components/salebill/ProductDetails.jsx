@@ -422,7 +422,7 @@ const handleAddAndFocus = () => {
             <TextField
               select
               label="Payment Mode"
-              fullWidth
+              sx={{width:'200px'}}
               value={paymentMode}
               onChange={(e) => setPaymentMode(e.target.value)}
                inputRef={getRef(24)}

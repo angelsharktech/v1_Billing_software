@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -53,6 +53,14 @@ const PurchaseBillList = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const handleCloseView = () => setView(false);
+
+const dateInputRef = useRef(null);
+
+useEffect(() => {
+  if (dateInputRef.current) {
+    dateInputRef.current.focus();
+  }
+}, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -195,6 +203,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                 setStartDate(e.target.value);
               }}
               size="small"
+              inputRef={dateInputRef}
             />
             <Button
               // accessKey="p"

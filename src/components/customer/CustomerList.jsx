@@ -214,6 +214,7 @@ const CustomerList = () => {
                 value={searchQuery} 
                 onChange={handleSearchChange} 
                 fullWidth={isSmallScreen}
+                autoFocusOnMount
               />
             </Box>
             <Button

@@ -149,6 +149,7 @@ const PaymentGivenList = ({ organizationId }) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 fullWidth={isSmallScreen}
+                autoFocusOnMount
               />
             </Box>
             <Button

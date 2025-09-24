@@ -116,6 +116,7 @@ const CustomerLedger = () => {
           <FilterData
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            autoFocusOnMount
           />
         </Box>
 

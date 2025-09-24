@@ -256,7 +256,7 @@ const PurchaseBillReport = () => {
           <Typography variant="h5" fontWeight={600} mb={2}>
             Purchase Report
           </Typography>
-          <FilterData value={searchQuery} onChange={handleSearchChange} />
+          <FilterData value={searchQuery} onChange={handleSearchChange} autoFocusOnMount />
           <Box display="flex" alignItems="center" gap={2} mb={2} mr={2}>
             <TextField
               label="Start Date"

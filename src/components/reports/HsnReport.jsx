@@ -171,7 +171,7 @@ const HsnReport = () => {
         </Box>
 
         <Box display="flex" alignItems="center" gap={2} mr={4}>
-          <FilterData value={searchQuery} onChange={handleSearchChange} />
+          <FilterData value={searchQuery} onChange={handleSearchChange} autoFocusOnMount />
 
           <Button
             variant="outlined"

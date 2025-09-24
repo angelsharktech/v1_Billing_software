@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -54,6 +54,14 @@ const SaleBillList = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const handleCloseView = () => setView(false);
+
+const dateInputRef = useRef(null);
+
+useEffect(() => {
+  if (dateInputRef.current) {
+    dateInputRef.current.focus();
+  }
+}, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -168,6 +176,7 @@ const SaleBillList = () => {
               inputProps={{
                 max: moment().format("YYYY-MM-DD"), // Disable future dates
               }}
+              inputRef={dateInputRef}
             />
 
             <Button
