@@ -28,6 +28,7 @@ const Registration = () => {
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
+    userName:"",
     phone_number: "",
     email: "",
     country: "",
@@ -54,6 +55,7 @@ const Registration = () => {
   const [errors, setErrors] = useState({
     email: "",
     phone_number: "",
+    userName:""
   });
   const navigate = useNavigate();
 
@@ -109,6 +111,19 @@ const Registration = () => {
         setErrors((prev) => ({ ...prev, phone_number: "" }));
       }
     }
+    if (name === "userName") {
+      const userNameExists = users?.some(
+        (u) => u?.userName?.toLowerCase() === value?.toLowerCase()
+      );
+      if (userNameExists) {
+        setErrors((prev) => ({
+          ...prev,
+          userName: "User Name already Exist",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, userName: "" }));
+      }
+    }
     setFormData({ ...formData, [name]: value });
   };
 
@@ -133,6 +148,14 @@ const Registration = () => {
       setSnackbarOpen(true);
       return;
     }
+    const userNameExists = users?.some(
+      (u) => u?.userName?.toLowerCase() === formData.userName.toLowerCase()
+    );
+    if (userNameExists) {
+      setSnackbarMessage("User Name already exists!");
+      setSnackbarOpen(true);
+      return;
+    }
     const finalData = { ...formData, bankDetails };
     // Add API call here
     const result = await registerUser(finalData);
@@ -150,6 +173,7 @@ const Registration = () => {
       {[
         "first_name",
         "last_name",
+        "userName",
         "phone_number",
         "email",
         "password",

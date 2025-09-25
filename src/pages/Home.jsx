@@ -259,7 +259,7 @@ const Home = ({ setSelectedTab }) => {
         <Grid container spacing={3} mb={4}>
           <Grid item xs={12} sm={6} md={2.4}>
             <StatCard
-              title="Vendors"
+              title="Suppliers"
               value={counts.vendors}
               icon={<StoreIcon sx={{ fontSize: 50 }} />}
               onClick={() => setSelectedTab("Suppliers")}

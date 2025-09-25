@@ -37,7 +37,7 @@ const navItems = [
   {
     label: "Bills",
     icon: <ReceiptLongIcon />,
-    subItems: ["ALT+S:Sale Bill","ALT+P:Purchase Bill","Sale Return","Purchase Return"],
+    subItems: ["ALT+S:Sale Bill","ALT+P:Purchase Bill","ALT+S+R:Sale Return","ALT+P+R:Purchase Return"],
   },
   { label: "Suppliers", icon: <StoreIcon /> },
   { label: "Customer", icon: <PeopleIcon /> },

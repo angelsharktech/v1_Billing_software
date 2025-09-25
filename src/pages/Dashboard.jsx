@@ -67,13 +67,13 @@ const Dashboard = () => {
       case "ALT+P:Purchase Bill":
         return <PurchaseBill />;
 
-      case "Purchase Return":
+      case "ALT+P+R:Purchase Return":
         return <PurchaseBillReturn />;
 
       case "ALT+S:Sale Bill":
         return <SaleBill />;
 
-        case "Sale Return":
+        case "ALT+S+R:Sale Return":
           return <SaleBillReturn />
           
       case "Sale Report":

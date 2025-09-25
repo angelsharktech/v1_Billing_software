@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import invoice from "../assets/invoice.jpg";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "../services/UserService";
+import { loginUser, sendOtp, verifyOtp } from "../services/UserService";
 import { useAuth } from "../context/AuthContext";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -20,10 +20,12 @@ import InputAdornment from "@mui/material/InputAdornment";
 
 const Login = () => {
   const { loginData } = useAuth();
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [credentials, setCredentials] = useState({ userName: "", password: "" });
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [open , setOpen] =useState(false);
+  const [otp , setOTP] =useState('');
 
   const navigate = useNavigate();
 
@@ -31,14 +33,40 @@ const Login = () => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async () => {
+  const handleSendOtp = async () => {
     try {
-      const res = await loginUser(credentials);
+      const res = await sendOtp(credentials);
+      if (res) {
+        setSnackbarMessage("Otp Send successful!");
+        setShowSnackbar(true);
+        setOpen(true)
+      }
+    } catch (err) {
+      if(err.error){
+        setSnackbarMessage(err.error);
+        setShowSnackbar(true);
+      }
+      if(err.message){
+        setSnackbarMessage(err.message);
+        setShowSnackbar(true);
+      }
+    }
+  };
+
+  const handleVerifyOtp = async()=>{
+    try {
+      const payload = { 
+        userName:credentials.userName,
+        password:credentials.password,
+        otp:otp
+      }
+       const res = await verifyOtp(payload);
       if (res) {
         loginData(res.user, res.token);
         localStorage.setItem("token", res.token); // store token if needed
         setSnackbarMessage("Login successful!");
         setShowSnackbar(true);
+        // setOpen(true)
         setTimeout(() => {
           navigate("/dashboard");
         }, 500);
@@ -53,7 +81,7 @@ const Login = () => {
         setShowSnackbar(true);
       }
     }
-  };
+  }
 
  return (
     <Box
@@ -67,6 +95,7 @@ const Login = () => {
       }}
     >
       {/* Main content wrapper */}
+     
       <Box
         sx={{
           flex: 1, // pushes footer down
@@ -75,30 +104,30 @@ const Login = () => {
           justifyContent: "left",
           overflow: "hidden",
         }}
-      >
+       >
         <Paper
           elevation={8}
           sx={{
             p: 4,
-            maxWidth: 500,
+            maxWidth: 300,
             width: "50%",
             maxHeight: "90vh",
             overflowY: "auto",
-            marginLeft: "10%",
+            marginLeft: "15%",
             borderRadius: 5,
           }}
         >
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom mb={5}>
             Login
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={credentials.email}
+                sx={{width:'260px'}}
+                label="User Name"
+                name="userName"
+                type="userName"
+                value={credentials.userName}
                 onChange={handleChange}
               />
             </Grid>
@@ -126,12 +155,13 @@ const Login = () => {
               />
             </Grid>
           </Grid>
+          {!open && (
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleSubmit}
+                onClick={handleSendOtp}
                 sx={{ mt: "10%" }}
               >
                 Login
@@ -147,9 +177,36 @@ const Login = () => {
               </Link>
             </Grid>
           </Grid>
+          )}
+          {open && (<>
+          <Grid container spacing={2} mt={3}>
+            <Grid item xs={12}>
+              <TextField
+                sx={{width:'260px'}}
+                label="Enter OTP"
+                name="otp"
+                type="otp"
+                value={otp}
+                onChange={(e)=>setOTP(e.target.value)}
+              />
+            </Grid>
+          </Grid>
+            <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleVerifyOtp}
+                sx={{ mt: "10%" }}
+              >
+                Verify OTP
+              </Button>
+            </Grid>            
+          </Grid>
+          </>)}
         </Paper>
       </Box>
-
+     
       {/* Footer inside flex column */}
       <Box
         component="footer"
@@ -171,7 +228,7 @@ const Login = () => {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
-          severity={snackbarMessage === "Login successful!" ? "success" : "error"}
+          severity={snackbarMessage .includes("successful!") ? "success" : "error"}
           onClose={() => setShowSnackbar(false)}
           sx={{ width: "100%" }}
         >

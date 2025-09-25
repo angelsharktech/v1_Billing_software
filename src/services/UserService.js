@@ -40,6 +40,24 @@ export const loginUser = async (credentials) => {
     throw error.response?.data || { message: "Server error" };
   }
 };
+export const sendOtp = async (credentials) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/auth/sendOtp`, credentials);
+    return response.data;
+  } catch (error) {
+    console.error("Login failed:", error);
+    throw error.response?.data || { message: "Server error" };
+  }
+};
+export const verifyOtp = async (credentials) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/auth/verifyOtp`, credentials);
+    return response.data;
+  } catch (error) {
+    console.error("Login failed:", error);
+    throw error.response?.data || { message: "Server error" };
+  }
+};
 
 //All User
 export const getAllUser = async() =>{

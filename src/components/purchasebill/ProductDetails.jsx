@@ -12,6 +12,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Autocomplete,
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 
@@ -144,43 +145,61 @@ const ProductDetails = ({
           <Grid container spacing={2} key={index} mt={4}>
             {/* Product Dropdown */}
             <Grid item xs={12} sm={3}>
+              <Autocomplete
+                freeSolo // ✅ allows typing values not in list
+                options={products?.map((prod) => prod.name) || []}
+                value={item.productName || ""}
+                onChange={(event, newValue) => {
+                  // When user selects from dropdown
+                  handleProductChange(index, "productName", newValue || "");
+                }}
+                onInputChange={(event, newInputValue) => {
+                  // When user types manually
+                  handleProductChange(index, "productName", newInputValue);
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Product Name"
+                    sx={{ width: "200px" }}
+                    inputRef={(el) => (productRefs.current[index] = el)}
+                  />
+                )}
+              />
+            </Grid>
+            {/* <Grid item xs={12} sm={3}>
               <TextField
                 sx={{ width: "200px" }}
-                select
-                value={item.productName}
+                value={item.printAs}
                 onChange={(e) =>
-                  handleProductChange(index, "productName", e.target.value)
+                  handleProductChange(index, "printAs", e.target.value)
                 }
-                label="Select Product"
-                inputRef={(el) => (productRefs.current[index] = el)}
-              >
-                {products?.map((prod) => (
-                  <MenuItem key={prod._id} value={prod.name}>
-                    {prod.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+                label="Print As"
+              ></TextField>
+            </Grid> */}
 
             {/* HSN */}
             <Grid item xs={12} sm={1}>
-              <TextField
-                select
-                label="HSN"
-                value={item.hsnCode}
-                onChange={(e) =>
-                  handleProductChange(index, "hsnCode", e.target.value)
-                }
-                sx={{ width: "150px" }}
-              >
-                {[...new Set(products?.map((prod) => prod.hsnCode))].map(
-                  (hsn) => (
-                    <MenuItem key={hsn} value={hsn}>
-                      {hsn}
-                    </MenuItem>
-                  )
+              <Autocomplete
+                freeSolo
+                options={
+                  [...new Set(products?.map((prod) => prod.hsnCode))] || []
+                } // unique HSNs
+                value={item.hsnCode || ""}
+                onChange={(event, newValue) => {
+                  // when selecting from dropdown
+                  handleProductChange(index, "hsnCode", newValue || "");
+                }}
+                onInputChange={(event, newInputValue, reason) => {
+                  if (reason === "input") {
+                    // when typing manually
+                    handleProductChange(index, "hsnCode", newInputValue);
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="HSN" sx={{ width: "150px" }} />
                 )}
-              </TextField>
+              />
             </Grid>
 
             {/* Qty */}
@@ -204,8 +223,7 @@ const ProductDetails = ({
                 onChange={(e) =>
                   handleProductChange(index, "qty", e.target.value)
                 }
-                error={!!productErrors?.[index]}
-                helperText={productErrors?.[index] || ""}
+               
               />
             </Grid>
 
@@ -417,7 +435,7 @@ const ProductDetails = ({
             <TextField
               select
               label="Payment Mode"
-              sx={{width:'200px'}}
+              sx={{ width: "200px" }}
               value={paymentMode}
               onChange={(e) => setPaymentMode(e.target.value)}
             >

@@ -65,6 +65,7 @@ const PurchaseBillForm = ({
       cgst: 0,
       sgst: 0,
       igst: 0,
+      printAs:""
     },
   ]);
 
@@ -286,6 +287,7 @@ const PurchaseBillForm = ({
           isExisting: true,
           category: product.category,
           gstPercent: product.gstPercent || gstPercent || 0,
+          printAs:product?.printAs || ""
         };
       } else {
         updated[index] = {
@@ -316,33 +318,7 @@ const PurchaseBillForm = ({
         discountPercentage: Math.round(discountPercentage),
       };
     } 
-    else if (field === "qty") {
-      const qty = Number(value);
-      const availableQty =
-        products.find((p) => p._id === item._id)?.quantity || 0;
-
-      if (qty > availableQty) {
-        // Show error
-        setErrors((prev) => ({
-          ...prev,
-          products: {
-            ...prev.products,
-            [index]: `Only ${availableQty} items left`,
-          },
-        }));
-      } else {
-        // Clear error
-        setErrors((prev) => ({
-          ...prev,
-          products: {
-            ...prev.products,
-            [index]: "",
-          },
-        }));
-        updated[index][field] = qty;
-        // setSelectedProducts(updated);
-      }
-    } else {
+    else {
       updated[index] = { ...item, [field]: value };
     }
 
@@ -362,6 +338,7 @@ const PurchaseBillForm = ({
         discountPercentage: 0,
         discountedPrice: 0,
         category: "",
+        printAs:"",
         isExisting: false,
       },
     ]);
@@ -440,6 +417,7 @@ const PurchaseBillForm = ({
             hsnCode: prod.hsnCode,
             price: prod.discountedPrice,
             compareAtPrice: prod.price,
+            printAs:prod.printAs,
             quantity: prod.qty,
             organization_id: mainUser.organization_id?._id,
             status: "active",
@@ -493,6 +471,7 @@ const PurchaseBillForm = ({
           sgst: sgstAmount,
           igst: igstAmount,
           lineTotal,
+          printAs:product?.printAs
         };
       });
 
@@ -633,6 +612,7 @@ const PurchaseBillForm = ({
             discountPercentage: 0,
             gstPercent: 0,
             discountedPrice: 0,
+            printAs:""
           },
         ]);
         close();

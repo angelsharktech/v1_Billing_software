@@ -25,7 +25,7 @@ import {
   getAllPurchaseBills,
   getPurchaseBillByOrganization,
 } from "../../services/PurchaseBillService";
-import CreatePurchaseBill from "./CreatePurchaseBill";
+import CreatePurchaseBill from "./CreatePurchaseReturn";
 import ViewBill from "./ViewBill";
 import EditBill from "./EditBill";
 import { useAuth } from "../../context/AuthContext";

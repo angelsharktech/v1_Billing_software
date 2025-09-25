@@ -1,3 +1,4 @@
+import { set } from "date-fns";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 const ShortcutContext = createContext();
@@ -10,9 +11,15 @@ export const ShortcutProvider = ({ children }) => {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isProductOpen, setIsProductOpen] = useState(false);
   const [isQuotationOpen, setIsQuotationOpen] = useState(false);
+  const [isSaleReturnOpen, setIsSaleReturnOpen] = useState(false); // NEW: for Alt+S+R
+  const [isPurchaseReturnOpen, setIsPurchaseReturnOpen] = useState(false); // NEW: for Alt+P+R
+
+  const [keysPressed, setKeysPressed] = useState({});
 
   useEffect(() => {
     const handleKeyDown = (event) => {
+       const key = event.key.toLowerCase();
+      setKeysPressed((prev) => ({ ...prev, [key]: true }));
       // ALT + S -> Toggle Sale Bill
       if (event.altKey && event.key.toLowerCase() === "s") {
         event.preventDefault();
@@ -49,11 +56,33 @@ export const ShortcutProvider = ({ children }) => {
         event.preventDefault();
         setIsQuotationOpen((prev) => !prev);
       }
+
+
+    //  ALT + S + R -> Toggle Sale Return
+      if (event.altKey && keysPressed["s"] && key === "r") {
+        event.preventDefault();
+        setIsSaleReturnOpen((prev) => !prev);
+      }
+    //  ALT + P + R -> Toggle Purchase Return
+      if (event.altKey && keysPressed["p"] && key === "r") {
+        event.preventDefault();
+        setIsPurchaseReturnOpen((prev) => !prev);
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      const key = event.key.toLowerCase();
+      setKeysPressed((prev) => ({ ...prev, [key]: false }));
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    }
+  }, [keysPressed]);
 
   return (
     <ShortcutContext.Provider
@@ -72,6 +101,10 @@ export const ShortcutProvider = ({ children }) => {
         setIsProductOpen,
          isQuotationOpen,
         setIsQuotationOpen,
+        isSaleReturnOpen,
+        setIsSaleReturnOpen,
+        isPurchaseReturnOpen,
+        setIsPurchaseReturnOpen
       }}
     >
       {children}

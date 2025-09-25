@@ -3,6 +3,7 @@ import { Box, Snackbar, Alert, Modal, IconButton } from "@mui/material";
 import SaleBillForm from "./SaleBillForm";
 import GenerateBill from "../shared/GenerateBill";
 import CloseIcon from '@mui/icons-material/Close';
+import NewSaleBillForm from "./NewSaleBillForm";
 
 const style = {
   position: "absolute",
@@ -68,6 +69,15 @@ const CreateSaleBill = ({ open, handleClose, refresh }) => {
           >
             <CloseIcon />
           </IconButton>
+          {/* <NewSaleBillForm
+            setShowPrint={setShowPrint}
+            setPrintData={setPrintData}
+            setSnackbarOpen={setSnackbarOpen}
+            setSnackbarMessage={setSnackbarMessage}
+            // setInvoiceNumber={newInvoiceNumber}
+            close = {handleClose}
+            refresh={refresh}
+          /> */}
           <SaleBillForm
             setShowPrint={setShowPrint}
             setPrintData={setPrintData}

@@ -9,6 +9,8 @@ import AddVendor from "../vendors/AddVendor";
 import AddCustomer from "../customer/AddCustomer";
 import AddCategory from "../category/AddCategory";
 import AddProduct from "../product/AddProduct";
+import CreateSaleReturn from "../saleBillReturn/CreateSaleReturn";
+import CreatePurchaseReturn from "../purchaseBillReturn/CreatePurchaseReturn";
 
 const GlobalModals = () => {
   const {
@@ -26,6 +28,10 @@ const GlobalModals = () => {
     setIsProductOpen,
     isQuotationOpen,
     setIsQuotationOpen,
+    isSaleReturnOpen,
+    setIsSaleReturnOpen,
+    isPurchaseReturnOpen,
+    setIsPurchaseReturnOpen,
   } = useShortcuts();
 
   const handleClose = () => {
@@ -36,6 +42,8 @@ const GlobalModals = () => {
     setIsCategoryOpen(false);
     setIsProductOpen(false);
     setIsQuotationOpen(false);
+    setIsSaleReturnOpen(false);
+    setIsPurchaseReturnOpen(false);
   };
   return (
     <>
@@ -47,6 +55,11 @@ const GlobalModals = () => {
       <AddCategory open={isCategoryOpen} handleClose={handleClose} />
       <AddProduct open={isProductOpen} handleClose={handleClose} />
       <AddQuotationDialog open={isQuotationOpen} handleClose={handleClose} />
+      <CreateSaleReturn open={isSaleReturnOpen} handleClose={handleClose} />
+      <CreatePurchaseReturn
+        open={isPurchaseReturnOpen}
+        handleClose={handleClose}
+      />
     </>
   );
 };

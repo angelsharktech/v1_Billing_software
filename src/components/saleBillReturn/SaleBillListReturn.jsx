@@ -24,7 +24,7 @@ import {
   getAllSaleBills,
   getSaleBillByOrganization,
 } from "../../services/SaleBillService";
-import CreateSaleBill from "./CreateSaleBill";
+import CreateSaleBill from "./CreateSaleReturn";
 import { Visibility } from "@mui/icons-material";
 import EditIcon from "@mui/icons-material/Edit";
 import ViewBill from "./ViewBill";
