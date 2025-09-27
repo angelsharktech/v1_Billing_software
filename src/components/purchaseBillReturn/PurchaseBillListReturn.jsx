@@ -54,11 +54,11 @@ const PurchaseBillListReturn = () => {
   const handleClose = () => setOpen(false);
   const handleCloseView = () => setView(false);
 
-  const dateInputRef = useRef(null);
+  const purchaseReturnInputRef = useRef(null);
 
   useEffect(() => {
-    if (dateInputRef.current) {
-      dateInputRef.current.focus();
+    if (purchaseReturnInputRef.current) {
+      purchaseReturnInputRef.current.focus();
     }
   }, []);
 
@@ -197,6 +197,18 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
             Purchase Return Summary
           </Typography>
           <Box display="flex" alignItems="center" gap={2} mb={2} mr={4}>
+             <Button
+              // accessKey="p"
+              variant="contained"
+              sx={{
+                background: "linear-gradient(135deg, #182848, #324b84ff)",
+                color: "#fff",
+              }}
+              onClick={handleOpen}
+              ref={purchaseReturnInputRef}
+            >
+              Create Purchase Return (Alt + P)
+            </Button>
             <TextField
               label="Date"
               type="date"
@@ -206,19 +218,9 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                 setStartDate(e.target.value);
               }}
               size="small"
-              inputRef={dateInputRef}
+              
             />
-            <Button
-              // accessKey="p"
-              variant="contained"
-              sx={{
-                background: "linear-gradient(135deg, #182848, #324b84ff)",
-                color: "#fff",
-              }}
-              onClick={handleOpen}
-            >
-              Create Purchase Return (Alt + P)
-            </Button>
+           
           </Box>
         </Box>
 

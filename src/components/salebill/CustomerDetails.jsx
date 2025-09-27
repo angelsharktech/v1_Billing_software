@@ -102,7 +102,7 @@ const CustomerDetails = ({
         </Grid>
         <Grid item xs={12} sm={4} width={200}>
           <TextField
-            label="Opening Amount"
+            label="Opening Balance"
             fullWidth
             value={customer.openingAmount}
             onChange={(e) =>
@@ -136,24 +136,9 @@ const CustomerDetails = ({
                         ...prev,
                         [key]: newValue,
                       }));
-
-                      // validate only stateCode here
-                      if (key === "stateCode") {
-                        const stateCodeRegex = /^\d{2}$/; // GST state code = 2 digits
-                        if (!stateCodeRegex.test(newValue)) {
-                          setErrors((prev) => ({
-                            ...prev,
-                            stateCode: "Invalid State Code",
-                          }));
-                        } else {
-                          setErrors((prev) => ({ ...prev, stateCode: "" }));
-                        }
-                      }
+                   
                     }}
-                    error={
-                      key === "stateCode" ? Boolean(errors.stateCode) : false
-                    }
-                    helperText={key === "stateCode" ? errors.stateCode : ""}
+                    
                     inputRef={getRef(9 + i)} // ✅ start index 9, increment for each GST field
                     onKeyDown={(e) => handleKeyDown(e, 9 + i, totalFields)}
                   />

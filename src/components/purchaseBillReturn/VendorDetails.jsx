@@ -123,7 +123,7 @@ const VendorDetails = ({
           />
           
         </Grid>
-        <Grid item xs={12} sm={4} width={200}>
+        {/* <Grid item xs={12} sm={4} width={200}>
           <TextField
             label="State Code"
             fullWidth
@@ -132,10 +132,10 @@ const VendorDetails = ({
             disabled={isExistingVendor}
           />
           
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} sm={4} width={200}>
           <TextField
-            label="Opening Amount"
+            label="Opening Balance"
             fullWidth
             value={vendor.openingAmount || ""}
             onChange={(e) => setVendor({ ...vendor, openingAmount: e.target.value })}

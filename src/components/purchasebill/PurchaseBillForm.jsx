@@ -47,7 +47,7 @@ const PurchaseBillForm = ({
   });
 
   const [isExistingVendor, setIsExistingVendor] = useState(false);
-    const [errors, setErrors] = useState({ phone_number: "", products: {} , stateCode:"" });
+    const [errors, setErrors] = useState({ phone_number: "", products: {}  });
   
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([
@@ -97,7 +97,6 @@ const PurchaseBillForm = ({
     gstNumber: "",
     legalName: "",
     state: "",
-    stateCode: "",
   });
 
   // load positions/roles/users + main user
@@ -217,7 +216,7 @@ const PurchaseBillForm = ({
           phone_number: "Invalid mobile number",
         }));
       } else {
-        setErrors((prev) => ({ ...prev, phone_number: "" , stateCode : "" }));
+        setErrors((prev) => ({ ...prev, phone_number: ""  }));
       }
       selectedVendor = users.find(
         (u) =>
@@ -242,7 +241,6 @@ const PurchaseBillForm = ({
         gstNumber: selectedVendor.gstDetails?.gstNumber || "",
         legalName: selectedVendor.gstDetails?.legalName || "",
         state: selectedVendor.gstDetails?.state || "",
-        stateCode: selectedVendor.gstDetails?.stateCode || "",
       });
       setIsExistingVendor(true);
     } else {
@@ -257,7 +255,6 @@ const PurchaseBillForm = ({
         gstNumber: "",
         legalName: "",
         state: "",
-        stateCode: "",
       });
       setIsExistingVendor(false);
     }

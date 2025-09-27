@@ -30,9 +30,7 @@ const ProductDetails = ({
    paymentMode,
    productErrors,
   setPaymentMode,
-  getRef, // ✅ from parent
-  handleKeyDown,
-  // totalFields,
+ 
 }) => {
   const productRefs = useRef([]);
   const [paymentType, setPaymentType] = useState("full"); // full | advance
@@ -151,7 +149,6 @@ const handleAddAndFocus = () => {
 
       {selectedProducts.map((item, index) => {
         const { cgst, sgst, igst } = calculateGST(item);
-        const rowBase = baseProductIndex + index * fieldsPerProduct;
 
         return (
           <Grid container spacing={2} key={index} mt={4}>
@@ -165,9 +162,6 @@ const handleAddAndFocus = () => {
                   handleProductChange(index, "productName", e.target.value)
                 }
                 label="Select Product"
-                inputRef={getRef(rowBase)} // ✅ dynamic global index
-                onKeyDown={(e) => handleKeyDown(e, rowBase, totalFields)}
-                
               >
                 {products?.map((prod) => (
                   <MenuItem key={prod._id} value={prod.name}>
@@ -187,8 +181,6 @@ const handleAddAndFocus = () => {
                   handleProductChange(index, "hsnCode", e.target.value)
                 }
                 sx={{ width: "150px" }}
-               inputRef={getRef(rowBase + 1)}
-                onKeyDown={(e) => handleKeyDown(e, rowBase + 1, totalFields)}
               >
                 {[...new Set(products?.map((prod) => prod.hsnCode))].map(
                   (hsn) => (
@@ -210,8 +202,6 @@ const handleAddAndFocus = () => {
                 onChange={(e) => handleProductChange(index, "qty", e.target.value)}
                 error={!!productErrors?.[index]}
                 helperText={productErrors?.[index] || ""}
-                 inputRef={getRef(rowBase + 2)}
-                onKeyDown={(e) => handleKeyDown(e, rowBase + 2, totalFields)}
               />
             </Grid>
 
@@ -223,8 +213,7 @@ const handleAddAndFocus = () => {
                 sx={{ width: "90px" }}
                 value={item.price}
                 onChange={(e) => handleProductChange(index, "price", e.target.value)}
-                   inputRef={getRef(rowBase + 3)}
-                onKeyDown={(e) => handleKeyDown(e, rowBase + 3, totalFields)}
+                
               />
             </Grid>
 
@@ -238,8 +227,6 @@ const handleAddAndFocus = () => {
                 onChange={(e) =>
                   handleProductChange(index, "discountPercentage", e.target.value)
                 }
-                   inputRef={getRef(rowBase + 4)}
-                onKeyDown={(e) => handleKeyDown(e, rowBase + 4, totalFields)}
               />
             </Grid>
 
@@ -253,8 +240,6 @@ const handleAddAndFocus = () => {
                 onChange={(e) =>
                   handleProductChange(index, "discountedPrice", e.target.value)
                 }
-                 inputRef={getRef(rowBase + 5)}
-                onKeyDown={(e) => handleKeyDown(e, rowBase + 5, totalFields)}
               />
             </Grid>
 
@@ -269,8 +254,6 @@ const handleAddAndFocus = () => {
                   onChange={(e) =>
                     handleProductChange(index, "gstPercent", e.target.value)
                   }
-                   inputRef={getRef(rowBase + 6)}
-                onKeyDown={(e) => handleKeyDown(e, rowBase + 6, totalFields)}
                 />
               </Grid>
             )}
@@ -306,9 +289,7 @@ const handleAddAndFocus = () => {
 
             {/* Delete Button */}
             <Grid item xs={12} sm={1}>
-              <IconButton onClick={() => handleRemoveProduct(index)} 
-                inputRef={getRef(rowBase + 8)}
-                onKeyDown={(e) => handleKeyDown(e, rowBase + 8, totalFields)}>
+              <IconButton onClick={() => handleRemoveProduct(index)} >
                 <Delete color="error" />
               </IconButton>
             </Grid>
@@ -402,8 +383,6 @@ const handleAddAndFocus = () => {
               value={advanceAmount}
               // onChange={(e) => handlePayment(e.target.value)}
               onChange={(e) => setAdvanceAmount(sanitizeNumber(e.target.value))}
-                inputRef={getRef(23)}
-                onKeyDown={(e) => handleKeyDown(e, 23, totalFields)}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -425,8 +404,6 @@ const handleAddAndFocus = () => {
               sx={{width:'200px'}}
               value={paymentMode}
               onChange={(e) => setPaymentMode(e.target.value)}
-               inputRef={getRef(24)}
-                onKeyDown={(e) => handleKeyDown(e, 24, totalFields)}
             >
               <MenuItem value="cash">Cash</MenuItem>
               <MenuItem value="online">Online</MenuItem>

@@ -11,7 +11,7 @@ export const useFormNavigation = () => {
   };
 
   const handleKeyDown = (e, index, totalFields) => {
-    if (e.key === "Backspace" && e.target.value === "" && index > 0 && e.target.value === undefined) {
+    if (e.key === "Backspace" && e.target.value === "" && index > 0) {
       e.preventDefault();
       refs.current[index - 1]?.current?.focus();
     }

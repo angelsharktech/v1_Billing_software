@@ -38,15 +38,10 @@ const AddProduct = ({ open, handleClose, refresh }) => {
   const [mainUser, setMainUser] = useState();
   const [form, setForm] = useState({
     name: "",
-    shortDescription: "",
-    price: "",
-    compareAtPrice: "",
     hsnCode: "",
-    sku: "",
-    quantity: "",
     category: "",
     tags: "",
-    unit: "",
+    productCode: "",
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -113,32 +108,17 @@ const AddProduct = ({ open, handleClose, refresh }) => {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.price || !form.hsnCode) {
+    if (!form.name || !form.hsnCode) {
       setSnackbarMessage("Enter Required fields!");
       setSnackbarOpen(true);
       return;
     }
-
-
-
-    if (form.compareAtPrice && (form.compareAtPrice) < (form.price)) {
-      setSnackbarMessage("MRP should be greater than Selling Price!");
-      setSnackbarOpen(true);
-      return;
-    }
-
     const product = {
       ...form,
-      price: parseFloat(form.price),
-      compareAtPrice: parseFloat(form.compareAtPrice) || 0,
-      quantity: parseInt(form.quantity) || 0,
       tags: form.tags ? form.tags.split(",").map((tag) => tag.trim()) : [],
-      hasVariant: hasVariant,
-      variantOptions: hasVariant === "Yes" ? variants : [],
       createdBy: webuser.id,
       organization_id: mainUser?.organization_id?._id || mainUser?.organization_id,
     };
-    
     try {
       const res = await addProducts(product);
       if (res.success === true) {
@@ -181,7 +161,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 required
               />
             </Grid>
-            <Grid item xs={6}>
+            {/* <Grid item xs={6}>
               <TextField
                 sx={{ width: "200px" }}
                 label="Price (₹)"
@@ -191,8 +171,8 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 onChange={handleChange}
                 required
               />
-            </Grid>
-            <Grid item xs={6}>
+            </Grid> */}
+            {/* <Grid item xs={6}>
               <TextField
                 sx={{ width: "200px" }}
                 label="MRP(₹)"
@@ -201,8 +181,8 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 value={form.compareAtPrice}
                 onChange={handleChange}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            </Grid> */}
+            {/* <Grid item xs={12} sm={6}>
               <TextField
                 sx={{ width: "200px" }}
                 label="SKU"
@@ -210,9 +190,9 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 value={form.sku}
                 onChange={handleChange}
               />
-            </Grid>
+            </Grid> */}
 
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <TextField
                 sx={{ width: "200px" }}
                 label="Short Description"
@@ -220,8 +200,8 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 value={form.shortDescription}
                 onChange={handleChange}
               />
-            </Grid>
-            <Grid item xs={6}>
+            </Grid> */}
+            {/* <Grid item xs={6}>
               <TextField
                 sx={{ width: "200px" }}
                 label="Quantity"
@@ -230,13 +210,13 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 value={form.quantity}
                 onChange={handleChange}
               />
-            </Grid>
+            </Grid> */}
             <Grid item xs={6}>
               <TextField
                 sx={{ width: "200px" }}
-                label="Unit"
-                name="unit"
-                value={form.unit}
+                label="Product Code"
+                name="productCode"
+                value={form.productCode}
                 onChange={handleChange}
               />
             </Grid>
@@ -252,8 +232,8 @@ const AddProduct = ({ open, handleClose, refresh }) => {
               //   margin="normal"
               >
                 {categories.map((cat) => (
-                  <MenuItem key={cat._id || cat.id} value={cat._id || cat.id}>
-                    {cat.categoryName || cat.name || cat.title || "Unnamed category"}
+                  <MenuItem key={cat._id} value={cat._id}>
+                    {cat.categoryName || "Unnamed category"}
                   </MenuItem>
                 ))}
 
@@ -269,7 +249,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 onChange={handleChange}
               />
             </Grid>
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <Autocomplete
                 options={["Yes", "No"]}
                 value={hasVariant}
@@ -279,8 +259,8 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 )}
                 sx={{ width: "200px" }}
               />
-            </Grid>
-            {hasVariant === "Yes" && (
+            </Grid> */}
+            {/* {hasVariant === "Yes" && (
               <>
                 {variants.map((variant, idx) => (
                   <Grid container spacing={2} key={idx}>
@@ -337,7 +317,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                   </Button>
                 </Box>
               </>
-            )}
+            )} */}
           </Grid>
 
           <Box mt={4} display="flex" justifyContent="flex-end">

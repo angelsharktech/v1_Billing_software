@@ -55,11 +55,11 @@ const SaleBillList = () => {
   const handleClose = () => setOpen(false);
   const handleCloseView = () => setView(false);
 
-const dateInputRef = useRef(null);
+const saleInputRef = useRef(null);
 
 useEffect(() => {
-  if (dateInputRef.current) {
-    dateInputRef.current.focus();
+  if (saleInputRef.current) {
+    saleInputRef.current.focus();
   }
 }, []);
 
@@ -163,6 +163,15 @@ useEffect(() => {
             Sale Summary
           </Typography>
           <Box display="flex" alignItems="center" gap={2} mb={2} mr={4}>
+             <Button
+              // accessKey="s"
+              variant="contained"
+              sx={{background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff" }}
+              onClick={handleOpen}
+              ref={saleInputRef}
+            >
+              Create Sale bill (Alt + S)
+            </Button>
             <TextField
               label="Start Date"
               type="date"
@@ -175,17 +184,10 @@ useEffect(() => {
               inputProps={{
                 max: moment().format("YYYY-MM-DD"), // Disable future dates
               }}
-              inputRef={dateInputRef}
+              // inputRef={dateInputRef}
             />
 
-            <Button
-              // accessKey="s"
-              variant="contained"
-              sx={{background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff" }}
-              onClick={handleOpen}
-            >
-              Create Sale bill (Alt + S)
-            </Button>
+           
           </Box>
         </Box>
 

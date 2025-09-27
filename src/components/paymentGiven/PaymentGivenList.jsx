@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Table,
@@ -40,6 +40,13 @@ const PaymentGivenList = ({ organizationId }) => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
   const isExtraSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+const paymentGivenInputRef = useRef(null);
+
+  useEffect(() => {
+    if (paymentGivenInputRef.current) {
+      paymentGivenInputRef.current.focus();
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -145,13 +152,6 @@ const PaymentGivenList = ({ organizationId }) => {
             width={isSmallScreen ? "100%" : "auto"}
           >
             <Box flexGrow={1} width={isSmallScreen ? "100%" : "auto"} mt={2}>
-              <FilterData
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                fullWidth={isSmallScreen}
-                autoFocusOnMount
-              />
-            </Box>
             <Button
               variant="contained"
               sx={{
@@ -159,11 +159,20 @@ const PaymentGivenList = ({ organizationId }) => {
                 color: "#fff",
                 whiteSpace: "nowrap",
                 width: isSmallScreen ? "100%" : "auto",
+                mr:'10px',
               }}
               onClick={() => setOpenDialog(true)}
+              ref={paymentGivenInputRef}
             >
               Add Payment
             </Button>
+              <FilterData
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                fullWidth={isSmallScreen}
+                // autoFocusOnMount
+              />
+            </Box>
           </Box>
         </Box>
 

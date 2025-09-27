@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -88,7 +88,13 @@ const ProductList = () => {
   const handleCloseEdit = () => setEdit(false);
 
   const pageSize = 4;
+const productInputRef = useRef(null);
 
+  useEffect(() => {
+    if (productInputRef.current) {
+      productInputRef.current.focus();
+    }
+  }, []);
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -103,6 +109,7 @@ const ProductList = () => {
       const org_prod = data.data.filter(
         (prod) => prod?.organization_id === result?.organization_id?._id 
       );
+      
       setProducts(org_prod);
     } catch (error) {
       console.error("Error fetching product data", error);
@@ -194,18 +201,19 @@ const ProductList = () => {
               <Typography variant="body2" color="textSecondary">
                 HSN: {prod.hsnCode}
               </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                {prod.shortDescription}
+              <Typography variant="body2" color="textSecondary">
+                HSN: {prod.category.categoryName}
               </Typography>
+          
             </Box>
-            <Chip
+            {/* <Chip
               label={prod.status.charAt(0).toUpperCase() + prod.status.slice(1)}
               color={prod.status === "active" ? "success" : "default"}
               size="small"
-            />
+            /> */}
           </Box>
           
-          <Grid container spacing={1} sx={{ mt: 1 }}>
+          {/* <Grid container spacing={1} sx={{ mt: 1 }}>
             <Grid item xs={6}>
               <Typography variant="body2">
                 <strong>Price:</strong> ₹{prod.price}
@@ -226,7 +234,7 @@ const ProductList = () => {
                 <strong>Qty:</strong> {prod.quantity}
               </Typography>
             </Grid>
-          </Grid>
+          </Grid> */}
           
           <Box sx={{ mt: 1 }}>
             <Typography variant="body2" component="span">
@@ -277,8 +285,22 @@ const ProductList = () => {
             flexDirection={isSmallMobile ? "column" : "row"} 
             gap={1} 
             width={isSmallMobile ? "100%" : "auto"}
-          >
-            
+           >
+            <Button
+                variant="contained"
+                sx={{ 
+                 background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff",
+                  whiteSpace: 'nowrap',
+                  minWidth: 'auto',
+                  height:'40px',
+                  mr:'10px',
+                }}
+                onClick={handleOpen}
+                fullWidth={isSmallMobile}
+                ref={productInputRef}
+              >
+                {isSmallMobile ? 'Add Product' : 'Add Product (alt+r)'}
+              </Button>
             <FilterData 
                 value={searchQuery} 
                 onChange={handleSearchChange} 
@@ -287,19 +309,7 @@ const ProductList = () => {
               />
             
             <Box display="flex" gap={1} ml={isSmallMobile ? 0 : 1}>
-              <Button
-                variant="contained"
-                sx={{ 
-                 background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff",
-                  whiteSpace: 'nowrap',
-                  minWidth: 'auto',
-                  height:'40px'
-                }}
-                onClick={handleOpen}
-                fullWidth={isSmallMobile}
-              >
-                {isSmallMobile ? 'Add Product' : 'Add Product (alt+r)'}
-              </Button>
+              
 
               <Button
                 variant="outlined"
@@ -355,12 +365,7 @@ const ProductList = () => {
                 <TableRow>
                   <TableCell><strong>HSN Code</strong></TableCell>
                   <TableCell><strong>Name</strong></TableCell>
-                  <TableCell><strong>Short Description</strong></TableCell>
-                  <TableCell><strong>Price (₹)</strong></TableCell>
-                  <TableCell><strong>MRP (₹)</strong></TableCell>
-                  <TableCell><strong>Discount (%)</strong></TableCell>
-                  <TableCell><strong>Quantity</strong></TableCell>
-                  <TableCell><strong>Status</strong></TableCell>
+                  <TableCell><strong>Category</strong></TableCell>
                   <TableCell><strong>Tags</strong></TableCell>
                   <TableCell width={120}><strong>Actions</strong></TableCell>
                 </TableRow>
@@ -369,19 +374,8 @@ const ProductList = () => {
                 {paginatedProducts?.map((prod) => (
                   <TableRow key={prod._id}>
                     <TableCell>{prod.hsnCode}</TableCell>
-                    <TableCell>{prod.name}</TableCell>
-                    <TableCell>{prod.shortDescription}</TableCell>
-                    <TableCell>{prod.price}</TableCell>
-                    <TableCell>{prod.compareAtPrice}</TableCell>
-                    <TableCell>{prod.discountPercentage}%</TableCell>
-                    <TableCell>{prod.quantity}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={prod.status.charAt(0).toUpperCase() + prod.status.slice(1)}
-                        color={prod.status === "active" ? "success" : "default"}
-                        size="small"
-                      />
-                    </TableCell>
+                    <TableCell>{prod.name}</TableCell>                  
+                    <TableCell>{prod.category.categoryName}</TableCell>
                     <TableCell>
                       {prod.tags.map((tag, index) => (
                         <Chip

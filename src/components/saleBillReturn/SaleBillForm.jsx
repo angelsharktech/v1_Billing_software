@@ -120,7 +120,6 @@ const SaleBillForm = ({
     gstNumber: "",
     legalName: "",
     state: "",
-    stateCode: "",
   });
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
@@ -236,7 +235,6 @@ const handleCustomerSelection = (value, type) => {
         gstNumber: selectedCustomer.gstDetails?.gstNumber || "",
         legalName: selectedCustomer.gstDetails?.legalName || "",
         state: selectedCustomer.gstDetails?.state || "",
-        stateCode: selectedCustomer.gstDetails?.stateCode || "",
       });
       setIsExistingCustomer(true);
     } 
@@ -252,7 +250,6 @@ const handleCustomerSelection = (value, type) => {
     //     gstNumber: "",
     //     legalName: "",
     //     state: "",
-    //     stateCode: "",
     //   });
     //   setIsExistingCustomer(false);
     // }
@@ -452,7 +449,6 @@ const handleCustomerSelection = (value, type) => {
       //       gstNumber: gstDetails.gstNumber,
       //       legalName: gstDetails.legalName,
       //       state: gstDetails.state,
-      //       stateCode: gstDetails.stateCode,
       //     },
       //   };
 

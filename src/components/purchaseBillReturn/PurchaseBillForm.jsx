@@ -93,7 +93,6 @@ const [billDate , setBillDate] = useState("");
     gstNumber: "",
     legalName: "",
     state: "",
-    stateCode: "",
   });
 
   // load positions/roles/users + main user
@@ -237,8 +236,7 @@ const [billDate , setBillDate] = useState("");
       setGstDetails({
         gstNumber: selectedVendor.gstDetails?.gstNumber || "",
         legalName: selectedVendor.gstDetails?.legalName || "",
-        state: selectedVendor.gstDetails?.state || "",
-        stateCode: selectedVendor.gstDetails?.stateCode || "",
+        state: selectedVendor.gstDetails?.state || ""
       });
       setIsExistingVendor(true);
     } else {
@@ -253,7 +251,6 @@ const [billDate , setBillDate] = useState("");
         gstNumber: "",
         legalName: "",
         state: "",
-        stateCode: "",
       });
       setIsExistingVendor(false);
     }

@@ -59,7 +59,7 @@ const NewSaleBillForm = ({
 }) => {
   const { webuser } = useAuth();
   // const { getRef, handleKeyDown } = useFormNavigation();
-  let fieldIndex = 0;
+  const totalFields = 50
   // sum of all focusable inputs
   const { getRef, handleKeyDown } = useFormNavigation();
   // const getRef = (i) => refs[i];
@@ -713,14 +713,13 @@ const NewSaleBillForm = ({
               format="DD-MM-YYYY"
               slotProps={{
                 textField: {
-                  inputRef: getRef(fieldIndex),
-                  onKeyDown: (e) => handleKeyDown(e, fieldIndex),
+                  inputRef: getRef(0),
+                  onKeyDown: (e) => handleKeyDown(e, 0,totalFields),
                   inputProps: { tabIndex: 20 }, // 👈 keep this inside textField
                 },
               }}
             />
           </LocalizationProvider>
-          {fieldIndex++}
         </Box>
         <FormControl component="fieldset">
           <Typography variant="subtitle1">Bill Type</Typography>
@@ -729,13 +728,12 @@ const NewSaleBillForm = ({
             value={billType}
             onChange={(e) => setBillType(e.target.value)}
           >
-            {fieldIndex++}
             <FormControlLabel
               value="gst"
               control={
                 <Radio
-                  inputRef={getRef(fieldIndex)}
-                  onKeyDown={(e) => handleKeyDown(e, fieldIndex)}
+                  inputRef={getRef(1)}
+                  onKeyDown={(e) => handleKeyDown(e, 1,totalFields)}
                 />
               }
               label="GST Bill"
@@ -745,8 +743,8 @@ const NewSaleBillForm = ({
               value="nongst"
               control={
                 <Radio
-                  inputRef={getRef(fieldIndex)}
-                  onKeyDown={(e) => handleKeyDown(e, fieldIndex)}
+                  inputRef={getRef(2)}
+                  onKeyDown={(e) => handleKeyDown(e, 2,totalFields)}
                 />
               }
               label="Non-GST Bill"
@@ -755,7 +753,7 @@ const NewSaleBillForm = ({
         </FormControl>
 
         {/* Within State / Out of State */}
-        {/* {billType === "gst" && (
+        {billType === "gst" && (
           <Box mt={3}>
             <FormControl component="fieldset">
               <Typography variant="subtitle1">Billing Location</Typography>
@@ -787,8 +785,8 @@ const NewSaleBillForm = ({
               </RadioGroup>
             </FormControl>
           </Box>
-        )} */}
-        {billType === "gst" && (
+        )}
+        {/* {billType === "gst" && (
           <>
             {fieldIndex++}
             <RadioGroup
@@ -821,7 +819,7 @@ const NewSaleBillForm = ({
             </RadioGroup>
             {fieldIndex++}
           </>
-        )}
+        )} */}
       </Box>
       {/* Step 2: Product Details */}
 
@@ -868,12 +866,11 @@ const NewSaleBillForm = ({
                 {...params}
                 label="Customer Name"
                 sx={{ width: "200px" }}
-                inputRef={getRef(fieldIndex)}
-                onKeyDown={(e) => handleKeyDown(e, fieldIndex)} // 20 = total fields across all components
+                inputRef={getRef(5)}
+                onKeyDown={(e) => handleKeyDown(e, 5,totalFields)} // 20 = total fields across all components
               />
             )}
           />
-          {fieldIndex++}
           <Grid item xs={12} sm={4} width={200}>
             <TextField
               label="Mobile Number"
@@ -882,11 +879,10 @@ const NewSaleBillForm = ({
               onChange={(e) => handleCustomerSelection(e.target.value, "phone")}
               error={Boolean(errors.phone_number)}
               helperText={errors.phone_number}
-              inputRef={getRef(fieldIndex)}
-              onKeyDown={(e) => handleKeyDown(e, fieldIndex)}
+              inputRef={getRef(6)}
+              onKeyDown={(e) => handleKeyDown(e, 6,totalFields)}
             />
           </Grid>
-          {fieldIndex++}
           <Grid item xs={12} sm={4} width={200}>
             <TextField
               label="Address"
@@ -896,14 +892,13 @@ const NewSaleBillForm = ({
                 setCustomer({ ...customer, address: e.target.value })
               }
               disabled={isExistingCustomer}
-              inputRef={getRef(fieldIndex)}
-              onKeyDown={(e) => handleKeyDown(e, fieldIndex)}
+              inputRef={getRef(7)}
+              onKeyDown={(e) => handleKeyDown(e, 7,totalFields)}
             />
           </Grid>
-          {fieldIndex++}
           <Grid item xs={12} sm={4} width={200}>
             <TextField
-              label="Opening Amount"
+              label="Opening Balance"
               fullWidth
               value={customer.openingAmount}
               onChange={(e) =>
@@ -914,13 +909,10 @@ const NewSaleBillForm = ({
               onKeyDown={(e) => handleKeyDown(e, 8)}
             />
           </Grid>
-          {fieldIndex++}
           <Grid container spacing={2} mt={1}>
             {billType === "gst" &&
               Object.entries(gstDetails).map(([key, value]) => {
-                const thisIndex = fieldIndex++; // ✅ works inside { }
-
-                return (
+               
                   <Grid item xs={12} sm={6} key={key} width={200}>
                     {thisIndex}
                     <TextField
@@ -959,14 +951,13 @@ const NewSaleBillForm = ({
                         key === "stateCode" ? Boolean(errors.stateCode) : false
                       }
                       helperText={key === "stateCode" ? errors.stateCode : ""}
-                      inputRef={getRef(thisIndex)} // ✅ dynamic index
-                      onKeyDown={(e) => handleKeyDown(e, thisIndex)}
+                      inputRef={getRef(9+i)} // ✅ dynamic index
+                      onKeyDown={(e) => handleKeyDown(e, 9+i,totalFields)}
                     />
                   </Grid>
-                );
+                
               })}
           </Grid>
-          {fieldIndex++}
         </Grid>
       </Box>
 

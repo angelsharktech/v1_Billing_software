@@ -15,7 +15,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterData from "../shared/FilterData";
@@ -48,6 +48,13 @@ const CustomerList = () => {
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
   const isExtraSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
+const customerInputRef = useRef(null);
+
+useEffect(() => {
+  if (customerInputRef.current) {
+    customerInputRef.current.focus();
+  }
+}, []);
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -210,25 +217,28 @@ const CustomerList = () => {
             width={isSmallScreen ? "100%" : "auto"}
           >
             <Box flexGrow={1} width={isSmallScreen ? "100%" : "auto"}>
-              <FilterData 
-                value={searchQuery} 
-                onChange={handleSearchChange} 
-                fullWidth={isSmallScreen}
-                autoFocusOnMount
-              />
-            </Box>
-            <Button
+              <Button
               variant="contained"
               sx={{ 
                 background: "linear-gradient(135deg, #182848, #324b84ff)", 
                 color: "#fff",
                 whiteSpace: 'nowrap',
+                mr:'10px',
                 width: isSmallScreen ? "100%" : "auto"
               }}
               onClick={handleOpen}
+              ref={customerInputRef}
             >
               {isSmallScreen ? "Add Customer" : "Add Customer (alt+c)"}
             </Button>
+              <FilterData 
+                value={searchQuery} 
+                onChange={handleSearchChange} 
+                fullWidth={isSmallScreen}
+                // autoFocusOnMount
+              />
+            </Box>
+            
           </Box>
         </Box>
 

@@ -122,13 +122,11 @@ const { getRef, handleKeyDown } = useFormNavigation();
   const [errors, setErrors] = useState({
     phone_number: "",
     products: {},
-    stateCode: "",
   });
   const [gstDetails, setGstDetails] = useState({
     gstNumber: "",
     legalName: "",
     state: "",
-    stateCode: 0,
   });
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
@@ -218,7 +216,7 @@ const { getRef, handleKeyDown } = useFormNavigation();
           phone_number: "Invalid mobile number",
         }));
       } else {
-        setErrors((prev) => ({ ...prev, phone_number: "", stateCode: "" }));
+        setErrors((prev) => ({ ...prev, phone_number: "" }));
       }
     } else if (type === "name") {
       selectedCustomer = users.find(
@@ -239,7 +237,6 @@ const { getRef, handleKeyDown } = useFormNavigation();
         gstNumber: selectedCustomer.gstDetails?.gstNumber || "",
         legalName: selectedCustomer.gstDetails?.legalName || "",
         state: selectedCustomer.gstDetails?.state || "",
-        stateCode: selectedCustomer.gstDetails?.stateCode || "",
       });
       setIsExistingCustomer(true);
     } 
@@ -255,7 +252,6 @@ const { getRef, handleKeyDown } = useFormNavigation();
         gstNumber: "",
         legalName: "",
         state: "",
-        stateCode: "",
       });
       setIsExistingCustomer(false);
     }
@@ -456,7 +452,6 @@ const { getRef, handleKeyDown } = useFormNavigation();
             gstNumber: gstDetails.gstNumber,
             legalName: gstDetails.legalName,
             state: gstDetails.state,
-            stateCode: gstDetails.stateCode,
           },
         };
 
@@ -478,7 +473,6 @@ const { getRef, handleKeyDown } = useFormNavigation();
         billType === "gst" &&
         gstDetails.gstNumber === "" ||
         gstDetails.legalName === "" ||
-        gstDetails.stateCode === "" ||
         gstDetails.state === ""
       ) {
         setSnackbarMessage("Please Fill Gst Details");

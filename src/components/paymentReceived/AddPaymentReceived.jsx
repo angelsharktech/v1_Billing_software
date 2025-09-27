@@ -219,7 +219,7 @@ const AddPaymentReceived = ({
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <TextField
-                label="Opening Amount"
+                label="Opening Balance"
                 value={payment.openingAmount}
                 InputProps={{ readOnly: true }} // ✅ readonly autofill
                 fullWidth
@@ -227,7 +227,7 @@ const AddPaymentReceived = ({
             </Grid>
             <Grid item xs={6}>
               <TextField
-                label="Closing Amount"
+                label="Closing Balance"
                 value={payment.closingAmount}
                 InputProps={{ readOnly: true }} // ✅ readonly autofill
                 fullWidth
