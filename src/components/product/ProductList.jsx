@@ -202,7 +202,7 @@ const productInputRef = useRef(null);
                 HSN: {prod.hsnCode}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                HSN: {prod.category.categoryName}
+                HSN: {prod?.category?.categoryName}
               </Typography>
           
             </Box>
@@ -375,7 +375,7 @@ const productInputRef = useRef(null);
                   <TableRow key={prod._id}>
                     <TableCell>{prod.hsnCode}</TableCell>
                     <TableCell>{prod.name}</TableCell>                  
-                    <TableCell>{prod.category.categoryName}</TableCell>
+                    <TableCell>{prod?.category?.categoryName}</TableCell>
                     <TableCell>
                       {prod.tags.map((tag, index) => (
                         <Chip
