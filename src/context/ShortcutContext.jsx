@@ -18,20 +18,20 @@ export const ShortcutProvider = ({ children }) => {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-       const key = event.key.toLowerCase();
+       const key = event.key?.toLowerCase();
       setKeysPressed((prev) => ({ ...prev, [key]: true }));
       // ALT + S -> Toggle Sale Bill
-      if (event.altKey && event.key.toLowerCase() === "s") {
+      if (event.altKey && event.key?.toLowerCase() === "s") {
         event.preventDefault();
         setIsSaleBillOpen((prev) => !prev);
       }
       // ALT + P -> Toggle Purchase Bill
-      if (event.altKey && event.key.toLowerCase() === "p") {
+      if (event.altKey && event.key?.toLowerCase() === "p") {
         event.preventDefault();
         setIsPurchaseBillOpen((prev) => !prev);
       }
       // ALT + L -> Toggle Supplier
-      if (event.altKey && event.key.toLowerCase() === "l") {
+      if (event.altKey && event.key?.toLowerCase() === "l") {
         event.preventDefault();
         setIsSupplierOpen((prev) => !prev);
       }
@@ -41,18 +41,18 @@ export const ShortcutProvider = ({ children }) => {
         setIsCustomerOpen((prev) => !prev);
       }
         // ALT + x -> Toggle Category   
-      if (event.altKey && event.key.toLowerCase() === "x") {
+      if (event.altKey && event.key?.toLowerCase() === "x") {
         event.preventDefault();
         setIsCategoryOpen((prev) => !prev);
       }
         // ALT + r -> Toggle Product
-        if (event.altKey && event.key.toLowerCase() === "r") {  
+        if (event.altKey && event.key?.toLowerCase() === "r") {  
         event.preventDefault();
         setIsProductOpen((prev) => !prev);
       }
       
       // ALT + Q -> Toggle Quotation
-      if (event.altKey && event.key.toLowerCase() === "q") {
+      if (event.altKey && event.key?.toLowerCase() === "q") {
         event.preventDefault();
         setIsQuotationOpen((prev) => !prev);
       }
@@ -71,7 +71,7 @@ export const ShortcutProvider = ({ children }) => {
     };
 
     const handleKeyUp = (event) => {
-      const key = event.key.toLowerCase();
+      const key = event.key?.toLowerCase();
       setKeysPressed((prev) => ({ ...prev, [key]: false }));
     };
 

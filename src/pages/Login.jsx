@@ -20,12 +20,15 @@ import InputAdornment from "@mui/material/InputAdornment";
 
 const Login = () => {
   const { loginData } = useAuth();
-  const [credentials, setCredentials] = useState({ userName: "", password: "" });
+  const [credentials, setCredentials] = useState({
+    userName: "",
+    password: "",
+  });
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [open , setOpen] =useState(false);
-  const [otp , setOTP] =useState('');
+  const [open, setOpen] = useState(false);
+  const [otp, setOTP] = useState("");
 
   const navigate = useNavigate();
 
@@ -39,28 +42,28 @@ const Login = () => {
       if (res) {
         setSnackbarMessage("Otp Send successful!");
         setShowSnackbar(true);
-        setOpen(true)
+        setOpen(true);
       }
     } catch (err) {
-      if(err.error){
+      if (err.error) {
         setSnackbarMessage(err.error);
         setShowSnackbar(true);
       }
-      if(err.message){
+      if (err.message) {
         setSnackbarMessage(err.message);
         setShowSnackbar(true);
       }
     }
   };
 
-  const handleVerifyOtp = async()=>{
+  const handleVerifyOtp = async () => {
     try {
-      const payload = { 
-        userName:credentials.userName,
-        password:credentials.password,
-        otp:otp
-      }
-       const res = await verifyOtp(payload);
+      const payload = {
+        userName: credentials.userName,
+        password: credentials.password,
+        otp: otp,
+      };
+      const res = await verifyOtp(payload);
       if (res) {
         loginData(res.user, res.token);
         localStorage.setItem("token", res.token); // store token if needed
@@ -72,18 +75,42 @@ const Login = () => {
         }, 500);
       }
     } catch (err) {
-      if(err.error){
+      if (err.error) {
         setSnackbarMessage(err.error);
         setShowSnackbar(true);
       }
-      if(err.message){
+      if (err.message) {
         setSnackbarMessage(err.message);
         setShowSnackbar(true);
       }
     }
-  }
+  };
+  const handleLogin = async () => {
+    try {
+      const res = await loginUser(credentials);
+      if (res) {
+          loginData(res.user, res.token);
+        localStorage.setItem("token", res.token); // store token if needed
+        setSnackbarMessage("Login successful!");
+        setShowSnackbar(true);
+        // setOpen(true);
+         setTimeout(() => {
+          navigate("/dashboard");
+        }, 500);
+      }
+    } catch (err) {
+      if (err.error) {
+        setSnackbarMessage(err.error);
+        setShowSnackbar(true);
+      }
+      if (err.message) {
+        setSnackbarMessage(err.message);
+        setShowSnackbar(true);
+      }
+    }
+  };
 
- return (
+  return (
     <Box
       sx={{
         height: "100vh",
@@ -95,7 +122,7 @@ const Login = () => {
       }}
     >
       {/* Main content wrapper */}
-     
+
       <Box
         sx={{
           flex: 1, // pushes footer down
@@ -104,7 +131,7 @@ const Login = () => {
           justifyContent: "left",
           overflow: "hidden",
         }}
-       >
+      >
         <Paper
           elevation={8}
           sx={{
@@ -123,7 +150,7 @@ const Login = () => {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
-                sx={{width:'260px'}}
+                sx={{ width: "260px" }}
                 label="User Name"
                 name="userName"
                 type="userName"
@@ -156,57 +183,60 @@ const Login = () => {
             </Grid>
           </Grid>
           {!open && (
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSendOtp}
-                sx={{ mt: "10%" }}
-              >
-                Login
-              </Button>
-            </Grid>
-
-            <Grid item xs={12} textAlign="right" mt={"3%"}>
-              <Link
-                to="/register"
-                style={{ textDecoration: "none", color: "#1976d2" }}
-              >
-                No Account? Register Here
-              </Link>
-            </Grid>
-          </Grid>
-          )}
-          {open && (<>
-          <Grid container spacing={2} mt={3}>
-            <Grid item xs={12}>
-              <TextField
-                sx={{width:'260px'}}
-                label="Enter OTP"
-                name="otp"
-                type="otp"
-                value={otp}
-                onChange={(e)=>setOTP(e.target.value)}
-              />
-            </Grid>
-          </Grid>
             <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleVerifyOtp}
-                sx={{ mt: "10%" }}
-              >
-                Verify OTP
-              </Button>
-            </Grid>            
-          </Grid>
-          </>)}
+              <Grid item xs={12}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleLogin}
+                  // onClick={handleSendOtp}
+                  sx={{ mt: "10%" }}
+                >
+                  Login
+                </Button>
+              </Grid>
+
+              <Grid item xs={12} textAlign="right" mt={"3%"}>
+                <Link
+                  to="/register"
+                  style={{ textDecoration: "none", color: "#1976d2" }}
+                >
+                  No Account? Register Here
+                </Link>
+              </Grid>
+            </Grid>
+          )}
+          {open && (
+            <>
+              <Grid container spacing={2} mt={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    sx={{ width: "260px" }}
+                    label="Enter OTP"
+                    name="otp"
+                    type="otp"
+                    value={otp}
+                    onChange={(e) => setOTP(e.target.value)}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleVerifyOtp}
+                    sx={{ mt: "10%" }}
+                  >
+                    Verify OTP
+                  </Button>
+                </Grid>
+              </Grid>
+            </>
+          )}
         </Paper>
       </Box>
-     
+
       {/* Footer inside flex column */}
       <Box
         component="footer"
@@ -217,8 +247,16 @@ const Login = () => {
           fontSize: "1 rem",
         }}
       >
-        © {new Date().getFullYear()} Angel Shark IT Solution. All rights reserved. Visit our website 
-        <a href='https://www.angelshark.in/' target="blank" style={{color:'black'}}> www.angelshark.in </a>
+        © {new Date().getFullYear()} Angel Shark IT Solution. All rights
+        reserved. Visit our website
+        <a
+          href="https://www.angelshark.in/"
+          target="blank"
+          style={{ color: "black" }}
+        >
+          {" "}
+          www.angelshark.in{" "}
+        </a>
       </Box>
 
       <Snackbar
@@ -228,7 +266,9 @@ const Login = () => {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
-          severity={snackbarMessage .includes("successful!") ? "success" : "error"}
+          severity={
+            snackbarMessage.includes("successful!") ? "success" : "error"
+          }
           onClose={() => setShowSnackbar(false)}
           sx={{ width: "100%" }}
         >

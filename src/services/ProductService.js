@@ -24,7 +24,7 @@ export const addProducts = async (data) => {
     const response = await axios.post(`${BASE_URL}/` ,data, getAuthHeader());
     return response.data;
   } catch (error) {
-    console.error("Error fetching Product :", error);
+    console.error("Error Adding Product :", error);
     throw error;
   }
 };
