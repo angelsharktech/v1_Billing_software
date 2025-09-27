@@ -76,7 +76,7 @@ const CategoryList = () => {
           .forEach((cat) => {
             flattened.push({
               id: cat._id,
-              categoryName: cat.categoryName,
+              categoryName: cat?.categoryName,
               slug: cat.slug,
               description: cat.description,
             });
@@ -89,7 +89,7 @@ const CategoryList = () => {
   };
 
   const filteredCategory = rows?.filter((cat) =>
-    cat.categoryName?.toLowerCase().includes(searchQuery?.toLowerCase())
+    cat?.categoryName?.toLowerCase().includes(searchQuery?.toLowerCase())
   );
 
   const handleSearchChange = (e) => {
@@ -241,7 +241,7 @@ const CategoryList = () => {
               <TableBody>
                 {paginatedCategory?.map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell align="center">{row.categoryName}</TableCell>
+                    <TableCell align="center">{row?.categoryName}</TableCell>
                     <TableCell align="center">
                       <IconButton
                         color="primary"
