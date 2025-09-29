@@ -105,7 +105,7 @@ useEffect(() => {
 
   const filteredvendor = filteredVendors?.filter(
     (ven) =>
-      ven.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ven.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ven.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ven.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ven.phone_number?.includes(searchQuery.toLowerCase())
@@ -156,7 +156,7 @@ useEffect(() => {
     <Paper sx={{ p: 2, mb: 2, borderRadius: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
         <Typography variant="subtitle1" fontWeight="bold">
-          {vendor.first_name} {vendor.last_name}
+          {vendor.name}
         </Typography>
         <Box>
           <IconButton
@@ -274,7 +274,7 @@ useEffect(() => {
                 {paginatedVendors.map((vendor) => (
                   <TableRow key={vendor._id}>
                     <TableCell>
-                      {vendor.first_name} {vendor.last_name}
+                      {vendor.name}
                     </TableCell>
                     <TableCell>{vendor.phone_number}</TableCell>
                     <TableCell>{vendor.address}  {vendor.city}</TableCell>

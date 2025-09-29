@@ -124,7 +124,7 @@ const PrintInvoiceDialog = ({ open, onClose, bill = {} }) => {
                   <Typography variant="h6" fontWeight="bold">
                     Invoice to:
                   </Typography>
-                  <Typography>{customer?.first_name || "N/A"}</Typography>
+                  <Typography>{customer?.name || "N/A"}</Typography>
                   <Typography>{customer?.address || "N/A"}</Typography>
                   <Typography>{customer?.phone_number || "N/A"}</Typography>
                 </Grid>

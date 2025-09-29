@@ -39,7 +39,7 @@ const PurchaseBillForm = ({
 
   const [vendor, setVendor] = useState({
     _id: "",
-    first_name: "",
+    name: "",
     address: "",
     phone_number: "",
     pincode: "",
@@ -225,14 +225,14 @@ const PurchaseBillForm = ({
     } else if (type === "name") {
       selectedVendor = users.find(
         (s) =>
-          s.first_name === value && s.role_id.name.toLowerCase() === "vendor"
+          s.name === value && s.role_id.name.toLowerCase() === "vendor"
       );
     }
 
     if (selectedVendor) {
       setVendor({
         _id: selectedVendor._id,
-        first_name: selectedVendor.first_name,
+        name: selectedVendor.name,
         address: selectedVendor.address || "",
         phone_number: selectedVendor.phone_number || value,
         openingAmount: selectedVendor.openingAmount,
@@ -246,7 +246,7 @@ const PurchaseBillForm = ({
     } else {
       setVendor((prev) => ({
         _id: "",
-        first_name: type === "name" ? value : prev.first_name,
+        name: type === "name" ? value : prev.name,
         address: prev.address,
         phone_number: type === "phone" ? value : prev.phone_number,
         openingAmount: selectedVendor?.openingAmount || 0,
@@ -349,7 +349,7 @@ const PurchaseBillForm = ({
     try {
       let finalVendor = { ...vendor };
 
-      if (!vendor.phone_number || !vendor.first_name) {
+      if (!vendor.phone_number || !vendor.name) {
         setSnackbarMessage("Please fill vendor details!");
         setSnackbarOpen(true);
         return;
@@ -379,10 +379,10 @@ const PurchaseBillForm = ({
           ...vendor,
           organization_id: mainUser.organization_id?._id,
           email:
-            vendor.first_name.replace(/\s+/g, "").toLowerCase() +
+            vendor.name.replace(/\s+/g, "").toLowerCase() +
             "@example.com",
           password:
-            vendor.first_name.replace(/\s+/g, "").toLowerCase() +
+            vendor.name.replace(/\s+/g, "").toLowerCase() +
             "@example.com",
           role_id: vendorRole?._id,
           position_id: vendorposition?._id,
@@ -596,7 +596,7 @@ const PurchaseBillForm = ({
         }
 
         setVendor({
-          first_name: "",
+          name: "",
           address: "",
           phone_number: "",
         });

@@ -159,13 +159,16 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
       }}
     >
       <Box textAlign="center">
-        <Avatar sx={{ width: 60, height: 60, mx: "auto", mb: 1 }} />
+          <Typography variant="h4" noWrap component="div" mr={2}>
+            Billing Desk
+          </Typography>
+        {/* <Avatar sx={{ width: 60, height: 60, mx: "auto", mb: 1 }} />
         <Typography fontWeight="bold" fontSize={14}>
-          {webuser.first_name}
+          {webuser.name}
         </Typography>
         <Typography fontSize={12} color="gray">
           {webuser.email}
-        </Typography>
+        </Typography> */}
       </Box>
 
       <List>

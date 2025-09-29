@@ -124,8 +124,7 @@ const PurchaseBillReturnReport = () => {
       const billStatus = (bill?.status);
       // const billPayStatus = (bill?.paymentType).toLowerCase();
       const billName = (
-        bill.client_id?.first_name ||
-        "" + " " + bill.client_id?.last_name ||
+        bill.client_id?.name ||
         ""
       ).toLowerCase();
 
@@ -190,8 +189,7 @@ const PurchaseBillReturnReport = () => {
         cgst: `${bill?.products?.[0]?.cgst || "0"}`,
         sgst: `${bill?.products?.[0]?.sgst || "0"}`,
         igst: `${bill?.products?.[0]?.igst || "0"}`,
-        customerName: `${bill.bill_to?.first_name ||
-          "" + " " + bill.bill_to?.last_name ||
+        customerName: `${bill.bill_to?.name ||
           ""
           }`,
         invoiceNo: bill?.bill_number || "",
@@ -406,9 +404,8 @@ const PurchaseBillReturnReport = () => {
 
                     {/* Customer Name */}
                     <TableCell>
-                      {bill.bill_to?.first_name +
-                        " " +
-                        (bill.bill_to?.last_name ? bill.bill_to?.last_name : "")}
+                      {bill.bill_to?.name +
+                        " " }
                     </TableCell>
 
                     {/* GST Number */}

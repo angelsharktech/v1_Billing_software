@@ -35,20 +35,20 @@ const CustomerDetails = ({
           getOptionLabel={(option) =>
             typeof option === "string"
               ? option
-              : option.first_name + " " + (option.last_name || "")
+              : option.name + " " 
           }
           value={
-            customerList.find((s) => s.first_name === customer.first_name) ||
-            customer.first_name ||
+            customerList.find((s) => s.name === customer.name) ||
+            customer.name ||
             "" // keep typed value for new customer
           }
           onChange={(event, newValue) => {
             if (typeof newValue === "string") {
               // User typed a new vendor name
               handleCustomerSelection(newValue, "name");
-            } else if (newValue && newValue.first_name) {
+            } else if (newValue && newValue.name) {
               // Selected existing vendor
-              handleCustomerSelection(newValue.first_name, "name");
+              handleCustomerSelection(newValue.name, "name");
             }
           }}
           onInputChange={(event, newInputValue) => {

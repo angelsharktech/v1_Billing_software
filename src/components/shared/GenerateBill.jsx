@@ -100,7 +100,7 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
         <Grid container spacing={2}>
           <Grid item xs={6} width={450}>
             <Typography variant="h6" fontWeight="bold" p={0.5}>
-              To: {customer?.first_name}
+              To: {customer?.name}
             </Typography>
             <Typography p={0.5}>{customer?.address}</Typography>
             <Typography p={0.5}>{customer?.phone_number}</Typography>

@@ -26,8 +26,7 @@ const Registration = () => {
   const [users, setUsers] = useState([]);
 
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
+    name: "",
     userName:"",
     phone_number: "",
     email: "",
@@ -171,8 +170,7 @@ const Registration = () => {
   const renderPersonalInfo = () => (
     <>
       {[
-        "first_name",
-        "last_name",
+        "name",
         "userName",
         "phone_number",
         "email",

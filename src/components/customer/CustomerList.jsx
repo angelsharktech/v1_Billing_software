@@ -108,7 +108,7 @@ useEffect(() => {
   // Search bar code
   const filteredCustomer = filteredCustomers?.filter(
     (cust) =>
-      cust.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cust.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cust.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cust.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cust.phone_number?.includes(searchQuery.toLowerCase())
@@ -164,7 +164,7 @@ useEffect(() => {
     <Paper sx={{ p: 2, mb: 2, borderRadius: 2, boxShadow: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
         <Typography variant="subtitle1" fontWeight="bold">
-          {customer.first_name} {customer.last_name}
+          {customer.name} 
         </Typography>
         <Box>
           <IconButton
@@ -282,7 +282,7 @@ useEffect(() => {
                 {paginatedCustomers.map((customer) => (
                   <TableRow key={customer._id}>
                     <TableCell>
-                      {customer.first_name} {customer.last_name}
+                      {customer.name}
                     </TableCell>
                     <TableCell>{customer.phone_number}</TableCell>
                     <TableCell>{customer.address}  {customer.city}</TableCell>

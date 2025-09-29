@@ -55,7 +55,7 @@ const SaleBillForm = ({
   const navigate = useNavigate();
   const [customer, setCustomer] = useState({
     _id: "",
-    first_name: "",
+    name: "",
     address: "",
     phone_number: "",
     pincode: "",
@@ -219,14 +219,14 @@ const handleCustomerSelection = (value, type) => {
     } else if (type === "name") {
       selectedCustomer = users.find(
         (s) =>
-          s.first_name === value && s.role_id.name.toLowerCase() === "customer"
+          s.name === value && s.role_id.name.toLowerCase() === "customer"
       );
     }
 
     if (selectedCustomer) {
       setCustomer({
         _id: selectedCustomer._id,
-        first_name: selectedCustomer.first_name,
+        name: selectedCustomer.name,
         address: selectedCustomer.address || "",
         phone_number: selectedCustomer.phone_number || value,
         openingAmount: selectedCustomer.openingAmount,
@@ -241,7 +241,7 @@ const handleCustomerSelection = (value, type) => {
     // else {
     //   setCustomer((prev) => ({
     //     _id: "",
-    //     first_name: type === "name" ? value : prev.first_name,
+    //     name: type === "name" ? value : prev.name,
     //     address: prev.address,
     //     phone_number: type === "phone" ? value : prev.phone_number,
     //     openingAmount: selectedCustomer?.openingAmount || 0,
@@ -414,7 +414,7 @@ const handleCustomerSelection = (value, type) => {
     try {
       let finalCustomer = { ...customer };
 
-      if (!customer.phone_number || !customer.first_name) {
+      if (!customer.phone_number || !customer.name) {
         setSnackbarMessage("Please fill customer details!");
         setSnackbarOpen(true);
         return;
@@ -438,10 +438,10 @@ const handleCustomerSelection = (value, type) => {
       //     ...customer,
       //     organization_id: mainUser.organization_id?._id,
       //     email:
-      //       customer.first_name.replace(/\s+/g, "").toLowerCase() +
+      //       customer.name.replace(/\s+/g, "").toLowerCase() +
       //       "@example.com",
       //     password:
-      //       customer.first_name.replace(/\s+/g, "").toLowerCase() +
+      //       customer.name.replace(/\s+/g, "").toLowerCase() +
       //       "@example.com",
       //     role_id: customerRole._id,
       //     position_id: customerposition._id,
@@ -630,7 +630,7 @@ const handleCustomerSelection = (value, type) => {
         }
 
         setCustomer({
-          first_name: "",
+          name: "",
           address: "",
           phone_number: "",
           openingAmount: 0,

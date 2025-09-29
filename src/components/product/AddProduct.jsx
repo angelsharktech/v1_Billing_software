@@ -40,7 +40,9 @@ const AddProduct = ({ open, handleClose, refresh }) => {
     name: "",
     hsnCode: "",
     category: "",
-    tags: "",
+    unit: "",
+    price:0,
+    quantity:0,
     productCode: "",
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -90,19 +92,14 @@ const AddProduct = ({ open, handleClose, refresh }) => {
     }));
   };
 
-  const handleCancel = () => {
+  const handleReset = () => {
     handleClose();
     setForm({
       name: "",
-      // description: "",
       shortDescription: "",
       price: "",
-      compareAtPrice: "",
-      hsnCode: "",
-      sku: "",
       quantity: "",
       category: "",
-      tags: "",
       unit: "",
     });
   };
@@ -115,7 +112,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
     }
     const product = {
       ...form,
-      tags: form.tags ? form.tags.split(",").map((tag) => tag.trim()) : [],
+      // tags: form.tags ? form.tags.split(",").map((tag) => tag.trim()) : [],
       createdBy: webuser.id,
       organization_id: mainUser?.organization_id?._id || mainUser?.organization_id,
     };
@@ -124,7 +121,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
       if (res.success === true) {
         setSnackbarMessage("Product Added!");
         setSnackbarOpen(true);
-        handleClose();
+        handleReset();
         refresh();
       }
     } catch (error) {
@@ -143,7 +140,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Name"
+                label="Product Name"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
@@ -161,7 +158,16 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 required
               />
             </Grid>
-            {/* <Grid item xs={6}>
+            <Grid item xs={6}>
+              <TextField
+                sx={{ width: "200px" }}
+                label="Product Code"
+                name="productCode"
+                value={form.productCode}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={6}>
               <TextField
                 sx={{ width: "200px" }}
                 label="Price (₹)"
@@ -171,7 +177,17 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 onChange={handleChange}
                 required
               />
-            </Grid> */}
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                sx={{ width: "200px" }}
+                label="Unit"
+                name="unit"
+                value={form.unit}
+                onChange={handleChange}
+                // required
+              />
+            </Grid>
             {/* <Grid item xs={6}>
               <TextField
                 sx={{ width: "200px" }}
@@ -201,7 +217,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 onChange={handleChange}
               />
             </Grid> */}
-            {/* <Grid item xs={6}>
+            <Grid item xs={6}>
               <TextField
                 sx={{ width: "200px" }}
                 label="Quantity"
@@ -210,16 +226,8 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 value={form.quantity}
                 onChange={handleChange}
               />
-            </Grid> */}
-            <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Product Code"
-                name="productCode"
-                value={form.productCode}
-                onChange={handleChange}
-              />
             </Grid>
+            
 
             <Grid item xs={12}>
               <TextField
@@ -240,7 +248,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
               </TextField>
             </Grid>
 
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <TextField
                 sx={{ width: "200px" }}
                 label="Tags (comma separated)"
@@ -248,7 +256,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 value={form.tags}
                 onChange={handleChange}
               />
-            </Grid>
+            </Grid> */}
             {/* <Grid item xs={12}>
               <Autocomplete
                 options={["Yes", "No"]}
@@ -321,7 +329,7 @@ const AddProduct = ({ open, handleClose, refresh }) => {
           </Grid>
 
           <Box mt={4} display="flex" justifyContent="flex-end">
-            <Button onClick={handleCancel} sx={{ mr: 2, color: "#324b84ff" }}>
+            <Button onClick={handleReset} sx={{ mr: 2, color: "#324b84ff" }}>
               Cancel
             </Button>
             <Button

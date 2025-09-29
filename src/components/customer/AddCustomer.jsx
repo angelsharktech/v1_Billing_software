@@ -1,8 +1,10 @@
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Grid,
+  IconButton,
   Modal,
   Snackbar,
   TextField,
@@ -21,6 +23,8 @@ import {
 } from "../../services/UserService";
 import { createGstDetails } from "../../services/GstService";
 import { addPayment } from "../../services/PaymentModeService";
+import CloseIcon from "@mui/icons-material/Close";
+import { getAllStates } from "../../services/StatesService";
 
 const style = {
   position: "absolute",
@@ -39,8 +43,7 @@ const style = {
 const AddCustomer = ({ open, handleClose, refresh }) => {
   const { webuser } = useAuth();
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
+    name: "",
     phone_number: "",
     // country: "",
     address: "",
@@ -57,6 +60,7 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
   const [positions, setPositions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [users, setUsers] = useState([]);
+  const [state, setState] = useState([]);
   const [mainUser, setMainUser] = useState();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -65,16 +69,19 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [posData, roleData, userData, user] = await Promise.all([
-          getAllPositions(),
-          getAllRoles(),
-          getAllUser(),
-          getUserById(webuser.id),
-        ]);
+        const [posData, roleData, userData, user, stateData] =
+          await Promise.all([
+            getAllPositions(),
+            getAllRoles(),
+            getAllUser(),
+            getUserById(webuser.id),
+            getAllStates(),
+          ]);
         setPositions(posData);
         setRoles(roleData);
         setUsers(userData);
         setMainUser(user);
+        setState(stateData);
       } catch (err) {
         console.error("Failed to fetch form data:", err);
       }
@@ -100,7 +107,26 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
       [name]: value,
     }));
   };
-
+const handleRefreshClose =async () =>{
+  handleClose();
+   setFormData({
+        name: "",
+        phone_number: "",
+        country: "",
+        address: "",
+        city: "",
+        openingAmount: 0,
+        // bio: "",
+      });
+     
+      // setIsGstApplicable(false);
+      setGstDetails({
+        gstNumber: "",
+        legalName: "",
+        state: "",
+        stateCode: "",
+      });
+}
   const handleSubmit = async () => {
     const customerRole = roles.find(
       (role) => role.name.toLowerCase() === "customer"
@@ -122,7 +148,7 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
       setSnackbarOpen(true);
       return;
     }
-    if (!formData.first_name) {
+    if (!formData.name) {
       setSnackbarMessage("First Name is Required!");
       setSnackbarOpen(true);
       return;
@@ -131,8 +157,9 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
       ...formData,
       gstDetails,
       organization_id: mainUser.organization_id?._id,
-      email: formData.first_name + "@example.com",
-      password: formData.first_name + "@example.com",
+      email: formData.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
+      password:
+        formData.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
       role_id: customerRole._id,
       position_id: customerposition._id,
       // openingAmount: formData.openingAmount,
@@ -169,8 +196,7 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
 
       // Optionally reset
       setFormData({
-        first_name: "",
-        last_name: "",
+        name: "",
         phone_number: "",
         country: "",
         address: "",
@@ -194,6 +220,18 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
     <>
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
+          <IconButton
+            aria-label="close"
+            onClick={handleRefreshClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
           <Typography variant="h6" mb={2}>
             Add Customer
           </Typography>
@@ -213,7 +251,7 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
                   name={key}
                   value={value}
                   onChange={handleChange}
-                  required={key === "first_name"}
+                  required={["name", "address", "phone_number"].includes(key)}
                   error={Boolean(errors[key])}
                   helperText={errors[key]}
                 />
@@ -233,27 +271,74 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
           </Box> */}
 
           {/* {isGstApplicable && ( */}
+          <Typography variant="h6" mt={2}>
+            GST Details
+          </Typography>
           <Grid container spacing={2} mt={1}>
-            {Object.entries(gstDetails).map(([key, value]) => (
-              <Grid item xs={12} sm={6} key={key}>
-                <TextField
-                  fullWidth
-                  label={key
-                    .replace(/([A-Z])/g, " $1")
-                    .replace(/^./, (s) => s.toUpperCase())}
-                  name={key}
-                  value={value}
-                  onChange={(e) =>
-                    setGstDetails((prev) => ({
-                      ...prev,
-                      [key]: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-            ))}
+            {/* GST Number */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Gst Number"
+                name="gstNumber"
+                value={gstDetails.gstNumber}
+                onChange={(e) =>
+                  setGstDetails({ ...gstDetails, gstNumber: e.target.value })
+                }
+              />
+            </Grid>
+
+            {/* Legal Name */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Legal Name"
+                name="legalName"
+                value={gstDetails.legalName}
+                onChange={(e) =>
+                  setGstDetails({ ...gstDetails, legalName: e.target.value })
+                }
+              />
+            </Grid>
+
+            {/* State and statecode with Autocomplete */}
+            <Grid item xs={12} sm={6}>
+              <Autocomplete
+                freeSolo
+                options={state.map((s) => s.name)}
+                value={gstDetails.state}
+                onChange={(event, newValue) => {
+                  const selectedState = state.find((s) => s.name === newValue);
+                  setGstDetails((prev) => ({
+                    ...prev,
+                    state: newValue || "",
+                    stateCode: selectedState ? selectedState.stateCode : "",
+                  }));
+                }}
+                onInputChange={(event, newInputValue) => {
+                  setGstDetails((prev) => ({ ...prev, state: newInputValue }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="State"
+                    sx={{ width: "200px" }}
+                  />
+                )}
+              />
+            </Grid>
+
+            {/* State Code (read-only) */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="State Code"
+                name="stateCode"
+                value={gstDetails.stateCode}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
           </Grid>
-          {/* )} */}
 
           <Box mt={3} display="flex" justifyContent="flex-end">
             <Button onClick={handleClose} sx={{ mr: 2, color: "#182848" }}>

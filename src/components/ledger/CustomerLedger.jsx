@@ -81,10 +81,7 @@ const CustomerLedger = () => {
       const matchesSearch = payments.some(
         (row) =>
           row.paymentType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          row.client_id.first_name
-            ?.toLowerCase()
-            .includes(searchQuery.toLocaleLowerCase()) ||
-          row.client_id.last_name
+          row.client_id.name
             ?.toLowerCase()
             .includes(searchQuery.toLocaleLowerCase()) ||
           row.salebill?.bill_number?.includes(searchQuery) ||
@@ -93,7 +90,6 @@ const CustomerLedger = () => {
       return matchesSearch;
     }
   );
-
   const toggleRow = (clientId) => {
     setOpenRows((prev) => ({ ...prev, [clientId]: !prev[clientId] }));
   };
@@ -151,7 +147,7 @@ const CustomerLedger = () => {
                       </IconButton>
                     </TableCell>
                     <TableCell align="center">
-                      {client.first_name} {client.last_name || ""}
+                      {client?.name}
                     </TableCell>
                     <TableCell align="center">{payments.length}</TableCell>
                   </TableRow>

@@ -27,7 +27,8 @@ export const createUser = async (userData) => {
     return response;
   } catch (error) {
     console.error("user creation error:", error);   
-    throw error.response?.data.error || { message: "user creation error" };
+    //  return error.response;
+    throw error.response?.data || { message: "user creation error" };
   }
 };
 // Login user

@@ -270,7 +270,7 @@ const updateBill = async () => {
               <Grid item xs={6}>
                 <TextField
                   label="Customer Name"
-                  value={bill.bill_to?.first_name || ""}
+                  value={bill.bill_to?.name || ""}
                   fullWidth
                   disabled
                 />

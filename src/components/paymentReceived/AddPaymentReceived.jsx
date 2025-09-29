@@ -178,7 +178,7 @@ const AddPaymentReceived = ({
             {(userType === "customer" ? customerList : supplierList).map(
               (u) => (
                 <MenuItem key={u._id} value={u._id}>
-                  {u.first_name} {u.last_name}
+                  {u.name}
                 </MenuItem>
               )
             )}

@@ -67,7 +67,7 @@ const NewSaleBillForm = ({
   const navigate = useNavigate();
   const [customer, setCustomer] = useState({
     _id: "",
-    first_name: "",
+    name: "",
     address: "",
     phone_number: "",
     pincode: "",
@@ -234,14 +234,14 @@ const NewSaleBillForm = ({
     } else if (type === "name") {
       selectedCustomer = users.find(
         (s) =>
-          s.first_name === value && s.role_id.name.toLowerCase() === "customer"
+          s.name === value && s.role_id.name.toLowerCase() === "customer"
       );
     }
 
     if (selectedCustomer) {
       setCustomer({
         _id: selectedCustomer._id,
-        first_name: selectedCustomer.first_name,
+        name: selectedCustomer.name,
         address: selectedCustomer.address || "",
         phone_number: selectedCustomer.phone_number || value,
         openingAmount: selectedCustomer.openingAmount,
@@ -256,7 +256,7 @@ const NewSaleBillForm = ({
     } else {
       setCustomer((prev) => ({
         _id: "",
-        first_name: type === "name" ? value : prev.first_name,
+        name: type === "name" ? value : prev.name,
         address: prev.address,
         phone_number: type === "phone" ? value : prev.phone_number,
         openingAmount: selectedCustomer?.openingAmount || 0,
@@ -429,7 +429,7 @@ const NewSaleBillForm = ({
     try {
       let finalCustomer = { ...customer };
 
-      if (!customer.phone_number || !customer.first_name) {
+      if (!customer.phone_number || !customer.name) {
         setSnackbarMessage("Please fill customer details!");
         setSnackbarOpen(true);
         return;
@@ -454,10 +454,10 @@ const NewSaleBillForm = ({
           ...customer,
           organization_id: mainUser.organization_id?._id,
           email:
-            customer.first_name.replace(/\s+/g, "").toLowerCase() +
+            customer.name.replace(/\s+/g, "").toLowerCase() +
             "@example.com",
           password:
-            customer.first_name.replace(/\s+/g, "").toLowerCase() +
+            customer.name.replace(/\s+/g, "").toLowerCase() +
             "@example.com",
           role_id: customerRole._id,
           position_id: customerposition._id,
@@ -662,7 +662,7 @@ const NewSaleBillForm = ({
         }
 
         setCustomer({
-          first_name: "",
+          name: "",
           address: "",
           phone_number: "",
           openingAmount: 0,
@@ -833,20 +833,20 @@ const NewSaleBillForm = ({
             getOptionLabel={(option) =>
               typeof option === "string"
                 ? option
-                : option.first_name + " " + (option.last_name || "")
+                : option.name + " "
             }
             value={
-              customerList.find((s) => s.first_name === customer.first_name) ||
-              customer.first_name ||
+              customerList.find((s) => s.name === customer.name) ||
+              customer.name ||
               "" // keep typed value for new customer
             }
             onChange={(event, newValue) => {
               if (typeof newValue === "string") {
                 // User typed a new vendor name
                 handleCustomerSelection(newValue, "name");
-              } else if (newValue && newValue.first_name) {
+              } else if (newValue && newValue.name) {
                 // Selected existing vendor
-                handleCustomerSelection(newValue.first_name, "name");
+                handleCustomerSelection(newValue.name, "name");
               }
             }}
             onInputChange={(event, newInputValue) => {

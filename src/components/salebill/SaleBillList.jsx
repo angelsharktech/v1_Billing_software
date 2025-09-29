@@ -248,7 +248,7 @@ useEffect(() => {
               {filteredBills.map((bill, index) => (
                 <TableRow key={index}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{bill.bill_to?.first_name || "N/A"}</TableCell>
+                  <TableCell>{bill.bill_to?.name || "N/A"}</TableCell>
                   <TableCell>{bill.bill_number || "N/A"}</TableCell>
                   <TableCell>
                     {bill.billDate

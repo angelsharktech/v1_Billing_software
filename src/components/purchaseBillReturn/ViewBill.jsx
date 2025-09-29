@@ -112,7 +112,7 @@ const ViewBill = ({ open, data, handleCloseView }) => {
                 <Typography variant="h6" fontWeight="bold">
                   Invoice to:
                 </Typography>
-                <Typography>{bill?.bill_to?.first_name}</Typography>
+                <Typography>{bill?.bill_to?.name}</Typography>
                 <Typography>{bill?.bill_to?.address}</Typography>
                 <Typography>{bill?.bill_to?.phone_number}</Typography>
               </Grid>

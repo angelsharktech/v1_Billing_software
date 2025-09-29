@@ -10,6 +10,10 @@ import {
   ListItemText,
   Box,
   Button,
+  Avatar,
+  Menu,
+  MenuItem,
+  Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Link, useNavigate } from "react-router-dom";
@@ -20,6 +24,21 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { webuser, logoutUser } = useAuth();
   const navigate = useNavigate();
+   const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleMenuClose();
+    logoutUser();
+    navigate("/login");
+    console.log("Logged out");
+  };
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
@@ -37,28 +56,42 @@ const Navbar = () => {
   };
   return (
     <>
-      <AppBar
-        position="fixed"
-        sx={{
-          // ml: { sm: `${drawerWidth}px` },
-          // width: { sm: `calc(100% - ${drawerWidth}px)` },
-          background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff", 
-          borderBottomRightRadius: 40,
-        }}
-      >
-        <Toolbar sx={{ justifyContent: "flex-end" }}>
-          <Typography variant="h4" noWrap component="div" mr={2}>
-            Billing Desk
-          </Typography>
-          <Button
-            // variant="outlined"
-            color="#fff"
-            onClick={handleNavClick}
-          >
-            <LogoutIcon titleAccess="LogOut" />
-          </Button>
-        </Toolbar>
-      </AppBar>
+     <AppBar
+      position="fixed"
+      sx={{
+        background: "linear-gradient(135deg, #182848, #324b84ff)",
+        color: "#fff",
+        borderBottomRightRadius: 40,
+      }}
+    >
+      <Toolbar sx={{ justifyContent: "flex-end" }}>
+        <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+          <Avatar sx={{ width: 45, height: 45 }} />
+        </IconButton>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+          <Typography fontWeight="bold" fontSize={14} align="ceter" padding={2}>
+          {webuser.name +" "}
+        </Typography>
+        <Divider></Divider>
+          <MenuItem onClick={handleLogout}>
+            <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+            Logout
+          </MenuItem>
+        </Menu>
+      </Toolbar>
+    </AppBar>
 
       <Drawer
         anchor="left"

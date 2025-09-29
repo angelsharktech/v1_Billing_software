@@ -48,17 +48,9 @@ import GetAppOutlinedIcon from "@mui/icons-material/GetAppOutlined";
 const exportColumns = [
   { label: "HSN Code", key: "hsnCode" },
   { label: "Name", key: "name" },
-  { label: "Short Description", key: "shortDescription" },
-  { label: "Price", key: "price" },
-  { label: "MRP", key: "compareAtPrice" },
-  { label: "Discount (%)", key: "discountPercentage" },
-  { label: "Quantity", key: "quantity" },
-  { label: "Status", key: "status" },
-  {
-    label: "Tags",
-    key: "tags",
-    render: (rowData) => rowData.tags?.join(", "),
-  },
+  { label: "Category", key: "category" },
+  { label: "Product Code", key: "productCode" },
+  
 ];
 
 const ProductList = () => {
@@ -202,7 +194,7 @@ const productInputRef = useRef(null);
                 HSN: {prod.hsnCode}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                HSN: {prod?.category?.categoryName}
+                Category: {prod.category.categoryName}
               </Typography>
           
             </Box>
@@ -213,13 +205,13 @@ const productInputRef = useRef(null);
             /> */}
           </Box>
           
-          {/* <Grid container spacing={1} sx={{ mt: 1 }}>
+          <Grid container spacing={1} sx={{ mt: 1 }}>
             <Grid item xs={6}>
               <Typography variant="body2">
                 <strong>Price:</strong> ₹{prod.price}
               </Typography>
             </Grid>
-            <Grid item xs={6}>
+            {/* <Grid item xs={6}>
               <Typography variant="body2">
                 <strong>MRP:</strong> ₹{prod.compareAtPrice}
               </Typography>
@@ -228,15 +220,20 @@ const productInputRef = useRef(null);
               <Typography variant="body2">
                 <strong>Discount:</strong> {prod.discountPercentage}%
               </Typography>
-            </Grid>
+            </Grid> */}
             <Grid item xs={6}>
               <Typography variant="body2">
                 <strong>Qty:</strong> {prod.quantity}
               </Typography>
             </Grid>
-          </Grid> */}
+            <Grid item xs={6}>
+              <Typography variant="body2">
+                <strong>Unit:</strong> {prod.unit}
+              </Typography>
+            </Grid>
+          </Grid>
           
-          <Box sx={{ mt: 1 }}>
+          {/* <Box sx={{ mt: 1 }}>
             <Typography variant="body2" component="span">
               <strong>Tags: </strong>
             </Typography>
@@ -248,7 +245,7 @@ const productInputRef = useRef(null);
                 sx={{ m: 0.2, fontSize: '0.7rem' }}
               />
             ))}
-          </Box>
+          </Box> */}
         </CardContent>
         <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
           <IconButton color="primary" onClick={() => handleEdit(prod)} size="small">
@@ -364,9 +361,12 @@ const productInputRef = useRef(null);
               <TableHead sx={{ backgroundColor: "lightgrey" }}>
                 <TableRow>
                   <TableCell><strong>HSN Code</strong></TableCell>
-                  <TableCell><strong>Name</strong></TableCell>
+                  <TableCell><strong>Product Code</strong></TableCell>
+                  <TableCell><strong>Product Name</strong></TableCell>
                   <TableCell><strong>Category</strong></TableCell>
-                  <TableCell><strong>Tags</strong></TableCell>
+                  <TableCell><strong>Price</strong></TableCell>
+                  <TableCell><strong>Unit</strong></TableCell>
+                  <TableCell><strong>Quantity</strong></TableCell>
                   <TableCell width={120}><strong>Actions</strong></TableCell>
                 </TableRow>
               </TableHead>
@@ -374,9 +374,13 @@ const productInputRef = useRef(null);
                 {paginatedProducts?.map((prod) => (
                   <TableRow key={prod._id}>
                     <TableCell>{prod.hsnCode}</TableCell>
+                    <TableCell>{prod.productCode}</TableCell>
                     <TableCell>{prod.name}</TableCell>                  
-                    <TableCell>{prod?.category?.categoryName}</TableCell>
-                    <TableCell>
+                    <TableCell>{prod.category.categoryName}</TableCell>
+                    <TableCell>{prod.price}</TableCell>
+                    <TableCell>{prod.unit}</TableCell>
+                    <TableCell>{prod.quantity}</TableCell>
+                    {/* <TableCell>
                       {prod.tags.map((tag, index) => (
                         <Chip
                           key={index}
@@ -385,8 +389,8 @@ const productInputRef = useRef(null);
                           sx={{ m: 0.2 }}
                         />
                       ))}
-                    </TableCell>
-                    <TableCell align="center">
+                    </TableCell> */}
+                    <TableCell >
                       <IconButton color="primary" onClick={() => handleEdit(prod)}>
                         <EditIcon />
                       </IconButton>

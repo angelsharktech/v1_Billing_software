@@ -213,7 +213,7 @@ const paymentGivenInputRef = useRef(null);
                       {row.date ? new Date(row.date).toLocaleDateString() : "--"}
                     </TableCell>
                     <TableCell align="center">
-                      {row.client_id?.first_name + " " +( row.client_id?.last_name ? row.client_id?.last_name : "") || ''}
+                      {row.client_id?.name || ''}
                     </TableCell>
                     <TableCell align="center">{row.paymentType}</TableCell>
                     <TableCell align="center">₹ {row.balance > 0 ? row.balance : row.advanceAmount  || 0}</TableCell>

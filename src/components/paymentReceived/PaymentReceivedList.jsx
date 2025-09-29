@@ -212,7 +212,7 @@ const paymentReceivedInputRef = useRef(null);
                     </TableCell>
                    
                     <TableCell align="center">
-                      {row.client_id?.first_name + " " +( row.client_id?.last_name ? row.client_id?.last_name : "") || ''}
+                      {row.client_id?.name || ''}
                     </TableCell>
                     <TableCell align="center">{row.paymentType}</TableCell>
                     <TableCell align="center">₹ {row.advanceAmount > 0 ? row.advanceAmount : row.balance}</TableCell>

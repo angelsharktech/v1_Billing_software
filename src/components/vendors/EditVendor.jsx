@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Grid,
+  IconButton,
   Modal,
   Snackbar,
   TextField,
@@ -12,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import { updateUser } from "../../services/UserService";
 import { useNavigate } from "react-router-dom";
 import { createGstDetails, getGstDetails } from "../../services/GstService";
+import CloseIcon from "@mui/icons-material/Close";
 
 const style = {
   position: "absolute",
@@ -30,15 +32,14 @@ const style = {
 const EditVendor = ({ open, data, handleCloseEdit, refresh }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
+    name: "",
     phone_number: "",
     country: "",
     address: "",
     city: "",
     bio: "",
     gstRegistered: "",
-    openingAmount : 0
+    openingAmount: 0,
   });
 
   const [gstDetails, setGstDetails] = useState({
@@ -63,18 +64,17 @@ const EditVendor = ({ open, data, handleCloseEdit, refresh }) => {
       try {
         if (data) {
           setFormData({
-            first_name: data.first_name || "",
-            last_name: data.last_name || "",
+            name: data.name || "",
             phone_number: data.phone_number || "",
             country: data.country || "",
             address: data.address || "",
             city: data.city || "",
             bio: data.bio || "",
-            openingAmount : data.openingAmount || 0,
+            openingAmount: data.openingAmount || 0,
           });
           // const gstApplicable = data.gstRegistered;
           // setIsGstApplicable(gstApplicable);
-           setGstDetails({
+          setGstDetails({
             gstNumber: data.gstDetails?.gstNumber || "",
             legalName: data.gstDetails?.legalName || "",
             state: data.gstDetails?.state || "",
@@ -136,7 +136,7 @@ const EditVendor = ({ open, data, handleCloseEdit, refresh }) => {
       const updatedUser = {
         ...formData,
         bankDetails,
-        gstDetails
+        gstDetails,
       };
       const res = await updateUser(data._id, updatedUser);
 
@@ -151,7 +151,6 @@ const EditVendor = ({ open, data, handleCloseEdit, refresh }) => {
         return;
       }
       if (res) {
-        
         // if (gstDetails.gstNumber === "") {
         // if (gstDetails.gstNumber === "") {
         //   const r = await createGstDetails(data._id, gstDetails); // Call your API here
@@ -183,6 +182,18 @@ const EditVendor = ({ open, data, handleCloseEdit, refresh }) => {
     <>
       <Modal open={open} onClose={handleCloseEdit}>
         <Box sx={style}>
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseEdit}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
           <Typography variant="h6" mb={2}>
             Edit Vendor
           </Typography>
@@ -202,7 +213,7 @@ const EditVendor = ({ open, data, handleCloseEdit, refresh }) => {
                   name={key}
                   value={value}
                   onChange={handleChange}
-                  required={key === "first_name"}
+                  required={key === "name"}
                 />
               </Grid>
             ))}
@@ -219,31 +230,31 @@ const EditVendor = ({ open, data, handleCloseEdit, refresh }) => {
             </Box> */}
           </Grid>
           {/* {isGstApplicable && ( */}
-            <Box mt={2}>
-              <Typography variant="h6" mb={2}>
-                GST Details
-              </Typography>
-              <Grid container spacing={2}>
-                {Object.entries(gstDetails).map(([key, value]) => (
-                  <Grid item xs={12} sm={6} key={key}>
-                    <TextField
-                      fullWidth
-                      label={key
-                        .replace(/([A-Z])/g, " $1")
-                        .replace(/^./, (s) => s.toUpperCase())}
-                      name={key}
-                      value={value}
-                      onChange={(e) =>
-                        setGstDetails((prev) => ({
-                          ...prev,
-                          [key]: e.target.value,
-                        }))
-                      }
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
+          <Box mt={2}>
+            <Typography variant="h6" mb={2}>
+              GST Details
+            </Typography>
+            <Grid container spacing={2}>
+              {Object.entries(gstDetails).map(([key, value]) => (
+                <Grid item xs={12} sm={6} key={key}>
+                  <TextField
+                    fullWidth
+                    label={key
+                      .replace(/([A-Z])/g, " $1")
+                      .replace(/^./, (s) => s.toUpperCase())}
+                    name={key}
+                    value={value}
+                    onChange={(e) =>
+                      setGstDetails((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
           {/* )} */}
           <Typography variant="h6" mt={2} mb={2}>
             Bank Details
@@ -277,7 +288,10 @@ const EditVendor = ({ open, data, handleCloseEdit, refresh }) => {
             </Button>
             <Button
               variant="contained"
-            sx={{background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff" }}
+              sx={{
+                background: "linear-gradient(135deg, #182848, #324b84ff)",
+                color: "#fff",
+              }}
               onClick={handleUpdateUser}
             >
               Update

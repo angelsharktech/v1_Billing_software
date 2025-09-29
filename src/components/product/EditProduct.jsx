@@ -42,18 +42,14 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
   const { webuser } = useAuth();
   const [form, setForm] = useState({
     name: "",
-    shortDescription: "",
-    price: "",
-    compareAtPrice: "",
     hsnCode: "",
-    sku: "",
-    quantity: "",
     category: "",
-    tags: "",
     unit: "",
-    hasVariants: false,
-    variantOptions: [],
+    price: 0,
+    quantity: 0,
+    productCode: "",
 
+    // tags: "",
     // description: "",
     // costPerItem: "",
     // lowStockThreshold: "",
@@ -106,16 +102,6 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
           ...prod,
           // sku: '',
           category: prod.category?._id || "",
-          tags: prod.tags?.join(", ") || "",
-          hasVariants: prod.hasVariants || false,
-          variantOptions: prod.variantOptions || [],
-          costPerItem: prod.costPerItem || "",
-          lowStockThreshold: prod.lowStockThreshold || "",
-          dimensions: {
-            length: prod.dimensions?.length || "",
-            width: prod.dimensions?.width || "",
-            height: prod.dimensions?.height || "",
-          },
         });
       } catch (err) {
         console.error("Error loading product by ID", err);
@@ -135,57 +121,41 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
     }));
   };
 
-  const handleVariantChange = (index, field, value) => {
-    const updatedVariants = [...form.variantOptions];
-    if (field === "values") {
-      updatedVariants[index][field] = value.split(",").map((v) => v.trim());
-    } else {
-      updatedVariants[index][field] = value;
-    }
+  // const handleVariantChange = (index, field, value) => {
+  //   const updatedVariants = [...form.variantOptions];
+  //   if (field === "values") {
+  //     updatedVariants[index][field] = value.split(",").map((v) => v.trim());
+  //   } else {
+  //     updatedVariants[index][field] = value;
+  //   }
 
-    setForm((prev) => ({
-      ...prev,
-      variantOptions: updatedVariants,
-    }));
-  };
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     variantOptions: updatedVariants,
+  //   }));
+  // };
 
-  const addVariantOption = () => {
-    setForm((prev) => ({
-      ...prev,
-      variantOptions: [...prev.variantOptions, { name: "", values: [] }],
-    }));
-  };
+  // const addVariantOption = () => {
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     variantOptions: [...prev.variantOptions, { name: "", values: [] }],
+  //   }));
+  // };
 
-  const removeVariantOption = (index) => {
-    const updated = [...form.variantOptions];
-    updated.splice(index, 1);
-    setForm((prev) => ({
-      ...prev,
-      variantOptions: updated,
-    }));
-  };
+  // const removeVariantOption = (index) => {
+  //   const updated = [...form.variantOptions];
+  //   updated.splice(index, 1);
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     variantOptions: updated,
+  //   }));
+  // };
 
   const updateProduct = async () => {
     try {
       const updatedData = {
         ...form,
         status: form.quantity > 0 ? "active" : "out_of_stock",
-        tags: form.tags.split(",").map((tag) => tag.trim()),
-        dimensions: {
-          length: parseFloat(form.dimensions.length),
-          width: parseFloat(form.dimensions.width),
-          height: parseFloat(form.dimensions.height),
-        },
-        costPerItem: parseFloat(form.costPerItem),
-        lowStockThreshold: parseInt(form.lowStockThreshold),
-        variantOptions: form.hasVariants
-          ? form.variantOptions.map((opt) => ({
-              name: opt.name,
-              values: opt.values,
-              _id: opt._id,
-              id: opt.id,
-            }))
-          : [],
       };
 
       const res = await updateProductById(data._id, updatedData);
@@ -248,7 +218,7 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Name"
+                label="Product Name"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
@@ -258,7 +228,7 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="HSN number"
+                label="HSN Number"
                 name="hsnCode"
                 value={form.hsnCode}
                 onChange={handleChange}
@@ -267,6 +237,24 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
               />
             </Grid>
             <Grid item xs={6}>
+              <TextField
+                sx={{ width: "200px" }}
+                label="Product Code"
+                name="productCode"
+                value={form.productCode}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                sx={{ width: "200px" }}
+                label="Price"
+                name="price"
+                value={form.price}
+                onChange={handleChange}
+              />
+            </Grid>
+            {/* <Grid item xs={6}>
               <TextField
                 sx={{ width: "200px" }}
                 label="Price (₹)"
@@ -323,8 +311,27 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
                 value={form.shortDescription}
                 onChange={handleChange}
               />
+            </Grid> */}
+           
+              <Grid item xs={6}>
+              <TextField
+                sx={{ width: "200px" }}
+                label="Unit"
+                name="unit"
+                value={form.unit}
+                onChange={handleChange}
+              />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={6}>
+              <TextField
+                sx={{ width: "200px" }}
+                label="Quantity"
+                name="quantity"
+                value={form.quantity}
+                onChange={handleChange}
+              />
+            </Grid>
+             <Grid item xs={12}>
               <TextField
                 sx={{ width: "200px" }}
                 select
@@ -339,8 +346,9 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
                   </MenuItem>
                 ))}
               </TextField>
-            </Grid>
-            <Grid item xs={12}>
+            </Grid>          
+
+            {/* <Grid item xs={12}>
               <TextField
                 sx={{ width: "200px" }}
                 label="Tags (comma separated)"
@@ -348,9 +356,9 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
                 value={form.tags}
                 onChange={handleChange}
               />
-            </Grid>
+            </Grid> */}
             {/* <Grid></Grid> */}
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <Box display="flex" alignItems="center">
                 <Typography>Variants:</Typography>
                 <Button
@@ -375,7 +383,7 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
                     color="#324b84ff"
                     onClick={addVariantOption}
                   >
-                    {/* + Add Variant Option */}
+                  
                     <AddCircleOutlineOutlinedIcon />
                   </Button>
                 )}
@@ -412,7 +420,7 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
                     </Box>
                   </Grid>
                 ))}
-            </Grid>
+            </Grid>  */}
           </Grid>
 
           <Box mt={4} display="flex" justifyContent="flex-end">
