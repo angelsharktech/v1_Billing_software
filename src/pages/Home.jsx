@@ -98,8 +98,8 @@ const Home = ({ setSelectedTab }) => {
   const categories = await getAllCategories();
 
 
-  const vendorRole = roles.find((r) => r.name.toLowerCase() === "vendor");
-  const customerRole = roles.find((r) => r.name.toLowerCase() === "customer");
+  const vendorRole = roles.find((r) => r.name?.toLowerCase() === "vendor");
+  const customerRole = roles.find((r) => r.name?.toLowerCase() === "customer");
 
   const vendors =
     users?.filter(

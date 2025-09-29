@@ -159,7 +159,7 @@ const { getRef, handleKeyDown } = useFormNavigation();
       const taxable = qty * item.discountedPrice;
       subtotal += taxable;
     });
-    const isMaharashtra = state?.toLowerCase() === "maharashtra";
+    const isMaharashtra = state??.toLowerCase() === "maharashtra";
     const isGST = billType === "gst";
     let gstTotal = 0;
     let cgst = 0;
@@ -221,7 +221,7 @@ const { getRef, handleKeyDown } = useFormNavigation();
     } else if (type === "name") {
       selectedCustomer = users.find(
         (s) =>
-          s.name === value && s.role_id.name.toLowerCase() === "customer"
+          s.name === value && s.role_id.name?.toLowerCase() === "customer"
       );
     }
 
@@ -432,19 +432,19 @@ const { getRef, handleKeyDown } = useFormNavigation();
 
       if (!isExistingCustomer) {
         const customerRole = roles.find(
-          (role) => role.name.toLowerCase() === "customer"
+          (role) => role.name?.toLowerCase() === "customer"
         );
         const customerposition = positions.find(
-          (pos) => pos.name.toLowerCase() === "customer"
+          (pos) => pos.name?.toLowerCase() === "customer"
         );
         const payload = {
           ...customer,
           organization_id: mainUser.organization_id?._id,
           email:
-            customer.name.replace(/\s+/g, "").toLowerCase() +
+            customer.name.replace(/\s+/g, "")?.toLowerCase() +
             "@example.com",
           password:
-            customer.name.replace(/\s+/g, "").toLowerCase() +
+            customer.name.replace(/\s+/g, "")?.toLowerCase() +
             "@example.com",
           role_id: customerRole._id,
           position_id: customerposition._id,
@@ -713,7 +713,7 @@ const { getRef, handleKeyDown } = useFormNavigation();
         setGstDetails={setGstDetails}
         customerList={users.filter(
           (u) =>
-            u.role_id?.name?.toLowerCase() === "customer" &&
+            u.role_id?.name??.toLowerCase() === "customer" &&
             u.organization_id?._id === mainUser?.organization_id?._id &&
             u.status === "active"
         )}

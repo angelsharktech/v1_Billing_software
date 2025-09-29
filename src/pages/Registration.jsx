@@ -84,7 +84,7 @@ const Registration = () => {
 
     if (name === "email") {
       const emailExists = users?.some(
-        (u) => u?.email?.toLowerCase() === value?.toLowerCase()
+        (u) => u?.email??.toLowerCase() === value??.toLowerCase()
       );
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -112,7 +112,7 @@ const Registration = () => {
     }
     if (name === "userName") {
       const userNameExists = users?.some(
-        (u) => u?.userName?.toLowerCase() === value?.toLowerCase()
+        (u) => u?.userName??.toLowerCase() === value??.toLowerCase()
       );
       if (userNameExists) {
         setErrors((prev) => ({
@@ -140,7 +140,7 @@ const Registration = () => {
       return;
     }
     const emailExists = users?.some(
-      (u) => u?.email?.toLowerCase() === formData.email.toLowerCase()
+      (u) => u?.email??.toLowerCase() === formData.email?.toLowerCase()
     );
     if (emailExists) {
       setSnackbarMessage("Email already exists!");
@@ -148,7 +148,7 @@ const Registration = () => {
       return;
     }
     const userNameExists = users?.some(
-      (u) => u?.userName?.toLowerCase() === formData.userName.toLowerCase()
+      (u) => u?.userName??.toLowerCase() === formData.userName?.toLowerCase()
     );
     if (userNameExists) {
       setSnackbarMessage("User Name already exists!");

@@ -13,7 +13,7 @@ exports.getPaymentModes = async (req, res) => {
 
     // Add filtering by paymentType if provided
     if (req.query.paymentType) {
-      query.paymentType = req.query.paymentType.toLowerCase();
+      query.paymentType = req.query.paymentType?.toLowerCase();
     }
 
     // Add filtering by status if provided
@@ -125,7 +125,7 @@ exports.createPaymentMode = async (req, res) => {
 
     // Convert paymentType to lowercase to match enum values
     if (req.body.paymentType) {
-      req.body.paymentType = req.body.paymentType.toLowerCase();
+      req.body.paymentType = req.body.paymentType?.toLowerCase();
     }
 
     // Validate payment type specific fields
@@ -193,7 +193,7 @@ exports.updatePaymentMode = async (req, res) => {
 
     // Convert paymentType to lowercase if provided
     if (req.body.paymentType) {
-      req.body.paymentType = req.body.paymentType.toLowerCase();
+      req.body.paymentType = req.body.paymentType?.toLowerCase();
     }
 
     // Validate payment type specific fields
@@ -265,7 +265,7 @@ exports.patchPaymentMode = async (req, res) => {
 
     // For PATCH requests, we need to validate only if paymentType is being updated
     if (req.body.paymentType) {
-      req.body.paymentType = req.body.paymentType.toLowerCase();
+      req.body.paymentType = req.body.paymentType?.toLowerCase();
       const paymentData = { ...existingPayment.toObject(), ...req.body };
       
       const errors = validatePaymentFields(paymentData);

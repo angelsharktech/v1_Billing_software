@@ -55,7 +55,7 @@ const EditCategory = ({ edit, data, handleCloseEdit, refresh }) => {
           // Prefill with backend's field names: assume data has .name and .slug/_id
           setFormData({
             categoryName: data.categoryName ?? data.categoryName ?? "",
-            slug: data.slug ?? (data.name ? String(data.name).toLowerCase() : ""),
+            slug: data.slug ?? (data.name ? String(data.name)?.toLowerCase() : ""),
           });
         }
       } catch (err) {
@@ -79,7 +79,7 @@ const EditCategory = ({ edit, data, handleCloseEdit, refresh }) => {
       // Build payload with fields your backend expects (name and slug)
       const payload = {
         categoryName: formData.categoryName,
-        // slug: formData.categoryName ? formData.categoryName.toLowerCase().replace(/\s+/g, "-") : formData.slug,
+        // slug: formData.categoryName ? formData.categoryName?.toLowerCase().replace(/\s+/g, "-") : formData.slug,
         // add other fields here if needed, e.g. parent
       };
 

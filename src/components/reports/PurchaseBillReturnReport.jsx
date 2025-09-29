@@ -120,13 +120,13 @@ const PurchaseBillReturnReport = () => {
       if (start) start.setHours(0, 0, 0, 0);
       if (end) end.setHours(23, 59, 59, 999);
 
-      const billNumber = (bill?.bill_number || "").toLowerCase();
+      const billNumber = (bill?.bill_number || "")?.toLowerCase();
       const billStatus = (bill?.status);
-      // const billPayStatus = (bill?.paymentType).toLowerCase();
+      // const billPayStatus = (bill?.paymentType)?.toLowerCase();
       const billName = (
         bill.client_id?.name ||
         ""
-      ).toLowerCase();
+      )?.toLowerCase();
 
       const matchesDateRange =
         (!start || billDate >= start) && (!end || billDate <= end);
@@ -211,7 +211,7 @@ const PurchaseBillReturnReport = () => {
   );
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value.toLowerCase()); // Case-insensitive search
+    setSearchQuery(e.target.value?.toLowerCase()); // Case-insensitive search
   };
 
   const handleExportClick = (event) => {

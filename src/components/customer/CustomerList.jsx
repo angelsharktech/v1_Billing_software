@@ -87,7 +87,7 @@ useEffect(() => {
       setUser(data);
 
       const customerRole = roles.find(
-        (r) => r.name.toLowerCase() === "customer"
+        (r) => r.name?.toLowerCase() === "customer"
       );
       
       if (customerRole) {
@@ -108,10 +108,10 @@ useEffect(() => {
   // Search bar code
   const filteredCustomer = filteredCustomers?.filter(
     (cust) =>
-      cust.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cust.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cust.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cust.phone_number?.includes(searchQuery.toLowerCase())
+      cust.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      cust.address??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      cust.city??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      cust.phone_number?.includes(searchQuery?.toLowerCase())
   );
   
   const handleSearchChange = (e) => {

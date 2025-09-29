@@ -129,10 +129,10 @@ const handleRefreshClose =async () =>{
 }
   const handleSubmit = async () => {
     const customerRole = roles.find(
-      (role) => role.name.toLowerCase() === "customer"
+      (role) => role.name?.toLowerCase() === "customer"
     );
     const customerposition = positions.find(
-      (pos) => pos.name.toLowerCase() === "customer"
+      (pos) => pos.name?.toLowerCase() === "customer"
     );
 
     const phoneExists = users.find(
@@ -157,9 +157,9 @@ const handleRefreshClose =async () =>{
       ...formData,
       gstDetails,
       organization_id: mainUser.organization_id?._id,
-      email: formData.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
+      email: formData.name.replace(/\s+/g, "")?.toLowerCase() + "@example.com",
       password:
-        formData.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
+        formData.name.replace(/\s+/g, "")?.toLowerCase() + "@example.com",
       role_id: customerRole._id,
       position_id: customerposition._id,
       // openingAmount: formData.openingAmount,

@@ -216,12 +216,12 @@ const [billDate , setBillDate] = useState("");
       }
       selectedVendor = users.find(
         (u) =>
-          u.phone_number === value && u.role_id.name.toLowerCase() === "vendor"
+          u.phone_number === value && u.role_id.name?.toLowerCase() === "vendor"
       );
     } else if (type === "name") {
       selectedVendor = users.find(
         (s) =>
-          s.name === value && s.role_id.name.toLowerCase() === "vendor"
+          s.name === value && s.role_id.name?.toLowerCase() === "vendor"
       );
     }
 
@@ -264,7 +264,7 @@ const [billDate , setBillDate] = useState("");
     if (field === "productName") {
       // if chosen product exists in products list, fill details
       const product = products.find(
-        (p) => p.name.toLowerCase() === value.toLowerCase()
+        (p) => p.name?.toLowerCase() === value?.toLowerCase()
       );
       if (product) {
         const price = product.compareAtPrice || 0;
@@ -360,19 +360,19 @@ const [billDate , setBillDate] = useState("");
       // register vendor if not existing
       if (!isExistingVendor) {
         const vendorRole = roles.find(
-          (role) => role.name.toLowerCase() === "vendor"
+          (role) => role.name?.toLowerCase() === "vendor"
         );
         const vendorposition = positions.find(
-          (pos) => pos.name.toLowerCase() === "vendor"
+          (pos) => pos.name?.toLowerCase() === "vendor"
         );
         const payload = {
           ...vendor,
           organization_id: mainUser.organization_id?._id,
           email:
-            vendor.name.replace(/\s+/g, "").toLowerCase() +
+            vendor.name.replace(/\s+/g, "")?.toLowerCase() +
             "@example.com",
           password:
-            vendor.name.replace(/\s+/g, "").toLowerCase() +
+            vendor.name.replace(/\s+/g, "")?.toLowerCase() +
             "@example.com",
           role_id: vendorRole?._id,
           position_id: vendorposition?._id,
@@ -630,7 +630,7 @@ const [billDate , setBillDate] = useState("");
         errors={errors}
         supplierList={users.filter(
           (u) =>
-            u.role_id?.name?.toLowerCase() === "vendor" &&
+            u.role_id?.name??.toLowerCase() === "vendor" &&
             u.organization_id?._id === mainUser?.organization_id?._id &&
             u.status === "active"
         )}

@@ -27,7 +27,7 @@ const PrintInvoiceDialog = ({ open, onClose, bill = {} }) => {
 
   // Provide default values to prevent undefined errors
   const safeBill = bill || {};
-  const isGST = safeBill.billType?.toLowerCase() === "gst";
+  const isGST = safeBill.billType??.toLowerCase() === "gst";
   const customer = safeBill.biller || safeBill.bill_to || {};
   const orgName = typeof safeBill.org === "string" ? safeBill.org : safeBill.org?.name || "";
   const payment = safeBill.paymentDetails || safeBill || {};

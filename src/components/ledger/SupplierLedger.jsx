@@ -50,7 +50,7 @@ const SupplierLedger = () => {
     try {
       const data = await getPaymentByOrganization(mainUser.organization_id._id);
       
-      const bills = data.data.filter((bill) => bill.forPayment.toLowerCase() === "purchase");
+      const bills = data.data.filter((bill) => bill.forPayment?.toLowerCase() === "purchase");
       setRows(bills);
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -80,9 +80,9 @@ const SupplierLedger = () => {
     ({ payments }) => {
       const matchesSearch = payments.some(
         (row) =>
-          row.paymentType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          row.paymentType??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
           row.client_id.name
-            ?.toLowerCase()
+            ??.toLowerCase()
             .includes(searchQuery.toLocaleLowerCase()) ||
           row.purchasebill?.bill_number?.includes(searchQuery) ||
           String(row.advanceAmount).includes(searchQuery)

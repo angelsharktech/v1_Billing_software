@@ -15,7 +15,7 @@ const FilterData = ({ value, onChange, autoFocusOnMount = false, fullWidth }) =>
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === "/" || (e.ctrlKey && e.key.toLowerCase() === "f")) {
+      if (e.key === "/" || (e.ctrlKey && e.key?.toLowerCase() === "f")) {
         e.preventDefault();
         inputRef.current?.focus();
       }

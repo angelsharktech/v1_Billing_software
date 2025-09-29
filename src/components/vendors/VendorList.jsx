@@ -85,7 +85,7 @@ useEffect(() => {
       const data = await getAllUser();
       setUser(data);
 
-      const vendorRole = roles.find((r) => r.name.toLowerCase() === "vendor");
+      const vendorRole = roles.find((r) => r.name?.toLowerCase() === "vendor");
       if (vendorRole && mainUser) {
         const vendorsOnly = data.filter(
           (u) => u.role_id?._id === vendorRole?._id && 
@@ -105,10 +105,10 @@ useEffect(() => {
 
   const filteredvendor = filteredVendors?.filter(
     (ven) =>
-      ven.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ven.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ven.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ven.phone_number?.includes(searchQuery.toLowerCase())
+      ven.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      ven.address??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      ven.city??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      ven.phone_number?.includes(searchQuery?.toLowerCase())
   );
   
   const handleSearchChange = (e) => {

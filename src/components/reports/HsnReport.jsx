@@ -119,7 +119,7 @@ const HsnReport = () => {
 
   // ✅ Filter for search
   const filteredData = hsnReportArray.filter((row) =>
-    row.hsnCode?.toString().toLowerCase().includes(searchQuery)
+    row.hsnCode?.toString()?.toLowerCase().includes(searchQuery)
   );
 
   const exportData = filteredData.map((item, idx) => ({
@@ -127,7 +127,7 @@ const HsnReport = () => {
     ...item,
   }));
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value.toLowerCase()); // Case-insensitive search
+    setSearchQuery(e.target.value?.toLowerCase()); // Case-insensitive search
   };
   const handleExportClick = (event) => {
     setAnchorEl(event.currentTarget);

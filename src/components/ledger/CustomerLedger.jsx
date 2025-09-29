@@ -50,7 +50,7 @@ const CustomerLedger = () => {
     try {
       const data = await getPaymentByOrganization(mainUser.organization_id._id);
       
-      const bills = data.data.filter((bill) => bill.forPayment.toLowerCase() === "sale");
+      const bills = data.data.filter((bill) => bill.forPayment?.toLowerCase() === "sale");
       
       setRows(bills);
     } catch (error) {
@@ -80,9 +80,9 @@ const CustomerLedger = () => {
     ({ payments }) => {
       const matchesSearch = payments.some(
         (row) =>
-          row.paymentType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          row.paymentType??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
           row.client_id.name
-            ?.toLowerCase()
+            ??.toLowerCase()
             .includes(searchQuery.toLocaleLowerCase()) ||
           row.salebill?.bill_number?.includes(searchQuery) ||
           String(row.advanceAmount).includes(searchQuery)

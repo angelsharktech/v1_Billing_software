@@ -50,7 +50,7 @@ const StockInList = () => {
 
   const filteredStockIn = rows?.filter(
     (row) =>
-      row.supplier.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.supplier?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
       row.date.includes(searchQuery) ||
       String(row.amount).includes(searchQuery)
   );

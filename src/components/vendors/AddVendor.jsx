@@ -154,10 +154,10 @@ const AddVendor = ({ open, handleClose, refresh }) => {
   const handleSubmit = async () => {
     try {
       const vendorRole = roles.find(
-        (role) => role.name.toLowerCase() === "vendor"
+        (role) => role.name?.toLowerCase() === "vendor"
       );
       const vendorposition = positions.find(
-        (pos) => pos.name.toLowerCase() === "vendor"
+        (pos) => pos.name?.toLowerCase() === "vendor"
       );
       const phoneExists = users.find(
         (u) => u.phone_number === formData.phone_number

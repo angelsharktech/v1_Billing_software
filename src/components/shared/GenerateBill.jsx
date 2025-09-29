@@ -16,7 +16,7 @@ import {
 const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
 
   // ✅ Unified handling
-  const isGST = bill.billType?.toLowerCase() === "gst";
+  const isGST = bill.billType??.toLowerCase() === "gst";
 
   const cgst = bill?.products.reduce((acc, p) => {
     const val = parseFloat(p.cgst) || 0;  // ensure number

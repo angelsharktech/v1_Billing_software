@@ -93,8 +93,8 @@ const AddCategory = ({ open, handleClose, refresh }) => {
     try {
       const isDuplicate = categories.some(
         (cat) =>
-          cat.categoryName.toLowerCase().trim() ===
-          formData.categoryName.toLowerCase().trim()
+          cat.categoryName?.toLowerCase().trim() ===
+          formData.categoryName?.toLowerCase().trim()
       );
 
       if (isDuplicate) {
@@ -131,8 +131,8 @@ const AddCategory = ({ open, handleClose, refresh }) => {
   //     // Trim and make case-insensitive comparison
   //     const isDuplicate = categories.some(
   //       (cat) =>
-  //         cat.categoryName.toLowerCase().trim() ===
-  //         formData.categoryName.toLowerCase().trim()
+  //         cat.categoryName?.toLowerCase().trim() ===
+  //         formData.categoryName?.toLowerCase().trim()
   //     );
 
   //     if (isDuplicate) {

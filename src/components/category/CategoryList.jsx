@@ -89,7 +89,7 @@ const CategoryList = () => {
   };
 
   const filteredCategory = rows?.filter((cat) =>
-    cat.categoryName?.toLowerCase().includes(searchQuery?.toLowerCase())
+    cat.categoryName??.toLowerCase().includes(searchQuery??.toLowerCase())
   );
 
   const handleSearchChange = (e) => {
