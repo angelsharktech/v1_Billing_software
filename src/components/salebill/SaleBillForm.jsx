@@ -159,7 +159,7 @@ const { getRef, handleKeyDown } = useFormNavigation();
       const taxable = qty * item.discountedPrice;
       subtotal += taxable;
     });
-    const isMaharashtra = state??.toLowerCase() === "maharashtra";
+    const isMaharashtra = state?.toLowerCase() === "maharashtra";
     const isGST = billType === "gst";
     let gstTotal = 0;
     let cgst = 0;
@@ -713,7 +713,7 @@ const { getRef, handleKeyDown } = useFormNavigation();
         setGstDetails={setGstDetails}
         customerList={users.filter(
           (u) =>
-            u.role_id?.name??.toLowerCase() === "customer" &&
+            u.role_id?.name?.toLowerCase() === "customer" &&
             u.organization_id?._id === mainUser?.organization_id?._id &&
             u.status === "active"
         )}

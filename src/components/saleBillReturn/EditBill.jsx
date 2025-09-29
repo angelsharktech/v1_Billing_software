@@ -58,7 +58,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
       try {
         const res = await getSaleBillById(data?._id);
         const billData = res.data;
-        if (billData.balancePayMode??.toLowerCase().includes("finance")) {
+        if (billData.balancePayMode?.toLowerCase().includes("finance")) {
           // Extract finance name
           const parts = billData.balancePayMode.split("-");
           const financeName = parts.length > 1 ? parts[1] : "";
@@ -100,7 +100,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
   }, [advance, balance]);
 
   const handleAdvanceChange = async (e) => {
-    if (bill?.balancePayMode??.toLowerCase().includes("finance")) {
+    if (bill?.balancePayMode?.toLowerCase().includes("finance")) {
       return;
     } // 16.08.25
 
@@ -132,7 +132,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
       let financeName = "";
 
       // Special case: Finance
-      if (bill?.balancePayMode??.toLowerCase().includes("finance")) {
+      if (bill?.balancePayMode?.toLowerCase().includes("finance")) {
         const parts = bill.balancePayMode.split("-");
         financeName = parts.length > 1 ? parts[1] : "";
 
@@ -182,7 +182,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
         };
 
         // Add payment mode-specific fields
-        const selectedMode = paymentPayload.paymentType??.toLowerCase();
+        const selectedMode = paymentPayload.paymentType?.toLowerCase();
 
         if (selectedMode === "upi") {
           paymentPayload.utrId = paymentDetails.transactionNumber;

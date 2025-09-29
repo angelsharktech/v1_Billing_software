@@ -80,9 +80,9 @@ const SupplierLedger = () => {
     ({ payments }) => {
       const matchesSearch = payments.some(
         (row) =>
-          row.paymentType??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+          row.paymentType?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
           row.client_id.name
-            ??.toLowerCase()
+            ?.toLowerCase()
             .includes(searchQuery.toLocaleLowerCase()) ||
           row.purchasebill?.bill_number?.includes(searchQuery) ||
           String(row.advanceAmount).includes(searchQuery)

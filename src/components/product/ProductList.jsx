@@ -158,7 +158,7 @@ const productInputRef = useRef(null);
   const filteredProducts = products?.filter(
     (prod) =>
       prod.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      prod.hsnCode??.toLowerCase().includes(searchQuery?.toLowerCase())
+      prod.hsnCode?.toLowerCase().includes(searchQuery?.toLowerCase())
   );
   
   useEffect(() => {

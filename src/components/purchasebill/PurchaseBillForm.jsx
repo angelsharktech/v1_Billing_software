@@ -650,7 +650,7 @@ const PurchaseBillForm = ({
         setErrors={setErrors}
         supplierList={users.filter(
           (u) =>
-            u.role_id?.name??.toLowerCase() === "vendor" &&
+            u.role_id?.name?.toLowerCase() === "vendor" &&
             u.organization_id?._id === mainUser?.organization_id?._id &&
             u.status === "active"
         )}

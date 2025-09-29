@@ -74,7 +74,7 @@ const paymentReceivedInputRef = useRef(null);
   const filteredPayments = rows?.filter(
     
     (row) =>
-      row.paymentType??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      row.paymentType?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
       String(row.advanceAmount).includes(searchQuery) ||
       // row.date?.includes(searchQuery) || 
       row.salebill?.bill_number?.includes(searchQuery)

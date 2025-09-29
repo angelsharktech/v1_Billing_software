@@ -109,8 +109,8 @@ useEffect(() => {
   const filteredCustomer = filteredCustomers?.filter(
     (cust) =>
       cust.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      cust.address??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      cust.city??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      cust.address?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      cust.city?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
       cust.phone_number?.includes(searchQuery?.toLowerCase())
   );
   

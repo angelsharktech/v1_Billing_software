@@ -106,8 +106,8 @@ useEffect(() => {
   const filteredvendor = filteredVendors?.filter(
     (ven) =>
       ven.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      ven.address??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      ven.city??.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      ven.address?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+      ven.city?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
       ven.phone_number?.includes(searchQuery?.toLowerCase())
   );
   
