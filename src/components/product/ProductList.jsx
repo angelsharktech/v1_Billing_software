@@ -194,7 +194,7 @@ const productInputRef = useRef(null);
                 HSN: {prod.hsnCode}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                Category: {prod.category.categoryName}
+                Category: {prod.category?.categoryName}
               </Typography>
           
             </Box>
@@ -376,7 +376,7 @@ const productInputRef = useRef(null);
                     <TableCell>{prod.hsnCode}</TableCell>
                     <TableCell>{prod.productCode}</TableCell>
                     <TableCell>{prod.name}</TableCell>                  
-                    <TableCell>{prod.category.categoryName}</TableCell>
+                    <TableCell>{prod.category?.categoryName}</TableCell>
                     <TableCell>{prod.price}</TableCell>
                     <TableCell>{prod.unit}</TableCell>
                     <TableCell>{prod.quantity}</TableCell>

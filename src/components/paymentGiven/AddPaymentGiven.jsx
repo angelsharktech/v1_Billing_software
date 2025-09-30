@@ -11,9 +11,11 @@ import {
   FormControlLabel,
   Radio,
   Grid,
+  IconButton,
 } from "@mui/material";
 import { getAllUser, updateUser } from "../../services/UserService";
 import { addPayment } from "../../services/PaymentModeService";
+import CloseIcon from "@mui/icons-material/Close";
 
 const CUSTOMER_ROLE_ID = "687883c32a1384f42ea5a1d4"; // <-- replace with actual
 const SUPPLIER_ROLE_ID = "687883ba2a1384f42ea5a1d2"; // vendor role from your code
@@ -131,6 +133,18 @@ const AddPaymentGiven = ({
   return (
     <>
       <DialogTitle>Payment Given</DialogTitle>
+        <IconButton
+                  aria-label="close"
+                  onClick={onClose}
+                  sx={{
+                    position: "absolute",
+                    right: 8,
+                    top: 8,
+                    color: (theme) => theme.palette.grey[500],
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
       <DialogContent dividers>
         <Box display="flex" flexDirection="column" gap={2} mt={1}>
           {/* Radio: Customer or Supplier */}

@@ -7,6 +7,7 @@ import {
   MenuItem,
   Snackbar,
   Alert,
+  IconButton
 } from "@mui/material";
 
 
@@ -17,6 +18,7 @@ import {
 } from "../../services/CategoryService";
 import { useAuth } from "../../context/AuthContext";
 import { getUserById } from "../../services/UserService";
+import CloseIcon from "@mui/icons-material/Close";
 import Category from "../Category";
 
 const style = {
@@ -93,8 +95,8 @@ const AddCategory = ({ open, handleClose, refresh }) => {
     try {
       const isDuplicate = categories.some(
         (cat) =>
-          cat.categoryName?.toLowerCase().trim() ===
-          formData.categoryName?.toLowerCase().trim()
+          cat.categoryName.toLowerCase().trim() ===
+          formData.categoryName.toLowerCase().trim()
       );
 
       if (isDuplicate) {
@@ -131,8 +133,8 @@ const AddCategory = ({ open, handleClose, refresh }) => {
   //     // Trim and make case-insensitive comparison
   //     const isDuplicate = categories.some(
   //       (cat) =>
-  //         cat.categoryName?.toLowerCase().trim() ===
-  //         formData.categoryName?.toLowerCase().trim()
+  //         cat.categoryName.toLowerCase().trim() ===
+  //         formData.categoryName.toLowerCase().trim()
   //     );
 
   //     if (isDuplicate) {
@@ -163,7 +165,7 @@ const AddCategory = ({ open, handleClose, refresh }) => {
   //     setSnackbarOpen(true);
   //   }
   // };
-
+ 
   return (
     <>
       <Modal open={open} onClose={handleClose}>
@@ -173,6 +175,18 @@ const AddCategory = ({ open, handleClose, refresh }) => {
             justifyContent="space-between"
             alignItems="center"
           >
+          <IconButton
+            aria-label="close"
+            onClick={handleCancel}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
             <Typography variant="h6" mb={2}>
               Add Category
             </Typography>

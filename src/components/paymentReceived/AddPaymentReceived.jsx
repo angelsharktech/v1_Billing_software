@@ -11,9 +11,11 @@ import {
   FormControlLabel,
   Radio,
   Grid,
+  IconButton,
 } from "@mui/material";
 import { getAllUser, updateUser } from "../../services/UserService";
 import { addPayment } from "../../services/PaymentModeService";
+import CloseIcon from "@mui/icons-material/Close";
 
 const CUSTOMER_ROLE_ID = "687883c32a1384f42ea5a1d4"; // <-- replace with actual
 const SUPPLIER_ROLE_ID = "687883ba2a1384f42ea5a1d2"; // vendor role from your code
@@ -65,7 +67,10 @@ const AddPaymentReceived = ({
     setPayment({
       ...payment,
       advanceAmount: value,
-      closingAmount:userType === "customer" ? payment.openingAmount - Number(value) :payment.openingAmount + Number(value) , // ✅ auto calc
+      closingAmount:
+        userType === "customer"
+          ? payment.openingAmount - Number(value)
+          : payment.openingAmount + Number(value), // ✅ auto calc
     });
   };
   // Fetch users (customers + suppliers)
@@ -96,22 +101,22 @@ const AddPaymentReceived = ({
     const newPayment = {
       paymentType: payment.paymentType,
       ...(userType === "customer"
-    ? { advanceAmount: payment.advanceAmount }
-    : { balance: payment.advanceAmount }),
-      
+        ? { advanceAmount: payment.advanceAmount }
+        : { balance: payment.advanceAmount }),
+
       date: payment.date,
       client_id: payment.user,
       organization: organizationId || null,
       forPayment: userType === "customer" ? "sale" : "purchase", // ✅ differentiate
       createdBy: webuser?.id || null,
       narration: "Payment Received",
-      closingAmount: payment.closingAmount ,
+      closingAmount: payment.closingAmount,
     };
 
     try {
       setLoading(true);
       const savedPayment = await addPayment(newPayment);
-      
+
       if (savedPayment.success === true) {
         const res = await updateUser(payment.user, {
           openingAmount: payment.closingAmount,
@@ -129,6 +134,18 @@ const AddPaymentReceived = ({
   return (
     <>
       <DialogTitle>Payment Received</DialogTitle>
+      <IconButton
+        aria-label="close"
+        onClick={onClose}
+        sx={{
+          position: "absolute",
+          right: 8,
+          top: 8,
+          color: (theme) => theme.palette.grey[500],
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent dividers>
         <Box display="flex" flexDirection="column" gap={2} mt={1}>
           {/* Radio: Customer or Supplier */}
@@ -150,7 +167,6 @@ const AddPaymentReceived = ({
               control={<Radio />}
               label="Supplier"
             />
-            
           </RadioGroup>
           {/* Date */}
           <TextField
@@ -206,7 +222,7 @@ const AddPaymentReceived = ({
             <MenuItem value="cash">Cash</MenuItem>
             <MenuItem value="online">Online</MenuItem>
           </TextField>
-{/* 
+          {/* 
           <TextField
             label="Narration"
             value={payment.narration}
