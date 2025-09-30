@@ -96,7 +96,7 @@ useEffect(() => {
       });
       setBills(FilteredBill);
     }
-  };
+  };  
 
   const filteredBills = useMemo(() => {
     return bills.filter((bill) => {
@@ -252,7 +252,7 @@ useEffect(() => {
                   <TableCell>{bill.bill_number || "N/A"}</TableCell>
                   <TableCell>
                     {bill.billDate
-                      ? moment(bill.billDate).format("DD/MM/YYYY")
+                      ? bill?.billDate
                       : "--"}
                   </TableCell>
                   <TableCell align="center">

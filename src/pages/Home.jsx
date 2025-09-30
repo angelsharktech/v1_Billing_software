@@ -1,11 +1,8 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { Box, Button, Grid, Paper, Typography, styled } from "@mui/material";
-import PeopleIcon from "@mui/icons-material/People";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StoreIcon from "@mui/icons-material/Store";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
-import CategoryIcon from "@mui/icons-material/Category";
 import {
   BarChart,
   Bar,
@@ -15,20 +12,15 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  getAllUser,
-  getUserById,
-  getUserByOrganizastionId,
-} from "../services/UserService";
-import { getAllProducts } from "../services/ProductService";
+import { getUserById } from "../services/UserService";
 import { getSaleBillByOrganization } from "../services/SaleBillService";
 import { getPurchaseBillByOrganization } from "../services/PurchaseBillService";
 import { useAuth } from "../context/AuthContext";
-import { getAllRoles } from "../services/Role";
 import CreateSaleBill from "../components/salebill/CreateSaleBill";
 import CreatePurchaseBill from "../components/purchasebill/CreatePurchaseBill";
-import { getAllCategories } from "../services/CategoryService";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 const Item = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -36,15 +28,14 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
   borderRadius: 10,
   boxShadow: theme.shadows[3],
+ 
 }));
 
-const StatCard = ({ title, value, icon, color, onClick }) => (
+const StatCard = ({ title, value, icon, color }) => (
   <Item
-    onClick={onClick}
     sx={{
       backgroundColor: color,
       color: "white",
-      cursor: "pointer", // Makes it look clickable
       transition: "transform 0.2s",
       "&:hover": {
         transform: "scale(1.02)",
@@ -52,7 +43,7 @@ const StatCard = ({ title, value, icon, color, onClick }) => (
     }}
   >
     <Box display="flex" alignItems="center" justifyContent="space-between">
-      <Box sx={{ width: "120px", height: "100px" }}>
+      <Box sx={{ width: "150px", height: "120px" ,gap:'10px'}}>
         <Typography variant="h6">{title}</Typography>
         <Typography variant="h4">{value}</Typography>
       </Box>
@@ -61,14 +52,13 @@ const StatCard = ({ title, value, icon, color, onClick }) => (
   </Item>
 );
 
-const Home = ({ setSelectedTab }) => {
+const Home = () => {
   const { webuser } = useAuth();
   const [range, setRange] = useState("Today");
   const [counts, setCounts] = useState({
-    vendors: 0,
-    customers: 0,
-    products: 0,
-    category: 0,
+    todaySaleAmount: 0,
+    todayPurchaseAmount: 0,
+    todaySaleInvoices: 0,
   });
   const [saleBills, setSaleBills] = useState([]);
   const [purchaseBills, setPurchaseBills] = useState([]);
@@ -80,77 +70,67 @@ const Home = ({ setSelectedTab }) => {
   const handleCloseSaleBill = () => setOpenSaleBill(false);
   const handleClosePurchaseBill = () => setOpenPurchaseBill(false);
 
+  // Parse billDate "DD-MM-YYYY" → JS Date
+  const parseBillDate = (billDateStr) => {
+    if (!billDateStr) return null;
+    const [day, month, year] = billDateStr.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   useEffect(() => {
     fetchCounts(); // initial load
 
     const interval = setInterval(() => {
-      fetchCounts(); // auto refresh every 5 min
-    }, 2 * 60 * 1000); // 2 minutes
+      fetchCounts(); // auto refresh every 2 min
+    }, 2 * 60 * 1000);
 
-    return () => clearInterval(interval); // cleanup
+    return () => clearInterval(interval);
   }, [webuser]);
 
- const fetchCounts = async () => {
-  const user = await getUserById(webuser.id);
-  const users = await getUserByOrganizastionId(user.organization_id._id);
-  const prod = await getAllProducts();
-  const roles = await getAllRoles();
-  const categories = await getAllCategories();
+  const fetchCounts = async () => {
+    const user = await getUserById(webuser.id);
 
+    const saleBillsRes = await getSaleBillByOrganization(
+      user.organization_id._id
+    );
+    const purchaseBillsRes = await getPurchaseBillByOrganization(
+      user.organization_id._id
+    );
 
-  const vendorRole = roles.find((r) => r.name.toLowerCase() === "vendor");
-  const customerRole = roles.find((r) => r.name.toLowerCase() === "customer");
+    const saleBillsData = saleBillsRes?.data?.docs || [];
+    const purchaseBillsData = purchaseBillsRes?.data?.docs || [];
 
-  const vendors =
-    users?.filter(
-      (u) => u.role_id?._id === vendorRole?._id && u.status === "active"
-    ) || [];
+    setSaleBills(saleBillsData);
+    setPurchaseBills(purchaseBillsData);
 
-  const customers =
-    users?.filter(
-      (u) => u.role_id?._id === customerRole?._id && u.status === "active"
-    ) || [];
+    // ✅ Calculate today's stats
+    const today = new Date();
+    const isToday = (billDateStr) => {
+      const billDate = parseBillDate(billDateStr);
+      if (!billDate) return false;
+      return billDate.toDateString() === today.toDateString();
+    };
 
-  const products = prod.data.filter(
-    (prod) => prod?.organization_id === user.organization_id._id
-  );
+    const todaySales = saleBillsData.filter((b) => isToday(b.billDate));
+    const todayPurchases = purchaseBillsData.filter((b) =>
+      isToday(b.billDate)
+    );
 
-  // 🔥 Robust category filter
-  const categoryCount = categories.data.filter((cat) => {
-    if (!cat?.organization_id) return false;
+    const todaySaleAmount = todaySales.reduce(
+      (sum, b) => sum + (b.grandTotal || 0),
+      0
+    );
+    const todayPurchaseAmount = todayPurchases.reduce(
+      (sum, b) => sum + (b.grandTotal || 0),
+      0
+    );
 
-    // If org is a string
-    if (typeof cat.organization_id === "string") {
-      return cat.organization_id === user.organization_id._id;
-    }
-
-    // If org is an object with _id
-    if (typeof cat.organization_id === "object" && cat.organization_id._id) {
-      return cat.organization_id._id.toString() === user.organization_id._id.toString();
-    }
-
-    return false;
-  });
-
-
-  setCounts({
-    vendors: vendors.length,
-    customers: customers.length,
-    products: products.length,
-    category: categoryCount.length, // ✅ use length, not array
-  });
-
-  const saleBillsRes = await getSaleBillByOrganization(
-    user.organization_id._id
-  );
-  const purchaseBillsRes = await getPurchaseBillByOrganization(
-    user.organization_id._id
-  );
-
-  setSaleBills(saleBillsRes?.data?.docs || []);
-  setPurchaseBills(purchaseBillsRes?.data?.docs || []);
-};
-
+    setCounts({
+      todaySaleAmount,
+      todayPurchaseAmount,
+      todaySaleInvoices: todaySales.length,
+    });
+  };
 
   const filteredChartData = useMemo(() => {
     const months = [
@@ -202,16 +182,16 @@ const Home = ({ setSelectedTab }) => {
     };
 
     saleBills.forEach((bill) => {
-      const billDate = new Date(bill.createdAt);
-      if (filterFn(billDate)) {
+      const billDate = parseBillDate(bill.billDate);
+      if (billDate && filterFn(billDate)) {
         const month = billDate.getMonth();
         sale[month] += bill.grandTotal || 0;
       }
     });
 
     purchaseBills.forEach((bill) => {
-      const billDate = new Date(bill.createdAt);
-      if (filterFn(billDate)) {
+      const billDate = parseBillDate(bill.billDate);
+      if (billDate && filterFn(billDate)) {
         const month = billDate.getMonth();
         purchase[month] += bill.grandTotal || 0;
       }
@@ -237,59 +217,51 @@ const Home = ({ setSelectedTab }) => {
             Organization Overview
           </Typography>
           <Box display={"flex"} justifyContent={"flex-end"} gap={2}>
-          <Button
-          //  accessKey="s"
-            variant="contained"
-            sx={{background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff" }}
-            onClick={handleSaleOpen}
-          >
-            Create Sales bill (Alt+S)
-          </Button>
-          <Button
-          // accessKey="p"
-            variant="contained"
-          sx={{background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff" }}
-            onClick={handlePurchaseOpen}
-          >
-            Create Purchase bill (Alt+P)
-          </Button>
+            <Button
+              variant="contained"
+              sx={{
+                background: "linear-gradient(135deg, #182848, #324b84ff)",
+                color: "#fff",
+              }}
+              onClick={handleSaleOpen}
+            >
+              Create Sales bill (Alt+S)
+            </Button>
+            <Button
+              variant="contained"
+              sx={{
+                background: "linear-gradient(135deg, #182848, #324b84ff)",
+                color: "#fff",
+              }}
+              onClick={handlePurchaseOpen}
+            >
+              Create Purchase bill (Alt+P)
+            </Button>
           </Box>
         </Box>
 
-        <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} sm={6} md={2.4}>
+        <Grid container spacing={9} mb={4}>
+          <Grid item xs={12} sm={6} md={4}>
             <StatCard
-              title="Suppliers"
-              value={counts.vendors}
-              icon={<StoreIcon sx={{ fontSize: 50 }} />}
-              onClick={() => setSelectedTab("Suppliers")}
+              title="Today's Sales (₹)"
+              value={counts.todaySaleAmount.toFixed(2)}
+              icon={<TrendingDownIcon sx={{ fontSize: 50 }} />}
               color="#103962ff"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
+          <Grid item xs={12} sm={6} md={4}>
             <StatCard
-              title="Customers"
-              value={counts.customers}
-              icon={<PeopleIcon sx={{ fontSize: 50 }} />}
-              onClick={() => setSelectedTab("Customer")}
+              title="Today's Purchases (₹)"
+              value={counts.todayPurchaseAmount.toFixed(2)}
+              icon={<ShoppingCartIcon sx={{ fontSize: 50 }} />}
               color="#135116ff"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
+          <Grid item xs={12} sm={6} md={4}>
             <StatCard
-              title="Products"
-              value={counts.products}
-              icon={<Inventory2Icon sx={{ fontSize: 50 }} />}
-              onClick={() => setSelectedTab("Product")}
-              color="#5F8670"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
-            <StatCard
-              title="Categories"
-              value={counts.category}
-              icon={<CategoryIcon sx={{ fontSize: 50 }} />}
-              onClick={() => setSelectedTab("Category")}
+              title="Today's Sale Invoices"
+              value={counts.todaySaleInvoices}
+              icon={<ReceiptIcon sx={{ fontSize: 50 }} />}
               color="#750f8eff"
             />
           </Grid>
@@ -320,19 +292,9 @@ const Home = ({ setSelectedTab }) => {
                 Sale Overview - {range}
               </Typography>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart
-                  data={filteredChartData}
-                  barCategoryGap="10%"
-                  barSize={40}
-                >
+                <BarChart data={filteredChartData} barCategoryGap="10%" barSize={40}>
                   <defs>
-                    <linearGradient
-                      id="blueGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#3477eb" />
                       <stop offset="100%" stopColor="#25f5ee" />
                     </linearGradient>
@@ -353,19 +315,9 @@ const Home = ({ setSelectedTab }) => {
                 Purchase Overview - {range}
               </Typography>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart
-                  data={filteredChartData}
-                  barCategoryGap="10%"
-                  barSize={40}
-                >
+                <BarChart data={filteredChartData} barCategoryGap="10%" barSize={40}>
                   <defs>
-                    <linearGradient
-                      id="yellowGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="yellowGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#f5f125" />
                       <stop offset="100%" stopColor="#9ff01d" />
                     </linearGradient>
@@ -382,15 +334,10 @@ const Home = ({ setSelectedTab }) => {
         </Grid>
       </Box>
 
-      <CreateSaleBill
-        open={openSaleBill}
-        handleClose={handleCloseSaleBill}
-        // refresh={fetchBills}
-      />
+      <CreateSaleBill open={openSaleBill} handleClose={handleCloseSaleBill} />
       <CreatePurchaseBill
         open={openPurchaseBill}
         handleClose={handleClosePurchaseBill}
-        // refresh={fetchBills}
       />
     </>
   );

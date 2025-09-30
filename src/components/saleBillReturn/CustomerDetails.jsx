@@ -8,6 +8,7 @@ const CustomerDetails = ({
   handleCustomerSelection,
   errors,
   setCustomer,
+  billType,
   gstDetails,
   setGstDetails ,
   customerList = [],
@@ -94,6 +95,7 @@ const CustomerDetails = ({
             disabled={isExistingCustomer}
           />
         </Grid>
+        {billType === 'gst' && (<>
         <Grid container spacing={2} mt={1}>
           {Object.entries(gstDetails).map(([key, value]) => (
             <Grid item xs={12} sm={6} key={key} width={200}>
@@ -114,6 +116,7 @@ const CustomerDetails = ({
             </Grid>
           ))}
         </Grid>
+        </>)}
       </Grid>
     </Box>
   );

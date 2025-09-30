@@ -47,8 +47,8 @@ const PurchaseBillForm = ({
   });
 
   const [isExistingVendor, setIsExistingVendor] = useState(false);
-    const [errors, setErrors] = useState({ phone_number: "", products: {}  });
-  
+  const [errors, setErrors] = useState({ phone_number: "", products: {} });
+
   const [products, setProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([
     {
@@ -58,14 +58,13 @@ const PurchaseBillForm = ({
       qty: 1,
       price: 0,
       gstPercent: 0,
-      discountPercentage: 0,
+      discountPercentage: "",
       discountedPrice: 0,
       isExisting: false,
       category: "",
       cgst: 0,
       sgst: 0,
       igst: 0,
-      printAs:""
     },
   ]);
 
@@ -76,7 +75,7 @@ const PurchaseBillForm = ({
   const [paymentType, setPaymentType] = useState("full");
   const [advanceAmount, setAdvanceAmount] = useState(0);
   const [paymentMode, setPaymentMode] = useState(0);
-  const [billDate ,setBillDate] = useState("");
+  const [billDate, setBillDate] = useState("");
 
   const [totals, setTotals] = useState({
     subtotal: 0,
@@ -154,7 +153,7 @@ const PurchaseBillForm = ({
     let subtotal = 0;
     selectedProducts.forEach((item) => {
       const qty = Number(item.qty) || 0;
-      const price = Number(item.discountedPrice) || 0;
+      const price = Number(item.price) || 0;
       subtotal += qty * price;
     });
 
@@ -216,16 +215,15 @@ const PurchaseBillForm = ({
           phone_number: "Invalid mobile number",
         }));
       } else {
-        setErrors((prev) => ({ ...prev, phone_number: ""  }));
+        setErrors((prev) => ({ ...prev, phone_number: "" }));
       }
       selectedVendor = users.find(
         (u) =>
-          u.phone_number === value && u.role_id.name?.toLowerCase() === "vendor"
+          u.phone_number === value && u.role_id.name.toLowerCase() === "vendor"
       );
     } else if (type === "name") {
       selectedVendor = users.find(
-        (s) =>
-          s.name === value && s.role_id.name?.toLowerCase() === "vendor"
+        (s) => s.name === value && s.role_id.name.toLowerCase() === "vendor"
       );
     }
 
@@ -268,7 +266,7 @@ const PurchaseBillForm = ({
     if (field === "productName") {
       // if chosen product exists in products list, fill details
       const product = products.find(
-        (p) => p.name?.toLowerCase() === value?.toLowerCase()
+        (p) => p.name.toLowerCase() === value.toLowerCase()
       );
       if (product) {
         const price = product.compareAtPrice || 0;
@@ -279,12 +277,12 @@ const PurchaseBillForm = ({
           productName: product.name,
           hsnCode: product.hsnCode || "",
           price,
-          discountPercentage: product.discountPercentage || 0,
+          discountPercentage: product.discountPercentage || "",
           discountedPrice: discountPrice,
           isExisting: true,
           category: product.category,
           gstPercent: product.gstPercent || gstPercent || 0,
-          printAs:product?.printAs || ""
+          printAs: product?.printAs || "",
         };
       } else {
         updated[index] = {
@@ -293,32 +291,28 @@ const PurchaseBillForm = ({
           isExisting: false,
         };
       }
-    } 
-    else if (field === "discountPercentage") {
-      const discount = parseFloat(value) || 0;
+    } else if (field === "discountPercentage") {
+      const discountStr = value;
       const price = parseFloat(item.price) || 0;
-      const discountPrice = +(price - (price * discount) / 100);
+      let discountedPrice = price;
+      if (discountStr.includes("%")) {
+        const percent = parseFloat(discountStr.replace("%", ""));
+        discountedPrice = price - (price * percent) / 100;
+      } else {
+        const flatDiscount = parseFloat(discountStr);
+        if (!isNaN(flatDiscount)) {
+          discountedPrice = price - flatDiscount;
+        }
+      }
+
       updated[index] = {
         ...item,
-        discountPercentage: discount,
-        discountedPrice: discountPrice,
-      };
-    } 
-    else if (field === "discountedPrice") {
-      const discountedPrice = parseFloat(value) || 0;
-      const price = parseFloat(item.price) || 0;
-      const discountPercentage =
-        price > 0 ? +(((price - discountedPrice) / price) * 100) : 0;
-      updated[index] = {
-        ...item,
+        discountPercentage: discountStr, // keep user input as string
         discountedPrice,
-        discountPercentage: Math.round(discountPercentage),
       };
-    } 
-    else {
+    } else {
       updated[index] = { ...item, [field]: value };
     }
-
 
     setSelectedProducts(updated);
   };
@@ -332,10 +326,10 @@ const PurchaseBillForm = ({
         qty: 1,
         price: 0,
         gstPercent: 0,
-        discountPercentage: 0,
+        discountPercentage: "",
         discountedPrice: 0,
         category: "",
-        printAs:"",
+        printAs: "",
         isExisting: false,
       },
     ]);
@@ -370,27 +364,24 @@ const PurchaseBillForm = ({
       // register vendor if not existing
       if (!isExistingVendor) {
         const vendorRole = roles.find(
-          (role) => role.name?.toLowerCase() === "vendor"
+          (role) => role.name.toLowerCase() === "vendor"
         );
         const vendorposition = positions.find(
-          (pos) => pos.name?.toLowerCase() === "vendor"
+          (pos) => pos.name.toLowerCase() === "vendor"
         );
         const payload = {
           ...vendor,
           organization_id: mainUser.organization_id?._id,
-          email:
-            vendor.name.replace(/\s+/g, "")?.toLowerCase() +
-            "@example.com",
+          email: vendor.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
           password:
-            vendor.name.replace(/\s+/g, "")?.toLowerCase() +
-            "@example.com",
+            vendor.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
           role_id: vendorRole?._id,
           position_id: vendorposition?._id,
 
           gstDetails,
         };
         const res = await createUser(payload);
-        
+
         const paymentPayload = {
           organization: mainUser.organization_id?._id,
           narration: "Opening Balance",
@@ -414,7 +405,7 @@ const PurchaseBillForm = ({
             hsnCode: prod.hsnCode,
             price: prod.discountedPrice,
             compareAtPrice: prod.price,
-            printAs:prod.printAs,
+            printAs: prod.printAs,
             quantity: prod.qty,
             organization_id: mainUser.organization_id?._id,
             status: "active",
@@ -435,9 +426,17 @@ const PurchaseBillForm = ({
       const finalProducts = selectedProducts.map((product) => {
         const qty = Number(product.qty) || 0;
         // price = the actual selling/unit price after discount (use discountedPrice if available)
-        const unitPrice = Number(product.discountedPrice ?? product.price) || 0;
+        const unitPrice = Number(product.price) || 0;
         const lineAmount = +(qty * unitPrice); // taxable amount for this line
-
+        const discountStr = product.discountPercentage.toString();
+        let discountPrice = 0;
+        if (discountStr.includes("%")) {
+          const percent = parseFloat(discountStr) || 0;
+          discountPrice = unitPrice * qty - (unitPrice * qty * percent) / 100;
+        } else {
+          const flat = parseFloat(discountStr) || 0;
+          discountPrice = unitPrice * qty - flat;
+        }
         // GST percent precedence:
         // 1) product.gstPercent (explicit)
         // 2) product.gst (legacy)
@@ -459,16 +458,16 @@ const PurchaseBillForm = ({
           name: product.productName || product.name || "",
           hsnCode: product.hsnCode || "",
           qty,
-          price: unitPrice, // price used for subtotal
-          unitPrice: Number(product.price) || 0, // original price if you keep both
-          discount: Number(product.discountPercentage) || 0,
+           price: discountPrice, // price used for subtotal
+          unitPrice: unitPrice, // original price if you keep both
+          discount: product.discountPercentage || "",
           gstPercent: rate, // percent (important)
           gstAmount, // amount in ₹
           cgst: cgstAmount,
           sgst: sgstAmount,
           igst: igstAmount,
           lineTotal,
-          printAs:product?.printAs
+          printAs: product?.printAs,
         };
       });
 
@@ -506,7 +505,7 @@ const PurchaseBillForm = ({
         bill_to: finalVendor._id,
         products: finalProducts,
         billType: billType,
-        billDate :billDate,
+        billDate: billDate,
         qty: selectedProducts.length,
         paymentType: paymentType,
         advance: advanceAmount || 0,
@@ -606,10 +605,10 @@ const PurchaseBillForm = ({
             hsnCode: "",
             qty: 0,
             price: 0,
-            discountPercentage: 0,
+            discountPercentage: "",
             gstPercent: 0,
             discountedPrice: 0,
-            printAs:""
+            printAs: "",
           },
         ]);
         close();
@@ -647,6 +646,7 @@ const PurchaseBillForm = ({
         setGstDetails={setGstDetails}
         gstDetails={gstDetails}
         errors={errors}
+         billType={billType}
         setErrors={setErrors}
         supplierList={users.filter(
           (u) =>

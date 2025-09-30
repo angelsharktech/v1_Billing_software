@@ -17,6 +17,7 @@ const VendorDetails = ({
   setGstDetails,
   gstDetails,
   errors,
+  billType,
   setErrors,
   supplierList = [],
 }) => {
@@ -93,6 +94,8 @@ const VendorDetails = ({
         </Grid>
 
         {/* Vendor Gst Details */}
+        {billType === 'gst' && (
+          <>
         <Grid item xs={12} sm={4} width={200}>
           <TextField
             label="GST Number"
@@ -126,6 +129,8 @@ const VendorDetails = ({
             disabled={isExistingVendor}
           />
         </Grid>
+        </>
+        )}
         {/* <Grid item xs={12} sm={4} width={200}>
           <TextField
             label="State Code"

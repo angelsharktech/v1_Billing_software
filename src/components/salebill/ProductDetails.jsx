@@ -27,14 +27,12 @@ const ProductDetails = ({
   billType,
   advanceAmount,
   setAdvanceAmount,
-   paymentMode,
-   productErrors,
+  paymentMode,
+  productErrors,
   setPaymentMode,
- 
 }) => {
   const productRefs = useRef([]);
   const [paymentType, setPaymentType] = useState("full"); // full | advance
-
 
   // ✅ Sanitize number input
   const sanitizeNumber = (v) => {
@@ -44,13 +42,31 @@ const ProductDetails = ({
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
   };
+  // Calculate discounted taxable value for one product
+  const getDiscountedAmount = (item) => {
+    const price = sanitizeNumber(item.price);
+    const qty = sanitizeNumber(item.qty);
+    const base = price * qty;
+
+    if (!item.discountPercentage) return base;
+
+    const discountStr = item.discountPercentage.toString();
+
+    if (discountStr.includes("%")) {
+      const percent = parseFloat(discountStr) || 0;
+      return base - (base * percent) / 100;
+    } else {
+      const flat = parseFloat(discountStr) || 0;
+      return base - flat;
+    }
+  };
 
   // ✅ Compute Totals
   const totalsMemo = useMemo(() => {
     const subtotal = selectedProducts.reduce((acc, p) => {
-      const price = sanitizeNumber(p.discountedPrice ?? p.price);
+      const price = sanitizeNumber(p.price);
       const qty = sanitizeNumber(p.qty);
-      return acc + price * qty;
+      return acc + getDiscountedAmount(p);
     }, 0);
 
     if (billType !== "gst") {
@@ -90,7 +106,7 @@ const ProductDetails = ({
     const cgst = +totalCGST.toFixed(2);
     const sgst = +totalSGST.toFixed(2);
     const igst = +totalIGST.toFixed(2);
-    const gstTotal = +((cgst + sgst + igst).toFixed(2));
+    const gstTotal = +(cgst + sgst + igst).toFixed(2);
     const grandTotal = +(subtotal + gstTotal).toFixed(2);
 
     return {
@@ -109,21 +125,19 @@ const ProductDetails = ({
     }
   }, [totalsMemo, onTotalsChange]);
 
-  
-// ✅ Auto-focus on new product
-const handleAddAndFocus = () => {
-  handleAddProduct();
+  // ✅ Auto-focus on new product
+  const handleAddAndFocus = () => {
+    handleAddProduct();
 
-  setTimeout(() => {
-    const lastIndex = selectedProducts.length; // new product index
-    const rowBase = baseProductIndex + lastIndex * fieldsPerProduct;
-    const input = getRef(rowBase)?.current;
-    if (input) {
-      input.focus(); // ✅ focus on new Product Name
-    }
-  }, 50);
-};
-
+    setTimeout(() => {
+      const lastIndex = selectedProducts.length; // new product index
+      const rowBase = baseProductIndex + lastIndex * fieldsPerProduct;
+      const input = getRef(rowBase)?.current;
+      if (input) {
+        input.focus(); // ✅ focus on new Product Name
+      }
+    }, 50);
+  };
 
   // ✅ GST Calculation
   const calculateGST = (item) => {
@@ -139,9 +153,9 @@ const handleAddAndFocus = () => {
     }
   };
 
-    const baseProductIndex = 14; // start after customer fields
+  const baseProductIndex = 14; // start after customer fields
   const fieldsPerProduct = 12; // e.g. productName, hsn, qty, price, discount, discountedPrice, gst, delete
-
+ 
   return (
     <Box mt={3}>
       <Typography variant="h6">Products</Typography>
@@ -199,7 +213,9 @@ const handleAddAndFocus = () => {
                 type="number"
                 sx={{ width: "80px" }}
                 value={item.qty}
-                onChange={(e) => handleProductChange(index, "qty", e.target.value)}
+                onChange={(e) =>
+                  handleProductChange(index, "qty", e.target.value)
+                }
                 error={!!productErrors?.[index]}
                 helperText={productErrors?.[index] || ""}
               />
@@ -208,44 +224,49 @@ const handleAddAndFocus = () => {
             {/* MRP */}
             <Grid item xs={12} sm={2}>
               <TextField
-                label="MRP"
+                label="Rate"
                 type="number"
                 sx={{ width: "90px" }}
                 value={item.price}
-                onChange={(e) => handleProductChange(index, "price", e.target.value)}
-                
+                onChange={(e) =>
+                  handleProductChange(index, "price", e.target.value)
+                }
               />
             </Grid>
 
             {/* Discount % */}
             <Grid item xs={12} sm={2}>
               <TextField
-                label="Discount %"
-                type="number"
+                label="Discount"
+                type="text"
                 sx={{ width: "100px" }}
-                value={item.discountPercentage}
-                onChange={(e) =>
-                  handleProductChange(index, "discountPercentage", e.target.value)
-                }
+                value={item.discountPercentage || ""}
+                onChange={(e) => {
+                  handleProductChange(
+                    index,
+                    "discountPercentage",
+                    e.target.value
+                  );
+                }}
+                placeholder="e.g. 2%, 100 rs"
               />
             </Grid>
 
             {/* Selling Price */}
+             {billType === "gst" && (
+              <>
             <Grid item xs={12} sm={2}>
               <TextField
-                label="Selling Price"
+                label= "Taxable Value"
                 type="number"
-                sx={{ width: "100px" }}
-                value={item.discountedPrice}
-                onChange={(e) =>
-                  handleProductChange(index, "discountedPrice", e.target.value)
-                }
+                sx={{ width: "120px" }}
+                value={getDiscountedAmount(item)}
+                // onChange={(e) =>
+                //   handleProductChange(index, "discountedPrice", e.target.value)
+                // }
               />
             </Grid>
-
-            {/* GST % */}
-            {billType === "gst" && (
-              <Grid item xs={12} sm={1.5} >
+              <Grid item xs={12} sm={1.5}>
                 <TextField
                   label="GST %"
                   type="number"
@@ -256,22 +277,35 @@ const handleAddAndFocus = () => {
                   }
                 />
               </Grid>
+              </>
             )}
 
             {billType === "gst" && isWithinState && (
               <>
                 <Grid item xs={12} sm={1.5} width={100}>
-                  <TextField label="CGST" value={cgst} InputProps={{ readOnly: true }} />
+                  <TextField
+                    label="CGST"
+                    value={cgst}
+                    InputProps={{ readOnly: true }}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={1.5} width={100}>
-                  <TextField label="SGST" value={sgst} InputProps={{ readOnly: true }} />
+                  <TextField
+                    label="SGST"
+                    value={sgst}
+                    InputProps={{ readOnly: true }}
+                  />
                 </Grid>
               </>
             )}
 
             {billType === "gst" && !isWithinState && (
               <Grid item xs={12} sm={2} width={100}>
-                <TextField label="IGST" value={igst} InputProps={{ readOnly: true }} />
+                <TextField
+                  label="IGST"
+                  value={igst}
+                  InputProps={{ readOnly: true }}
+                />
               </Grid>
             )}
 
@@ -280,7 +314,7 @@ const handleAddAndFocus = () => {
               <TextField
                 label="Total"
                 value={
-                  item.discountedPrice * item.qty +
+                  getDiscountedAmount(item) +
                   (isWithinState ? cgst + sgst : igst)
                 }
                 InputProps={{ readOnly: true }}
@@ -289,7 +323,7 @@ const handleAddAndFocus = () => {
 
             {/* Delete Button */}
             <Grid item xs={12} sm={1}>
-              <IconButton onClick={() => handleRemoveProduct(index)} >
+              <IconButton onClick={() => handleRemoveProduct(index)}>
                 <Delete color="error" />
               </IconButton>
             </Grid>
@@ -401,7 +435,7 @@ const handleAddAndFocus = () => {
             <TextField
               select
               label="Payment Mode"
-              sx={{width:'200px'}}
+              sx={{ width: "200px" }}
               value={paymentMode}
               onChange={(e) => setPaymentMode(e.target.value)}
             >
@@ -410,7 +444,6 @@ const handleAddAndFocus = () => {
             </TextField>
           </Grid>
         </Grid>
-
       </Paper>
     </Box>
   );

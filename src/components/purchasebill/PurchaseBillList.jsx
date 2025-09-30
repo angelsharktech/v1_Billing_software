@@ -273,8 +273,8 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                   <TableCell>{bill.bill_to?.name || "N/A"}</TableCell>
                   <TableCell>{bill.bill_number || "N/A"}</TableCell>
                   <TableCell>
-                    {bill.createdAt
-                      ? moment(bill?.billDate).format("DD/MM/YYYY")
+                    {bill.billDate
+                      ? bill?.billDate
                       : "--"}
                   </TableCell>
                   <TableCell align="center">

@@ -54,9 +54,9 @@ const PurchaseBillForm = ({
       hsnCode: "",
       qty: 1,
       price: 0,
-      gstPercent: 0,
-      discountPercentage: 0,
+      discountPercentage: "",
       discountedPrice: 0,
+      gstPercent: 0,
       isExisting: false,
       category: "",
       cgst: 0,
@@ -72,7 +72,7 @@ const PurchaseBillForm = ({
   const [paymentType, setPaymentType] = useState("full");
   const [advanceAmount, setAdvanceAmount] = useState(0);
   const [paymentMode, setPaymentMode] = useState(0);
-const [billDate , setBillDate] = useState("");
+  const [billDate, setBillDate] = useState("");
   const [totals, setTotals] = useState({
     subtotal: 0,
     gstTotal: 0,
@@ -150,7 +150,7 @@ const [billDate , setBillDate] = useState("");
     let subtotal = 0;
     selectedProducts.forEach((item) => {
       const qty = Number(item.qty) || 0;
-      const price = Number(item.discountedPrice) || 0;
+      const price = Number(item.price) || 0;
       subtotal += qty * price;
     });
 
@@ -216,12 +216,11 @@ const [billDate , setBillDate] = useState("");
       }
       selectedVendor = users.find(
         (u) =>
-          u.phone_number === value && u.role_id.name?.toLowerCase() === "vendor"
+          u.phone_number === value && u.role_id.name.toLowerCase() === "vendor"
       );
     } else if (type === "name") {
       selectedVendor = users.find(
-        (s) =>
-          s.name === value && s.role_id.name?.toLowerCase() === "vendor"
+        (s) => s.name === value && s.role_id.name.toLowerCase() === "vendor"
       );
     }
 
@@ -236,7 +235,7 @@ const [billDate , setBillDate] = useState("");
       setGstDetails({
         gstNumber: selectedVendor.gstDetails?.gstNumber || "",
         legalName: selectedVendor.gstDetails?.legalName || "",
-        state: selectedVendor.gstDetails?.state || ""
+        state: selectedVendor.gstDetails?.state || "",
       });
       setIsExistingVendor(true);
     } else {
@@ -264,7 +263,7 @@ const [billDate , setBillDate] = useState("");
     if (field === "productName") {
       // if chosen product exists in products list, fill details
       const product = products.find(
-        (p) => p.name?.toLowerCase() === value?.toLowerCase()
+        (p) => p.name.toLowerCase() === value.toLowerCase()
       );
       if (product) {
         const price = product.compareAtPrice || 0;
@@ -275,7 +274,7 @@ const [billDate , setBillDate] = useState("");
           productName: product.name,
           hsnCode: product.hsnCode || "",
           price,
-          discountPercentage: product.discountPercentage || 0,
+          discountPercentage: product.discountPercentage || "",
           discountedPrice: discountPrice,
           isExisting: true,
           category: product.category,
@@ -289,23 +288,23 @@ const [billDate , setBillDate] = useState("");
         };
       }
     } else if (field === "discountPercentage") {
-      const discount = parseFloat(value) || 0;
+      const discountStr = value;
       const price = parseFloat(item.price) || 0;
-      const discountPrice = +(price - (price * discount) / 100);
+      let discountedPrice = price;
+      if (discountStr.includes("%")) {
+        const percent = parseFloat(discountStr.replace("%", ""));
+        discountedPrice = price - (price * percent) / 100;
+      } else {
+        const flatDiscount = parseFloat(discountStr);
+        if (!isNaN(flatDiscount)) {
+          discountedPrice = price - flatDiscount;
+        }
+      }
+
       updated[index] = {
         ...item,
-        discountPercentage: discount,
-        discountedPrice: discountPrice,
-      };
-    } else if (field === "discountedPrice") {
-      const discountedPrice = parseFloat(value) || 0;
-      const price = parseFloat(item.price) || 0;
-      const discountPercentage =
-        price > 0 ? +(((price - discountedPrice) / price) * 100) : 0;
-      updated[index] = {
-        ...item,
+        discountPercentage: discountStr, // keep user input as string
         discountedPrice,
-        discountPercentage: Math.round(discountPercentage),
       };
     } else {
       updated[index] = { ...item, [field]: value };
@@ -323,7 +322,7 @@ const [billDate , setBillDate] = useState("");
         qty: 1,
         price: 0,
         gstPercent: 0,
-        discountPercentage: 0,
+        discountPercentage: "",
         discountedPrice: 0,
         category: "",
         isExisting: false,
@@ -360,20 +359,17 @@ const [billDate , setBillDate] = useState("");
       // register vendor if not existing
       if (!isExistingVendor) {
         const vendorRole = roles.find(
-          (role) => role.name?.toLowerCase() === "vendor"
+          (role) => role.name.toLowerCase() === "vendor"
         );
         const vendorposition = positions.find(
-          (pos) => pos.name?.toLowerCase() === "vendor"
+          (pos) => pos.name.toLowerCase() === "vendor"
         );
         const payload = {
           ...vendor,
           organization_id: mainUser.organization_id?._id,
-          email:
-            vendor.name.replace(/\s+/g, "")?.toLowerCase() +
-            "@example.com",
+          email: vendor.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
           password:
-            vendor.name.replace(/\s+/g, "")?.toLowerCase() +
-            "@example.com",
+            vendor.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
           role_id: vendorRole?._id,
           position_id: vendorposition?._id,
 
@@ -386,38 +382,20 @@ const [billDate , setBillDate] = useState("");
         };
       }
 
-      // for (let prod of selectedProducts) {
-      //   // console.log(prod.productName,'****',prod.isExisting);
-      //   if (!prod.isExisting) {
-      //     const newProductPayload = {
-      //       name: prod.productName,
-      //       category: prod.category,
-      //       hsnCode: prod.hsnCode,
-      //       price: prod.discountedPrice,
-      //       compareAtPrice: prod.price,
-      //       quantity: prod.qty,
-      //       organization_id: mainUser.organization_id?._id,
-      //       status: "active",
-      //     };
-      //     const res = await addProducts(newProductPayload);
-      //     prod._id = res.data._id;
-      //     prod.isExisting = true;
-      //   } else {
-      //     const updatePayload = {
-      //       quantity: Number(prod.qty) || 0,
-      //       action: "add",
-      //     };
-      //     await updateInventory(prod._id, updatePayload);
-      //   }
-      // }
-
       // ---------- compute finalProducts & totals (replace your existing block) ----------
       const finalProducts = selectedProducts.map((product) => {
         const qty = Number(product.qty) || 0;
         // price = the actual selling/unit price after discount (use discountedPrice if available)
-        const unitPrice = Number(product.discountedPrice ?? product.price) || 0;
+        const unitPrice = Number(product.price) || 0;
         const lineAmount = +(qty * unitPrice); // taxable amount for this line
-
+        let discountPrice = 0;
+        if (discountStr.includes("%")) {
+          const percent = parseFloat(discountStr) || 0;
+          discountPrice = unitPrice * qty - (unitPrice * qty * percent) / 100;
+        } else {
+          const flat = parseFloat(discountStr) || 0;
+          discountPrice = unitPrice * qty - flat;
+        }
         // GST percent precedence:
         // 1) product.gstPercent (explicit)
         // 2) product.gst (legacy)
@@ -439,9 +417,9 @@ const [billDate , setBillDate] = useState("");
           name: product.productName || product.name || "",
           hsnCode: product.hsnCode || "",
           qty,
-          price: unitPrice, // price used for subtotal
-          unitPrice: Number(product.price) || 0, // original price if you keep both
-          discount: Number(product.discountPercentage) || 0,
+          price: discountPrice, // price used for subtotal
+          unitPrice: unitPrice, // original price if you keep both
+          discount: product.discountPercentage || "",
           gstPercent: rate, // percent (important)
           gstAmount, // amount in ₹
           cgst: cgstAmount,
@@ -485,10 +463,10 @@ const [billDate , setBillDate] = useState("");
         bill_to: finalVendor._id,
         products: finalProducts,
         billType: billType,
-         billDate :billDate,
+        billDate: billDate,
         qty: selectedProducts.length,
         paymentType: paymentType,
-        advance:  0,
+        advance: 0,
         balance: finalTotals.grandTotal,
         subtotal: finalTotals.subtotal,
         discount: 0,
@@ -538,21 +516,6 @@ const [billDate , setBillDate] = useState("");
         };
         if (refresh) refresh();
 
-        // let paymentPayload = {
-        //   client_id: finalVendor._id,
-        //   purchasebill: res?.data?._id || res?.data?._id,
-        //   organization: mainUser.organization_id?._id,
-        //   forPayment: "purchase",
-        //   paymentType: paymentMode,
-        //   narration: "Purchase",
-        //   balance: finalTotals.grandTotal,
-        //   closingAmount:
-        //     finalVendor?.openingAmount +
-        //     (finalTotals.grandTotal ),
-        // };
-        // const paymentResult = await addPayment(paymentPayload);
-        // console.log("1st paymentResult", paymentResult);
-
         let paymentPayload2 = {
           client_id: finalVendor._id,
           purchasebill: res?.data?._id || res?.data?._id,
@@ -561,20 +524,23 @@ const [billDate , setBillDate] = useState("");
           paymentType: paymentMode,
           narration: "Purachase Return",
           advanceAmount: finalTotals.grandTotal,
-          closingAmount: finalVendor.openingAmount -finalTotals.grandTotal,
+          closingAmount: finalVendor.openingAmount - finalTotals.grandTotal,
         };
-        // console.log("Payment Payload", paymentPayload);
 
         const paymentResult2 = await addPayment(paymentPayload2);
         if (paymentResult2?.success === false) {
           await deletePurchaseBill(res.data._id);
-          setSnackbarMessage(paymentResult2.errors || "Payment creation failed");
+          setSnackbarMessage(
+            paymentResult2.errors || "Payment creation failed"
+          );
           setSnackbarOpen(true);
           return;
         } else {
-          const res = await updateUser(finalVendor._id,{openingAmount:
-            Number(finalVendor.openingAmount) - Number(finalTotals.grandTotal)})
-          
+          const res = await updateUser(finalVendor._id, {
+            openingAmount:
+              Number(finalVendor.openingAmount) -
+              Number(finalTotals.grandTotal),
+          });
         }
 
         setVendor({
@@ -588,7 +554,7 @@ const [billDate , setBillDate] = useState("");
             hsnCode: "",
             qty: 0,
             price: 0,
-            discountPercentage: 0,
+            discountPercentage: "",
             gstPercent: 0,
             discountedPrice: 0,
           },
@@ -616,8 +582,8 @@ const [billDate , setBillDate] = useState("");
         isWithinState={isWithinState}
         setIsWithinState={setIsWithinState}
         totals={totals}
-         billDate = {billDate}
-        setBillDate = {setBillDate}
+        billDate={billDate}
+        setBillDate={setBillDate}
       />
 
       <VendorDetails
@@ -628,6 +594,7 @@ const [billDate , setBillDate] = useState("");
         setGstDetails={setGstDetails}
         gstDetails={gstDetails}
         errors={errors}
+        billType = {billType}
         supplierList={users.filter(
           (u) =>
             u.role_id?.name?.toLowerCase() === "vendor" &&

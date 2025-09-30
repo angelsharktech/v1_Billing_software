@@ -41,13 +41,31 @@ const ProductDetails = ({
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
   };
+  // Calculate discounted taxable value for one product
+  const getDiscountedAmount = (item) => {
+    const price = sanitizeNumber(item.price);
+    const qty = sanitizeNumber(item.qty);
+    const base = price * qty;
+
+    if (!item.discountPercentage) return base;
+
+    const discountStr = item.discountPercentage.toString();
+
+    if (discountStr.includes("%")) {
+      const percent = parseFloat(discountStr) || 0;
+      return base - (base * percent) / 100;
+    } else {
+      const flat = parseFloat(discountStr) || 0;
+      return base - flat;
+    }
+  };
 
   // ✅ Compute Totals
   const totalsMemo = useMemo(() => {
     const subtotal = selectedProducts.reduce((acc, p) => {
       const price = sanitizeNumber(p.discountedPrice ?? p.price);
       const qty = sanitizeNumber(p.qty);
-      return acc + price * qty;
+      return acc + getDiscountedAmount(p);
     }, 0);
 
     if (billType !== "gst") {
@@ -158,7 +176,6 @@ const ProductDetails = ({
                     {prod.name}
                   </MenuItem>
                 ))}
-                
               </TextField>
             </Grid>
 
@@ -199,7 +216,7 @@ const ProductDetails = ({
             {/* MRP */}
             <Grid item xs={12} sm={2}>
               <TextField
-                label="MRP"
+                label="Rate"
                 type="number"
                 sx={{ width: "90px" }}
                 value={item.price}
@@ -212,27 +229,29 @@ const ProductDetails = ({
             {/* Discount % */}
             <Grid item xs={12} sm={2}>
               <TextField
-                label="Discount %"
-                type="number"
+                label="Discount"
+                type="text"
                 sx={{ width: "100px" }}
-                value={item.discountPercentage}
-                onChange={(e) =>
+                value={item.discountPercentage || ""}
+                onChange={(e) => {
                   handleProductChange(
                     index,
                     "discountPercentage",
                     e.target.value
-                  )
-                }
+                  );
+                }}
+                placeholder="e.g. 2%, 100 rs"
               />
             </Grid>
 
             {/* Selling Price */}
+            {billType === "gst" && ( <>
             <Grid item xs={12} sm={2}>
               <TextField
-                label="Selling Price"
+                label="Taxable Value"
                 type="number"
-                sx={{ width: "100px" }}
-                value={item.discountedPrice}
+                sx={{ width: "120px" }}
+                value={getDiscountedAmount(item)}
                 onChange={(e) =>
                   handleProductChange(index, "discountedPrice", e.target.value)
                 }
@@ -240,7 +259,7 @@ const ProductDetails = ({
             </Grid>
 
             {/* GST % */}
-            {billType === "gst" && (
+            
               <Grid item xs={12} sm={1.5}>
                 <TextField
                   label="GST %"
@@ -252,6 +271,7 @@ const ProductDetails = ({
                   }
                 />
               </Grid>
+            </>
             )}
 
             {billType === "gst" && isWithinState && (
@@ -288,7 +308,7 @@ const ProductDetails = ({
               <TextField
                 label="Total"
                 value={
-                  item.discountedPrice * item.qty +
+                   getDiscountedAmount(item) +
                   (isWithinState ? cgst + sgst : igst)
                 }
                 InputProps={{ readOnly: true }}

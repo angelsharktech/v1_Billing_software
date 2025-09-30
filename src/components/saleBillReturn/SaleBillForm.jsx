@@ -64,7 +64,7 @@ const SaleBillForm = ({
   const [isExistingCustomer, setIsExistingCustomer] = useState(false);
   const [products, setProducts] = useState([]);
   const [paymentMode, setPaymentMode] = useState();
-    const [billDate , setBillDate] = useState("");
+  const [billDate, setBillDate] = useState("");
   const [selectedProducts, setSelectedProducts] = useState([
     {
       _id: "",
@@ -72,7 +72,7 @@ const SaleBillForm = ({
       hsnCode: "",
       qty: 1,
       price: 0,
-      discountPercentage: 0,
+      discountPercentage: "",
       discountedPrice: 0,
       gstPercent: 0,
       isExisting: false,
@@ -149,7 +149,7 @@ const SaleBillForm = ({
     let subtotal = 0;
     selectedProducts.forEach((item) => {
       const qty = Number(item.qty);
-      const taxable = qty * item.discountedPrice;
+      const taxable = qty * item.price;
       subtotal += taxable;
     });
     const isMaharashtra = state?.toLowerCase() === "maharashtra";
@@ -198,7 +198,7 @@ const SaleBillForm = ({
     }
   };
 
-const handleCustomerSelection = (value, type) => {
+  const handleCustomerSelection = (value, type) => {
     let selectedCustomer = null;
     if (type === "phone") {
       const phoneRegex = /^[6-9]\d{9}$/;
@@ -214,12 +214,11 @@ const handleCustomerSelection = (value, type) => {
 
       // selectedCustomer = users.find(
       //   (u) =>
-      //     u.phone_number === value && u.role_id.name?.toLowerCase() === "customer"
+      //     u.phone_number === value && u.role_id.name.toLowerCase() === "customer"
       // );
     } else if (type === "name") {
       selectedCustomer = users.find(
-        (s) =>
-          s.name === value && s.role_id.name?.toLowerCase() === "customer"
+        (s) => s.name === value && s.role_id.name.toLowerCase() === "customer"
       );
     }
 
@@ -237,7 +236,7 @@ const handleCustomerSelection = (value, type) => {
         state: selectedCustomer.gstDetails?.state || "",
       });
       setIsExistingCustomer(true);
-    } 
+    }
     // else {
     //   setCustomer((prev) => ({
     //     _id: "",
@@ -307,55 +306,25 @@ const handleCustomerSelection = (value, type) => {
         };
       }
     } else if (field === "discountPercentage") {
-      const discount = parseFloat(value) || 0;
+      const discountStr = value;
       const price = parseFloat(item.price) || 0;
-      const discountPrice = price - (price * discount) / 100;
+      let discountedPrice = price;
+      if (discountStr.includes("%")) {
+        const percent = parseFloat(discountStr.replace("%", ""));
+        discountedPrice = price - (price * percent) / 100;
+      } else {
+        const flatDiscount = parseFloat(discountStr);
+        if (!isNaN(flatDiscount)) {
+          discountedPrice = price - flatDiscount;
+        }
+      }
 
       updated[index] = {
         ...item,
-        discountPercentage: discount.toFixed(0),
-        discountedPrice: discountPrice,
-      };
-    } else if (field === "discountedPrice") {
-      const discountedPrice = parseFloat(value) || 0;
-      const price = parseFloat(item.price) || 0;
-      const discountPercentage =
-        price > 0 ? ((price - discountedPrice) / price) * 100 : 0;
-
-      updated[index] = {
-        ...item,
+        discountPercentage: discountStr, // keep user input as string
         discountedPrice,
-        discountPercentage: discountPercentage.toFixed(0),
       };
-    }  
-    //   if (field === "qty") {
-    //   const qty = Number(value);
-    //   const availableQty =
-    //     products.find((p) => p._id === item._id)?.quantity || 0;
-
-    //   if (qty > availableQty) {
-    //     // Show error
-    //     setErrors((prev) => ({
-    //       ...prev,
-    //       products: {
-    //         ...prev.products,
-    //         [index]: `Only ${availableQty} items left`,
-    //       },
-    //     }));
-    //   } else {
-    //     // Clear error
-    //     setErrors((prev) => ({
-    //       ...prev,
-    //       products: {
-    //         ...prev.products,
-    //         [index]: "",
-    //       },
-    //     }));
-    //     updated[index][field] = qty;
-    //     // setSelectedProducts(updated);
-    //   }
-    // } 
-    else {
+    } else {
       updated[index] = { ...item, [field]: value };
     }
 
@@ -371,7 +340,7 @@ const handleCustomerSelection = (value, type) => {
         qty: 1,
         price: 0,
         gst: 0,
-        discountPercentage: 0,
+        discountPercentage: "",
         discountedPrice: 0,
       },
     ]);
@@ -426,52 +395,20 @@ const handleCustomerSelection = (value, type) => {
           return;
         }
       }
-
-      // if (!isExistingCustomer) {
-      //   const customerRole = roles.find(
-      //     (role) => role.name?.toLowerCase() === "customer"
-      //   );
-      //   const customerposition = positions.find(
-      //     (pos) => pos.name?.toLowerCase() === "customer"
-      //   );
-      //   const payload = {
-      //     ...customer,
-      //     organization_id: mainUser.organization_id?._id,
-      //     email:
-      //       customer.name.replace(/\s+/g, "")?.toLowerCase() +
-      //       "@example.com",
-      //     password:
-      //       customer.name.replace(/\s+/g, "")?.toLowerCase() +
-      //       "@example.com",
-      //     role_id: customerRole._id,
-      //     position_id: customerposition._id,
-      //     gstDetails: {
-      //       gstNumber: gstDetails.gstNumber,
-      //       legalName: gstDetails.legalName,
-      //       state: gstDetails.state,
-      //     },
-      //   };
-
-      //   const res = await createUser(payload);
-      //   const paymentPayload = {
-      //             organization: mainUser.organization_id?._id,
-      //             narration: "Opening Balance",
-      //             client_id: res.data.data._id,
-      //             forPayment: "sale",
-      //             closingAmount: customer.openingAmount,
-      //           };
-      //           const resPayment = await addPayment(paymentPayload);
-      //           console.log("RESPONSE", res);
-      //   finalCustomer = { ...customer, _id: res.user.id };
-      // }
-
       // ---------- compute finalProducts & totals (replace your existing block) ----------
       const finalProducts = selectedProducts.map((product) => {
         const qty = Number(product.qty) || 0;
         // price = the actual selling/unit price after discount (use discountedPrice if available)
-        const unitPrice = Number(product.discountedPrice ?? product.price) || 0;
+        const unitPrice = Number(product.price) || 0;
         const lineAmount = +(qty * unitPrice); // taxable amount for this line
-
+        let discountPrice = 0;
+        if (discountStr.includes("%")) {
+          const percent = parseFloat(discountStr) || 0;
+          discountPrice = unitPrice * qty - (unitPrice * qty * percent) / 100;
+        } else {
+          const flat = parseFloat(discountStr) || 0;
+          discountPrice = unitPrice * qty - flat;
+        }
         // GST percent precedence:
         // 1) product.gstPercent (explicit)
         // 2) product.gst (legacy)
@@ -493,9 +430,9 @@ const handleCustomerSelection = (value, type) => {
           name: product.productName || product.name || "",
           hsnCode: product.hsnCode || "",
           qty,
-          price: unitPrice, // price used for subtotal
-          unitPrice: Number(product.price) || 0, // original price if you keep both
-          discount: Number(product.discountPercentage) || 0,
+          price: discountPrice, // price used for subtotal
+          unitPrice: unitPrice, // original price if you keep both
+          discount: product.discountPercentage || "",
           gstPercent: rate, // percent (important)
           gstAmount, // amount in ₹
           cgst: cgstAmount,
@@ -539,11 +476,11 @@ const handleCustomerSelection = (value, type) => {
         bill_to: finalCustomer._id,
         products: finalProducts,
         billType: billType,
-        billDate :billDate,
+        billDate: billDate,
         qty: selectedProducts.length,
         paymentType: paymentType,
         advance: 0,
-        balance: finalTotals.grandTotal ,
+        balance: finalTotals.grandTotal,
         isReturn: true,
         balancePayMode:
           (paymentDetails.balancePayMode || "") +
@@ -578,20 +515,10 @@ const handleCustomerSelection = (value, type) => {
       }
 
       if (res.success === true) {
-
         setSnackbarMessage("Sale bill created successfully!");
         setSnackbarOpen(true);
-        // const billData = {
-        //   biller: finalCustomer,
-        //   products: finalProducts,
-        //   billType,
-        //   paymentType,
-        //   paymentDetails,
-        //   gstPercent,
-        //   totals,
-        //   org: mainUser.organization_id?.name,
-        // };
-        const billData = await getSaleBillById(res.data._id);     
+       
+        const billData = await getSaleBillById(res.data._id);
 
         let paymentPayload2 = {
           client_id: finalCustomer._id,
@@ -601,13 +528,15 @@ const handleCustomerSelection = (value, type) => {
           paymentType: paymentMode,
           narration: "Sale Return",
           advanceAmount: finalTotals.grandTotal,
-          closingAmount:finalCustomer?.openingAmount - finalTotals.grandTotal,
-       };
+          closingAmount: finalCustomer?.openingAmount - finalTotals.grandTotal,
+        };
 
         const paymentResult2 = await addPayment(paymentPayload2);
         if (paymentResult2?.success === false) {
           await deleteSaleBill(res.data._id);
-          setSnackbarMessage(paymentResult2.errors || "Payment creation failed");
+          setSnackbarMessage(
+            paymentResult2.errors || "Payment creation failed"
+          );
           setSnackbarOpen(true);
           return;
         } else {
@@ -641,7 +570,7 @@ const handleCustomerSelection = (value, type) => {
             hsnCode: "",
             qty: 0,
             price: 0,
-            discountPercentage: 0,
+            discountPercentage: "",
             gst: 0,
             discountedPrice: 0,
           },
@@ -685,15 +614,15 @@ const handleCustomerSelection = (value, type) => {
         errors={errors}
         gstDetails={gstDetails}
         setGstDetails={setGstDetails}
-        billDate = {billDate}
-        setBillDate = {setBillDate}
-         customerList={users.filter(
+        billDate={billDate}
+        billType={billType}
+        setBillDate={setBillDate}
+        customerList={users.filter(
           (u) =>
             u.role_id?.name?.toLowerCase() === "customer" &&
             u.organization_id?._id === mainUser?.organization_id?._id &&
-             (u.status === "active" || u.status === "out_of_stock")
+            (u.status === "active" || u.status === "out_of_stock")
         )}
-
       />
 
       {/* Step 3: Bill Type */}
