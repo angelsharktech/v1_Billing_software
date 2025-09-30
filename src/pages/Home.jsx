@@ -98,8 +98,8 @@ const Home = ({ setSelectedTab }) => {
   const categories = await getAllCategories();
 
 
-  const vendorRole = roles.find((r) => r.name?.toLowerCase() === "vendor");
-  const customerRole = roles.find((r) => r.name?.toLowerCase() === "customer");
+  const vendorRole = roles.find((r) => r.name.toLowerCase() === "vendor");
+  const customerRole = roles.find((r) => r.name.toLowerCase() === "customer");
 
   const vendors =
     users?.filter(
@@ -243,7 +243,7 @@ const Home = ({ setSelectedTab }) => {
             sx={{background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff" }}
             onClick={handleSaleOpen}
           >
-            Create Sale bill (Alt+S)
+            Create Sales bill (Alt+S)
           </Button>
           <Button
           // accessKey="p"
@@ -313,9 +313,9 @@ const Home = ({ setSelectedTab }) => {
           </FormControl>
         </Box>
 
-        <Grid container spacing={25}>
+        <Grid container spacing={38}>
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, borderRadius: 2, width: "130%" }}>
+            <Paper sx={{ p: 3, borderRadius: 2, width: "190%" }}>
               <Typography variant="h6" gutterBottom>
                 Sale Overview - {range}
               </Typography>
@@ -348,7 +348,7 @@ const Home = ({ setSelectedTab }) => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, borderRadius: 2, width: "130%" }}>
+            <Paper sx={{ p: 3, borderRadius: 2, width: "170%" }}>
               <Typography variant="h6" gutterBottom>
                 Purchase Overview - {range}
               </Typography>

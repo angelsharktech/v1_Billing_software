@@ -159,19 +159,12 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
       }}
     >
       <Box textAlign="center">
-          <Typography variant="h4" noWrap component="div" mr={2}>
+          <Typography fontSize={28} noWrap component="div" mr={2}>
             Billing Desk
           </Typography>
-        {/* <Avatar sx={{ width: 60, height: 60, mx: "auto", mb: 1 }} />
-        <Typography fontWeight="bold" fontSize={14}>
-          {webuser.name}
-        </Typography>
-        <Typography fontSize={12} color="gray">
-          {webuser.email}
-        </Typography> */}
       </Box>
 
-      <List>
+      <List style={{fontSize:'1px'}}>
         {navItems.map((item) => {
           if (item.subItems) {
             return (
@@ -185,7 +178,7 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                   <ListItemIcon sx={{ color: selectedTab === item.label ? "#182848" : "white" }}>
                     {item.icon}
                   </ListItemIcon>
-                  <ListItemText primary={item.label} />
+                  <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: "15px" }}/>
                   {openDropdown === item.label ? <ExpandLess /> : <ExpandMore />}
                 </ListItemButton>
 
@@ -199,7 +192,7 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                         onKeyDown={(e) => handleKeyDown(e, subLabel)}
                         sx={selectedTab === subLabel ? selectedStyle : { pl: 4, ...unselectedStyle }}
                       >
-                        <ListItemText primary={subLabel} />
+                        <ListItemText primary={subLabel}   primaryTypographyProps={{ fontSize: "15px" }}/>
                       </ListItemButton>
                     ))}
                   </List>
@@ -218,7 +211,7 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                 <ListItemIcon sx={{ color: selectedTab === item.label ? "#182848" : "white" }}>
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText primary={item.label} />
+                <ListItemText primary={item.label}  primaryTypographyProps={{ fontSize: "15px" }}/>
               </ListItemButton>
             );
           }
