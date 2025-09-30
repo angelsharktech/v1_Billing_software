@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Grid,
+  IconButton,
   MenuItem,
   Modal,
   Paper,
@@ -15,9 +16,10 @@ import React, { useEffect, useState } from "react";
 import { addProducts } from "../../services/ProductService";
 import { getAllCategories } from "../../services/CategoryService";
 import { useAuth } from "../../context/AuthContext";
-import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
-import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
+import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
+import RemoveCircleOutlineOutlinedIcon from "@mui/icons-material/RemoveCircleOutlineOutlined";
 import { getUserById } from "../../services/UserService";
+import CloseIcon from "@mui/icons-material/Close";
 
 const style = {
   position: "absolute",
@@ -41,8 +43,8 @@ const AddProduct = ({ open, handleClose, refresh }) => {
     hsnCode: "",
     category: "",
     unit: "",
-    price:0,
-    quantity:0,
+    price: 0,
+    quantity: 0,
     productCode: "",
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -74,7 +76,6 @@ const AddProduct = ({ open, handleClose, refresh }) => {
           return String(catOrgId) === String(userOrgId);
         });
 
-        
         setCategories(parentsOnly);
       } catch (err) {
         console.error("Error loading categories", err);
@@ -114,7 +115,8 @@ const AddProduct = ({ open, handleClose, refresh }) => {
       ...form,
       // tags: form.tags ? form.tags.split(",").map((tag) => tag.trim()) : [],
       createdBy: webuser.id,
-      organization_id: mainUser?.organization_id?._id || mainUser?.organization_id,
+      organization_id:
+        mainUser?.organization_id?._id || mainUser?.organization_id,
     };
     try {
       const res = await addProducts(product);
@@ -136,7 +138,18 @@ const AddProduct = ({ open, handleClose, refresh }) => {
           <Typography variant="h6" mb={2}>
             Add Product
           </Typography>
-
+          <IconButton
+            aria-label="close"
+            onClick={handleReset}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -227,7 +240,6 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 onChange={handleChange}
               />
             </Grid>
-            
 
             <Grid item xs={12}>
               <TextField
@@ -237,14 +249,13 @@ const AddProduct = ({ open, handleClose, refresh }) => {
                 name="category"
                 value={form.category}
                 onChange={handleChange}
-              //   margin="normal"
+                //   margin="normal"
               >
                 {categories.map((cat) => (
                   <MenuItem key={cat._id} value={cat._id}>
                     {cat.categoryName || "Unnamed category"}
                   </MenuItem>
                 ))}
-
               </TextField>
             </Grid>
 
@@ -334,7 +345,10 @@ const AddProduct = ({ open, handleClose, refresh }) => {
             </Button>
             <Button
               variant="contained"
-              sx={{ background: "linear-gradient(135deg, #182848, #324b84ff)", color: "#fff" }}
+              sx={{
+                background: "linear-gradient(135deg, #182848, #324b84ff)",
+                color: "#fff",
+              }}
               onClick={handleSave}
             >
               Save
