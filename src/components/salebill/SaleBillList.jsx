@@ -252,7 +252,7 @@ useEffect(() => {
                   <TableCell>{bill.bill_number || "N/A"}</TableCell>
                   <TableCell>
                     {bill.billDate
-                      ? bill.billDate
+                      ? moment(bill.billDate).format("DD/MM/YYYY")
                       : "--"}
                   </TableCell>
                   <TableCell align="center">

@@ -401,7 +401,7 @@ const SaleBillReport = () => {
 
                     {/* Bill Date */}
                     <TableCell>
-                      {bill.billDate ? bill.billDate : "--"}
+                      {bill.billDate ? moment(bill.billDate).format("DD/MM/YYYY") : "--"}
                     </TableCell>
 
                     {/* HSN from product */}
@@ -422,8 +422,8 @@ const SaleBillReport = () => {
 
                     {/* Subtotal for that product (qty * price) */}
                     <TableCell>{product?.unitPrice || "N/A"}</TableCell>
-                    <TableCell>{product?.price || "N/A"}</TableCell>
                     <TableCell>{product?.discount.includes('%')?product?.discount : '₹' + product?.discount || "N/A"}</TableCell>
+                    <TableCell>{product?.price || "N/A"}</TableCell>
                     <TableCell>{product?.gstPercent || "0"}</TableCell>
 
                     {/* GST Total for that product */}

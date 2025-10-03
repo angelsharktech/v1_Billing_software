@@ -402,7 +402,7 @@ const PurchaseBillReturnReport = () => {
 
                     {/* Bill Date */}
                     <TableCell >
-                      {bill.billDate ? bill.billDate : "--"}
+                      {bill.billDate ? moment(bill.billDate).format("DD/MM/YYYY") : "--"}
                     </TableCell>
 
                     {/* HSN from product */}

@@ -278,7 +278,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{bill.bill_to?.name || "N/A"}</TableCell>
                   <TableCell>{bill.bill_number || "N/A"}</TableCell>
-                  <TableCell>{bill.billDate ? bill.billDate : "--"}</TableCell>
+                  <TableCell>{bill.billDate ? moment(bill.billDate).format("DD/MM/YYYY") : "--"}</TableCell>
                   <TableCell align="center">
                     {bill.grandTotal?.toFixed(2) || "0.00"}
                   </TableCell>

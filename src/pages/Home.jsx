@@ -71,11 +71,11 @@ const Home = () => {
   const handleClosePurchaseBill = () => setOpenPurchaseBill(false);
 
   // Parse billDate "DD-MM-YYYY" → JS Date
-  const parseBillDate = (billDateStr) => {
-    if (!billDateStr) return null;
-    const [day, month, year] = billDateStr.split("-").map(Number);
-    return new Date(year, month - 1, day);
-  };
+ const parseBillDate = (billDateStr) => {
+  if (!billDateStr) return null;
+  const [year, month, day] = billDateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
 
   useEffect(() => {
     fetchCounts(); // initial load
