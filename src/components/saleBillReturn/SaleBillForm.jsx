@@ -395,6 +395,60 @@ const SaleBillForm = ({
           return;
         }
       }
+         if (!isExistingCustomer) {
+        const customerRole = roles.find(
+          (role) => role.name.toLowerCase() === "customer"
+        );
+        const customerposition = positions.find(
+          (pos) => pos.name.toLowerCase() === "customer"
+        );
+        const payload = {
+          ...customer,
+          organization_id: mainUser.organization_id?._id,
+          email:
+            customer.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
+          password:
+            customer.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
+          role_id: customerRole._id,
+          position_id: customerposition._id,
+          gstDetails: {
+            gstNumber: gstDetails.gstNumber,
+            legalName: gstDetails.legalName,
+            state: gstDetails.state,
+          },
+        };
+
+        const res = await createUser(payload);
+        const paymentPayload = {
+          organization: mainUser.organization_id?._id,
+          narration: "Opening Balance",
+          client_id: res.data.data._id,
+          forPayment: "sale",
+          closingAmount: customer.openingAmount,
+        };
+        const resPayment = await addPayment(paymentPayload);
+
+        finalCustomer = { ...customer, _id: res.data.data._id };
+        setIsExistingCustomer(true);
+        setCustomer({
+          _id: res.data.data._id,
+          name: res.data.data.name,
+          address: res.data.data.address || "",
+          phone_number: res.data.data.phone_number,
+        });
+      
+      }
+      if (billType === "gst") {
+        if (
+          gstDetails.gstNumber === "" &&
+          gstDetails.legalName === "" &&
+          gstDetails.state === ""
+        ) {
+          setSnackbarMessage("Please Fill Gst Details");
+          setSnackbarOpen(true);
+          return;
+        }
+      }
       // ---------- compute finalProducts & totals (replace your existing block) ----------
       const finalProducts = selectedProducts.map((product) => {
         const qty = Number(product.qty) || 0;
@@ -518,7 +572,7 @@ const SaleBillForm = ({
       if (res.success === true) {
         setSnackbarMessage("Sale bill created successfully!");
         setSnackbarOpen(true);
-       
+
         const billData = await getSaleBillById(res.data._id);
 
         let paymentPayload2 = {
@@ -604,7 +658,7 @@ const SaleBillForm = ({
         isWithinState={isWithinState}
         setIsWithinState={setIsWithinState}
         totals={totals}
-         billDate={billDate}
+        billDate={billDate}
         setBillDate={setBillDate}
       />
       {/* Step 2: Product Details */}
