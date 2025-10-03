@@ -227,9 +227,9 @@ const productInputRef = useRef(null);
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="body2">
+              {/* <Typography variant="body2">
                 <strong>Unit:</strong> {prod.unit}
-              </Typography>
+              </Typography> */}
             </Grid>
           </Grid>
           
@@ -365,7 +365,7 @@ const productInputRef = useRef(null);
                   <TableCell><strong>Product Name</strong></TableCell>
                   <TableCell><strong>Category</strong></TableCell>
                   <TableCell><strong>Price</strong></TableCell>
-                  <TableCell><strong>Unit</strong></TableCell>
+                  {/* <TableCell><strong>Unit</strong></TableCell> */}
                   <TableCell><strong>Quantity</strong></TableCell>
                   <TableCell width={120}><strong>Actions</strong></TableCell>
                 </TableRow>
@@ -378,7 +378,7 @@ const productInputRef = useRef(null);
                     <TableCell>{prod.name}</TableCell>                  
                     <TableCell>{prod.category?.categoryName}</TableCell>
                     <TableCell>{prod.price}</TableCell>
-                    <TableCell>{prod.unit}</TableCell>
+                    {/* <TableCell>{prod.unit}</TableCell> */}
                     <TableCell>{prod.quantity}</TableCell>
                     {/* <TableCell>
                       {prod.tags.map((tag, index) => (
