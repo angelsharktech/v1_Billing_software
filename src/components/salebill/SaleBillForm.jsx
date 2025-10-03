@@ -469,15 +469,15 @@ const SaleBillForm = ({
       
       }
 
-      if (
-        (billType === "gst" && gstDetails.gstNumber === "") ||
-        gstDetails.legalName === "" ||
-        gstDetails.state === ""
-      ) {
-        setSnackbarMessage("Please Fill Gst Details");
-        setSnackbarOpen(true);
-        return;
-      }
+       if (billType === "gst"){
+          if(gstDetails.gstNumber === "" &&
+        gstDetails.legalName === "" &&
+        gstDetails.state === ""){
+          setSnackbarMessage("Please Fill Gst Details");
+          setSnackbarOpen(true);
+          return;
+        }         
+    }
 
       // ---------- compute finalProducts & totals (replace your existing block) ----------
       const finalProducts = selectedProducts.map((product) => {
