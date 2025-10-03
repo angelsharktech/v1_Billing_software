@@ -459,8 +459,8 @@ const SaleBillForm = ({
         const resPayment = await addPayment(paymentPayload);
 
         finalCustomer = { ...customer, _id: res.data.data._id };
-        setIsExistingVendor(true);
-        setVendor({
+        setIsExistingCustomer(true);
+        setCustomer({
           _id: res.data.data._id,
           name: res.data.data.name,
           address: res.data.data.address || "",
