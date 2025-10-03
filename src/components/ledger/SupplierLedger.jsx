@@ -213,7 +213,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                   <strong>Supplier</strong>
                 </TableCell>
                 <TableCell align="center">
-                  <strong>Opening Amount</strong>
+                  <strong>Closing Balance</strong>
                 </TableCell>
                 <TableCell align="center">
                   <strong>Total Transactions</strong>
