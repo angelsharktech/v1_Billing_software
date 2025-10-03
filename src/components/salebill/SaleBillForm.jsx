@@ -529,7 +529,7 @@ const SaleBillForm = ({
 
       // compute totals from finalProducts (single source of truth)
       const computedSubtotal = +finalProducts
-        .reduce((acc, p) => acc + Number(p.qty) * Number(p.price), 0)
+        .reduce((acc, p) => acc +  Number(p.price), 0)
         .toFixed(2);
       const computedGstTotal = +finalProducts
         .reduce((acc, p) => acc + (Number(p.gstAmount) || 0), 0)
