@@ -182,9 +182,9 @@ useEffect(() => {
               }}
               size="small"
               inputProps={{
-                max: moment().format("YYYY-MM-DD"), // Disable future dates
+                max: moment().format("DD-MM-YYYY"), // Disable future dates
               }}
-              // inputRef={dateInputRef}
+              
             />
 
            
@@ -252,7 +252,7 @@ useEffect(() => {
                   <TableCell>{bill.bill_number || "N/A"}</TableCell>
                   <TableCell>
                     {bill.billDate
-                      ? bill?.billDate
+                      ? bill.billDate
                       : "--"}
                   </TableCell>
                   <TableCell align="center">

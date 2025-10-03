@@ -35,11 +35,14 @@ const BillType = ({
         <LocalizationProvider dateAdapter={AdapterMoment}>
           <DatePicker
             label="Bill Date"
-            value={moment(billDate, "DD-MM-YYYY")}
-            onChange={(newValue) =>
-              setBillDate(moment(newValue).format("DD-MM-YYYY"))
-            }
-            format="DD-MM-YYYY"
+            value={billDate ? moment(billDate, "YYYY-MM-DD") : null} // ✅ Moment object
+            format="DD/MM/YYYY" // display format
+            onChange={(newValue) => {
+              setBillDate(newValue ? newValue.format("YYYY-MM-DD") : ""); // ✅ store as string
+            }}
+            // slotProps={{
+            //   textField: { fullWidth: true },
+            // }}
           />
         </LocalizationProvider>
       </Box>

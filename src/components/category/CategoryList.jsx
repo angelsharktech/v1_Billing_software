@@ -28,6 +28,8 @@ import PaginationComponent from "../shared/PaginationComponent";
 import FilterData from "../shared/FilterData";
 import { useAuth } from "../../context/AuthContext";
 import { getUserById } from "../../services/UserService";
+import { getProductsByCategories } from "../../services/ProductService";
+import CloseIcon from "@mui/icons-material/Close";
 
 const CategoryList = () => {
   const { webuser } = useAuth();
@@ -50,6 +52,9 @@ const CategoryList = () => {
   const handleClose = () => setOpen(false);
   const handleCloseEdit = () => setEdit(false);
   const categoryInputRef = useRef(null);
+
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     if (categoryInputRef.current) {
@@ -91,7 +96,22 @@ const CategoryList = () => {
   const filteredCategory = rows?.filter((cat) =>
     cat.categoryName?.toLowerCase().includes(searchQuery?.toLowerCase())
   );
-
+  const handleCategoryClick = async (category) => {
+    setSelectedCategory(category); // mark the clicked category
+    try {
+      console.log(category);
+      
+      const res = await getProductsByCategories(category?.id);
+      if (res.success) {
+        setProducts(res.data);
+      } else {
+        setProducts([]);
+      }
+    } catch (err) {
+      console.error("Error fetching products", err);
+      setProducts([]);
+    }
+  };
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
@@ -139,8 +159,13 @@ const CategoryList = () => {
           mb: 1,
         }}
       >
-        <Typography variant="subtitle1" fontWeight="bold">
-          {category.name}
+        <Typography
+          variant="subtitle1"
+          fontWeight="bold"
+          onClick={() => handleCategoryClick(category)}
+          sx={{ cursor: "pointer" }}
+        >
+          {category.categoryName || category.name}
         </Typography>
         <Box>
           <IconButton
@@ -189,19 +214,19 @@ const CategoryList = () => {
           >
             <Box flexGrow={1} width={isSmallScreen ? "100%" : "auto"} mt={2}>
               <Button
-              variant="contained"
-              sx={{
-                background: "linear-gradient(135deg, #182848, #324b84ff)",
-                color: "#fff",
-                whiteSpace: "nowrap",
-                mr:'10px',
-                width: isSmallScreen ? "100%" : "auto",
-              }}
-              onClick={handleOpen}
-              ref={categoryInputRef}
-            >
-              {isSmallScreen ? "Add Category" : "Add Category (alt+x)"}
-            </Button>
+                variant="contained"
+                sx={{
+                  background: "linear-gradient(135deg, #182848, #324b84ff)",
+                  color: "#fff",
+                  whiteSpace: "nowrap",
+                  mr: "10px",
+                  width: isSmallScreen ? "100%" : "auto",
+                }}
+                onClick={handleOpen}
+                ref={categoryInputRef}
+              >
+                {isSmallScreen ? "Add Category" : "Add Category (alt+x)"}
+              </Button>
               <FilterData
                 value={searchQuery}
                 onChange={handleSearchChange}
@@ -209,7 +234,6 @@ const CategoryList = () => {
                 autoFocusOnMount
               />
             </Box>
-            
           </Box>
         </Box>
 
@@ -238,28 +262,156 @@ const CategoryList = () => {
                   </TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {paginatedCategory?.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell align="center">{row.categoryName}</TableCell>
-                    <TableCell align="center">
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEdit(row)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDelete(row.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
+                  <React.Fragment key={index}>
+                    {/* Category Row */}
+                    <TableRow>
+                      <TableCell align="center">
+                        <Button
+                          variant="text"
+                          color="black"
+                          onClick={() =>
+                            handleCategoryClick(
+                              selectedCategory?.id === row.id ? null : row
+                            )
+                          }
+                        >
+                          {row.categoryName}
+                        </Button>
+                      </TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          color="primary"
+                          onClick={() => handleEdit(row)}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDelete(row.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Products Row (only visible for selected category) */}
+                    {selectedCategory?.id === row.id && (
+                      <TableRow>
+                        <TableCell colSpan={2}>
+                          <Box
+                            sx={{
+                              p: 2,
+                              backgroundColor: "#f9f9f9",
+                              borderRadius: 1,
+                            }}
+                          >
+                            <Box
+                              display="flex"
+                              justifyContent="space-between"
+                              alignItems="center"
+                              mb={1}
+                            >
+                              <Typography variant="subtitle1" fontWeight="bold">
+                                Products in "{selectedCategory.categoryName}"
+                              </Typography>
+                              <IconButton
+                                onClick={() => setSelectedCategory(null)}
+                              >
+                                <CloseIcon />
+                              </IconButton>
+                            </Box>
+
+                            {products.length > 0 ? (
+                              <Table size="small">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>
+                                      <strong>Product Name</strong>
+                                    </TableCell>
+                                    <TableCell>
+                                      <strong>Price</strong>
+                                    </TableCell>
+                                    <TableCell>
+                                      <strong>Stock</strong>
+                                    </TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {products.map((prod) => (
+                                    <TableRow key={prod.id}>
+                                      <TableCell>{prod.name}</TableCell>
+                                      <TableCell>{prod.price}</TableCell>
+                                      <TableCell>{prod.quantity}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            ) : (
+                              <Typography>
+                                No products found in this category.
+                              </Typography>
+                            )}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
                 ))}
               </TableBody>
             </Table>
+            {/* {selectedCategory && (
+              <Box sx={{ p: 3 }}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography variant="h6">
+                    Products in "{selectedCategory.categoryName}"
+                  </Typography>
+                  <IconButton onClick={() => setSelectedCategory(null)}>
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+                {products.length > 0 ? (
+                  <TableContainer
+                    component={Paper}
+                    elevation={2}
+                    sx={{ mt: 1 }}
+                  >
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>
+                            <strong>Product Name</strong>
+                          </TableCell>
+                          <TableCell>
+                            <strong>Price</strong>
+                          </TableCell>
+                          <TableCell>
+                            <strong>Stock</strong>
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {products.map((prod) => (
+                          <TableRow key={prod.id}>
+                            <TableCell>{prod.name}</TableCell>
+                            <TableCell>{prod.price}</TableCell>
+                            <TableCell>{prod.stock}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography>No products found in this category.</Typography>
+                )}
+              </Box>
+            )}            */}
           </TableContainer>
         )}
       </Box>

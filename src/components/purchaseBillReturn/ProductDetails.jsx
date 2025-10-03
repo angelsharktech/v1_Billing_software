@@ -62,8 +62,6 @@ const ProductDetails = ({
   // ✅ Compute Totals
   const totalsMemo = useMemo(() => {
     const subtotal = selectedProducts.reduce((acc, p) => {
-      const price = sanitizeNumber(p.discountedPrice ?? p.price);
-      const qty = sanitizeNumber(p.qty);
       return acc + getDiscountedAmount(p);;
     }, 0);
 
@@ -85,7 +83,7 @@ const ProductDetails = ({
     selectedProducts.forEach((p) => {
       const price = sanitizeNumber(p.discountedPrice ?? p.price);
       const qty = sanitizeNumber(p.qty);
-      const amount = price * qty;
+      const amount =getDiscountedAmount(p);
 
       const percentFromProduct = sanitizeNumber(p.gstPercent ?? p.gst);
       const parentPercent = sanitizeNumber(gstPercent);
@@ -137,7 +135,16 @@ const ProductDetails = ({
   // ✅ GST Calculation
   const calculateGST = (item) => {
     const gstRate = Number(item.gstPercent || 0);
-    const base = Number(item.discountedPrice || 0) * Number(item.qty || 0);
+    const discountStr = item.discountPercentage.toString();
+    let base = 0 ;
+  if (discountStr.includes("%")) {
+    const percent = parseFloat(discountStr) || 0;
+     base = Number(item.price || 0) * (item.qty) - percent;
+  } else {
+    const flat = parseFloat(discountStr) || 0;
+     base = Number(item.price || 0) * (item.qty) - flat ;
+  }
+   
     const gstAmount = +(base * (gstRate / 100)).toFixed(2);
 
     if (isWithinState) {

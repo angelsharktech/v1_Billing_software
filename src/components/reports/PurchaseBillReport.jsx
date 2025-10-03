@@ -121,13 +121,13 @@ const PurchaseBillReport = () => {
       if (start) start.setHours(0, 0, 0, 0);
       if (end) end.setHours(23, 59, 59, 999);
 
-      const billNumber = (bill?.bill_number || "")?.toLowerCase();
+      const billNumber = (bill?.bill_number || "").toLowerCase();
       const billStatus = (bill?.status);
-      // const billPayStatus = (bill?.paymentType)?.toLowerCase();
+      // const billPayStatus = (bill?.paymentType).toLowerCase();
       const billName = (
         bill.client_id?.name ||
         "" 
-      )?.toLowerCase();
+      ).toLowerCase();
 
       const matchesDateRange =
         (!start || billDate >= start) && (!end || billDate <= end);
@@ -212,7 +212,7 @@ const PurchaseBillReport = () => {
   );
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value?.toLowerCase()); // Case-insensitive search
+    setSearchQuery(e.target.value.toLowerCase()); // Case-insensitive search
   };
 
   const handleExportClick = (event) => {
@@ -339,7 +339,7 @@ const PurchaseBillReport = () => {
           }}
         >
           <Table stickyHeader>
-            <TableHead>
+            <TableHead >
               <TableRow>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>#</strong>
@@ -349,6 +349,9 @@ const PurchaseBillReport = () => {
                 </TableCell>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>HSN</strong>
+                </TableCell>
+                <TableCell sx={{ background: "#e0e0e0ff" }}>
+                  <strong>Product Code</strong>
                 </TableCell>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Invoice No.</strong>
@@ -361,6 +364,12 @@ const PurchaseBillReport = () => {
                   <strong>GSTIN</strong>
                 </TableCell>
 
+                <TableCell sx={{ background: "#e0e0e0ff" }}>
+                  <strong>Rate</strong>
+                </TableCell>
+                <TableCell sx={{ background: "#e0e0e0ff" }}>
+                  <strong>Discount</strong>
+                </TableCell>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Taxable Amount</strong>
                 </TableCell>
@@ -394,25 +403,27 @@ const PurchaseBillReport = () => {
 
                     {/* Bill Date */}
                     <TableCell>
-                      {bill.createdAt ? moment(bill.createdAt).format("DD/MM/YYYY") : "--"}
+                      {bill.billDate ?bill.billDate : "--"}
                     </TableCell>
 
                     {/* HSN from product */}
                     <TableCell>{product?.hsnCode || "N/A"}</TableCell>
+                    <TableCell>{product?.productCode || "N/A"}</TableCell>
 
                     {/* Bill Number */}
                     <TableCell>{bill?.bill_number || "N/A"}</TableCell>
 
                     {/* Customer Name */}
                     <TableCell>
-                      {bill.bill_to?.name +
-                        " " }
+                      {bill.bill_to?.name }
                     </TableCell>
 
                     {/* GST Number */}
                     <TableCell>{bill?.bill_to?.gstDetails?.gstNumber || "N/A"}</TableCell>
 
                     {/* Subtotal for that product (qty * price) */}
+                    <TableCell>{product?.unitPrice || "N/A"}</TableCell>
+                    <TableCell>{product?.discount.includes('%')?product?.discount : '₹' + product?.discount || "N/A"}</TableCell>
                     <TableCell>{product?.price || "N/A"}</TableCell>
                     <TableCell>{product?.gstPercent || "0"}</TableCell>
 

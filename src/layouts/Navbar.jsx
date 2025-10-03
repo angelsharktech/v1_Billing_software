@@ -66,7 +66,7 @@ const Navbar = () => {
     >
       <Toolbar sx={{ justifyContent: "flex-end" }}>
         <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-          <Avatar sx={{ width: 45, height: 45 }} />
+          <Avatar sx={{ width: 35, height: 35 ,marginRight:'35px' }} >U</Avatar>
         </IconButton>
         <Menu
           anchorEl={anchorEl}

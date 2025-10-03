@@ -380,6 +380,13 @@ const PurchaseBillForm = ({
           ...vendor,
           _id: res.user.id || res?.data?.id || res?.data?._id,
         };
+         setIsExistingVendor(true);
+        setVendor({
+          _id: res.data.data._id,
+          name: res.data.data.name,
+          address: res.data.data.address || "",
+          phone_number: res.data.data.phone_number,
+        });
       }
 
       // ---------- compute finalProducts & totals (replace your existing block) ----------
@@ -388,6 +395,7 @@ const PurchaseBillForm = ({
         // price = the actual selling/unit price after discount (use discountedPrice if available)
         const unitPrice = Number(product.price) || 0;
         const lineAmount = +(qty * unitPrice); // taxable amount for this line
+        const discountStr = product.discountPercentage.toString();
         let discountPrice = 0;
         if (discountStr.includes("%")) {
           const percent = parseFloat(discountStr) || 0;
@@ -406,11 +414,11 @@ const PurchaseBillForm = ({
         const rate = percentFromProduct || Number(gstPercent) || 0;
 
         // calculate GST amounts
-        const gstAmount = +(lineAmount * (rate / 100)).toFixed(2);
+        const gstAmount = +(discountPrice * (rate / 100)).toFixed(2);
         const cgstAmount = isWithinState ? +(gstAmount / 2).toFixed(2) : 0;
         const sgstAmount = isWithinState ? +(gstAmount / 2).toFixed(2) : 0;
         const igstAmount = !isWithinState ? +gstAmount.toFixed(2) : 0;
-        const lineTotal = +(lineAmount + gstAmount).toFixed(2);
+        const lineTotal = +(discountPrice + gstAmount).toFixed(2);
 
         return {
           _id: product._id,

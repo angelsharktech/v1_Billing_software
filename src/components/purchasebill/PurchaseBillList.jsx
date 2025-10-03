@@ -54,13 +54,13 @@ const PurchaseBillList = () => {
   const handleClose = () => setOpen(false);
   const handleCloseView = () => setView(false);
 
-const purchaseInputRef = useRef(null);
+  const purchaseInputRef = useRef(null);
 
-useEffect(() => {
-  if (purchaseInputRef.current) {
-    purchaseInputRef.current.focus();
-  }
-}, []);
+  useEffect(() => {
+    if (purchaseInputRef.current) {
+      purchaseInputRef.current.focus();
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -164,10 +164,14 @@ useEffect(() => {
 
     const message = `Dear ${bill.bill_to?.name || "Valued Supplier"},
 
-This is a reminder regarding your pending payment for Invoice No: ${bill.bill_number || "N/A"}.
+This is a reminder regarding your pending payment for Invoice No: ${
+      bill.bill_number || "N/A"
+    }.
 
 Invoice Amount: ₹${bill.grandTotal?.toFixed(2) || "0.00"}
-Amount Paid: ₹${(Number(bill.advance || 0) + Number(bill.fullPaid || 0)).toFixed(2)}
+Amount Paid: ₹${(
+      Number(bill.advance || 0) + Number(bill.fullPaid || 0)
+    ).toFixed(2)}
 Balance Amount: ₹${bill.balance?.toFixed(2) || "0.00"}
 
 Please complete the payment at your earliest convenience.
@@ -196,7 +200,10 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
             <Button
               // accessKey="p"
               variant="contained"
-              sx={{ background: "linear-gradient(135deg, #182848, #324b84ff)", color: "#fff" }}
+              sx={{
+                background: "linear-gradient(135deg, #182848, #324b84ff)",
+                color: "#fff",
+              }}
               onClick={handleOpen}
               ref={purchaseInputRef}
             >
@@ -212,7 +219,6 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
               }}
               size="small"
             />
-            
           </Box>
         </Box>
 
@@ -243,7 +249,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                 <TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
                   <strong>Bill Total (₹)</strong>
                 </TableCell>
-                 {/*<TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
+                {/*<TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
                   <strong>Received Amount</strong>
                 </TableCell>
                  <TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
@@ -272,15 +278,11 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{bill.bill_to?.name || "N/A"}</TableCell>
                   <TableCell>{bill.bill_number || "N/A"}</TableCell>
-                  <TableCell>
-                    {bill.billDate
-                      ? bill?.billDate
-                      : "--"}
-                  </TableCell>
+                  <TableCell>{bill.billDate ? bill.billDate : "--"}</TableCell>
                   <TableCell align="center">
                     {bill.grandTotal?.toFixed(2) || "0.00"}
                   </TableCell>
-                   {/*<TableCell align="center">
+                  {/*<TableCell align="center">
                     {bill.advance?.toFixed(2) || "0.00"}
                   </TableCell>
                    <TableCell align="center">
@@ -386,7 +388,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
         <Alert
           severity={
             snackbarMessage === "Bill cancelled successfully!" ||
-              snackbarMessage.includes("successfully")
+            snackbarMessage.includes("successfully")
               ? "success"
               : "error"
           }

@@ -64,11 +64,9 @@ const getDiscountedAmount = (item) => {
   // ✅ Compute Totals
   const totalsMemo = useMemo(() => {
     const subtotal = selectedProducts.reduce((acc, p) => {
-      const price = sanitizeNumber(p.discountedPrice ?? p.price);
-      const qty = sanitizeNumber(p.qty);
      return acc + getDiscountedAmount(p);;
     }, 0);
-
+    console.log(subtotal)
     if (billType !== "gst") {
       return {
         subtotal: +subtotal.toFixed(2),
@@ -87,7 +85,8 @@ const getDiscountedAmount = (item) => {
     selectedProducts.forEach((p) => {
       const price = sanitizeNumber(p.discountedPrice ?? p.price);
       const qty = sanitizeNumber(p.qty);
-      const amount = price * qty;
+      const amount = getDiscountedAmount(p);
+      // const amount = price * qty;
 
       const percentFromProduct = sanitizeNumber(p.gstPercent ?? p.gst);
       const parentPercent = sanitizeNumber(gstPercent);
@@ -138,8 +137,18 @@ const getDiscountedAmount = (item) => {
 
   // ✅ GST Calculation
   const calculateGST = (item) => {
+    console.log('purchase product details::',item)
     const gstRate = Number(item.gstPercent || 0);
-    const base = Number(item.discountedPrice || 0) * Number(item.qty || 0);
+    const discountStr = item.discountPercentage.toString();
+    let base = 0 ;
+  if (discountStr.includes("%")) {
+    const percent = parseFloat(discountStr) || 0;
+     base = Number(item.price || 0) * (item.qty) - percent;
+  } else {
+    const flat = parseFloat(discountStr) || 0;
+     base = Number(item.price || 0) * (item.qty) - flat ;
+  }
+   
     const gstAmount = +(base * (gstRate / 100)).toFixed(2);
 
     if (isWithinState) {
@@ -434,7 +443,7 @@ const getDiscountedAmount = (item) => {
         <Grid container spacing={2} mt={1}>
           <Grid item xs={12} sm={6}>
             <TextField
-              label="Received Amount"
+              label="Payment Amount"
               type="number"
               fullWidth
               value={advanceAmount}

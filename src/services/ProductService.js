@@ -37,6 +37,15 @@ export const getProductById = async (id) => {
     throw error;
   }
 };
+export const getProductsByCategories = async (id) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/category/${id}` );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching category :", error);
+    throw error;
+  }
+};
 //barcode api 
 export const getProductByBarcode = async (id) => {
   try {

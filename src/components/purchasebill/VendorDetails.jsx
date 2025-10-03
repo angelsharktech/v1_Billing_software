@@ -33,9 +33,8 @@ const VendorDetails = ({
             freeSolo // allows typing values not in list
             options={supplierList}
             getOptionLabel={(option) =>
-              typeof option === "string"
-                ? option
-                : option.name}
+              typeof option === "string" ? option : option.name
+            }
             value={
               supplierList.find((s) => s.name === vendor.name) ||
               vendor.name ||
@@ -92,44 +91,55 @@ const VendorDetails = ({
             disabled={isExistingVendor}
           />
         </Grid>
-
+        <Grid item xs={12} sm={4} width={200}>
+          <TextField
+            label="Opening Balance"
+            fullWidth
+            value={vendor.openingAmount}
+            onChange={(e) =>
+              setVendor({ ...vendor, openingAmount: e.target.value })
+            }
+            disabled={isExistingVendor}
+           
+          />
+        </Grid>
         {/* Vendor Gst Details */}
-        {billType === 'gst' && (
+        {billType === "gst" && (
           <>
-        <Grid item xs={12} sm={4} width={200}>
-          <TextField
-            label="GST Number"
-            fullWidth
-            value={gstDetails?.gstNumber || ""}
-            onChange={(e) =>
-              setGstDetails({ ...gstDetails, gstNumber: e.target.value })
-            }
-            disabled={isExistingVendor}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4} width={200}>
-          <TextField
-            label="Legal Name"
-            fullWidth
-            value={gstDetails?.legalName || ""}
-            onChange={(e) =>
-              setGstDetails({ ...gstDetails, legalName: e.target.value })
-            }
-            disabled={isExistingVendor}
-          />
-        </Grid>
-        <Grid item xs={12} sm={4} width={200}>
-          <TextField
-            label="State"
-            fullWidth
-            value={gstDetails?.state || ""}
-            onChange={(e) =>
-              setGstDetails({ ...gstDetails, state: e.target.value })
-            }
-            disabled={isExistingVendor}
-          />
-        </Grid>
-        </>
+            <Grid item xs={12} sm={4} width={200}>
+              <TextField
+                label="GST Number"
+                fullWidth
+                value={gstDetails?.gstNumber || ""}
+                onChange={(e) =>
+                  setGstDetails({ ...gstDetails, gstNumber: e.target.value })
+                }
+                disabled={isExistingVendor}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4} width={200}>
+              <TextField
+                label="Legal Name"
+                fullWidth
+                value={gstDetails?.legalName || ""}
+                onChange={(e) =>
+                  setGstDetails({ ...gstDetails, legalName: e.target.value })
+                }
+                disabled={isExistingVendor}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4} width={200}>
+              <TextField
+                label="State"
+                fullWidth
+                value={gstDetails?.state || ""}
+                onChange={(e) =>
+                  setGstDetails({ ...gstDetails, state: e.target.value })
+                }
+                disabled={isExistingVendor}
+              />
+            </Grid>
+          </>
         )}
         {/* <Grid item xs={12} sm={4} width={200}>
           <TextField

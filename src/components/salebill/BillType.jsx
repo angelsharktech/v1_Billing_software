@@ -37,20 +37,14 @@ const BillType = ({
         <LocalizationProvider dateAdapter={AdapterMoment}>
           <DatePicker
             label="Bill Date"
-            value={moment(billDate, "DD-MM-YYYY")}
-            onChange={(newValue) =>
-              setBillDate(moment(newValue).format("DD-MM-YYYY"))
-            }
-            format="DD-MM-YYYY"
-              slotProps={{
-      textField: {
-        inputRef: getRef(1),
-        onKeyDown: (e) => handleKeyDown(e, 1, totalFields), // totalFields = number of fields in all components if you want global
-      },
-      inputProps: {
-        tabIndex: 20, // optional, ensures proper tab order
-      },
-    }}
+            value={billDate ? moment(billDate, "YYYY-MM-DD") : null} // ✅ Moment object
+            format="DD/MM/YYYY" // display format
+            onChange={(newValue) => {
+              setBillDate(newValue ? newValue.format("YYYY-MM-DD") : ""); // ✅ store as string
+            }}
+            // slotProps={{
+            //   textField: { fullWidth: true },
+            // }}
           />
         </LocalizationProvider>
       </Box>
@@ -62,24 +56,10 @@ const BillType = ({
           value={billType}
           onChange={(e) => setBillType(e.target.value)}
         >
-          <FormControlLabel
-            value="gst"
-            control={
-              <Radio
-                inputRef={getRef(2)} // ✅ ref for Non-GST radio
-                onKeyDown={(e) => handleKeyDown(e, 2, totalFields)}
-              />
-            }
-            label="GST Bill"
-          />
+          <FormControlLabel value="gst" control={<Radio />} label="GST Bill" />
           <FormControlLabel
             value="nongst"
-            control={
-              <Radio
-                inputRef={getRef(3)} // ✅ ref for Non-GST radio
-                onKeyDown={(e) => handleKeyDown(e, 3, totalFields)}
-              />
-            }
+            control={<Radio />}
             label="Non-GST Bill"
           />
         </RadioGroup>
@@ -97,22 +77,12 @@ const BillType = ({
             >
               <FormControlLabel
                 value="within"
-                control={
-                  <Radio
-                    inputRef={getRef(4)} // ✅ within radio
-                    onKeyDown={(e) => handleKeyDown(e, 4, totalFields)}
-                  />
-                }
+                control={<Radio />}
                 label="Within State"
               />
               <FormControlLabel
                 value="out"
-                control={
-                  <Radio
-                    inputRef={getRef(5)} // ✅ within radio
-                    onKeyDown={(e) => handleKeyDown(e, 5, totalFields)}
-                  />
-                }
+                control={<Radio />}
                 label="Out of State"
               />
             </RadioGroup>

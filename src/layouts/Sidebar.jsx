@@ -27,8 +27,8 @@ import {
   ExpandLess,
   ExpandMore,
 } from "@mui/icons-material";
-import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
-import CreditScoreIcon from '@mui/icons-material/CreditScore';
+import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
+import CreditScoreIcon from "@mui/icons-material/CreditScore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -37,7 +37,12 @@ const navItems = [
   {
     label: "Bills",
     icon: <ReceiptLongIcon />,
-    subItems: ["ALT+S:Sale Bill","ALT+P:Purchase Bill","ALT+S+R:Sale Return","ALT+P+R:Purchase Return"],
+    subItems: [
+      "ALT+S:Sale Bill",
+      "ALT+P:Purchase Bill",
+      "ALT+S+R:Sale Return",
+      "ALT+P+R:Purchase Return",
+    ],
   },
   { label: "Suppliers", icon: <StoreIcon /> },
   { label: "Customer", icon: <PeopleIcon /> },
@@ -46,17 +51,17 @@ const navItems = [
   {
     label: "Reports",
     icon: <AssessmentIcon />,
-    subItems: ["Purchase Report" ,"Sale Report" ],
+    subItems: ["Purchase Report", "Sale Report"],
   },
   {
     label: "Payment",
     icon: <CurrencyRupeeIcon />,
-    subItems: ["Payment Given","Payment Received"],
+    subItems: ["Payment Given", "Payment Received"],
   },
   {
     label: "Ledger",
     icon: <CreditScoreIcon />,
-    subItems: ["Supplier Ledger","Customer Ledger"],
+    subItems: ["Supplier Ledger", "Customer Ledger"],
   },
   { label: "Quotation", icon: <Inventory2Icon /> },
 ];
@@ -158,13 +163,14 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
         position: "fixed",
       }}
     >
-      <Box textAlign="center">
-          <Typography fontSize={28} noWrap component="div" mr={2}>
-            Billing Desk
-          </Typography>
+      <Box sx={{ display: "flex", alignItems: "center" ,flexDirection:'column'}}>
+        <Typography fontSize={28} noWrap component="div" mr={2}>
+          Angel Bill
+        </Typography>
+        <Avatar sx={{ width: 65, height: 65 ,marginTop:'15px' }} />
       </Box>
 
-      <List style={{fontSize:'1px'}}>
+      <List style={{ fontSize: "1px",marginTop:'20px' }}>
         {navItems.map((item) => {
           if (item.subItems) {
             return (
@@ -173,16 +179,33 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                   ref={(el) => (refs.current[item.label] = el)}
                   onClick={() => handleDropdownClick(item.label)}
                   onKeyDown={(e) => handleKeyDown(e, item.label)}
-                  sx={selectedTab === item.label ? selectedStyle : unselectedStyle}
+                  sx={
+                    selectedTab === item.label ? selectedStyle : unselectedStyle
+                  }
                 >
-                  <ListItemIcon sx={{ color: selectedTab === item.label ? "#182848" : "white" }}>
+                  <ListItemIcon
+                    sx={{
+                      color: selectedTab === item.label ? "#182848" : "white",
+                    }}
+                  >
                     {item.icon}
                   </ListItemIcon>
-                  <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: "15px" }}/>
-                  {openDropdown === item.label ? <ExpandLess /> : <ExpandMore />}
+                  <ListItemText
+                    primary={item.label}
+                    primaryTypographyProps={{ fontSize: "15px" }}
+                  />
+                  {openDropdown === item.label ? (
+                    <ExpandLess />
+                  ) : (
+                    <ExpandMore />
+                  )}
                 </ListItemButton>
 
-                <Collapse in={openDropdown === item.label} timeout="auto" unmountOnExit>
+                <Collapse
+                  in={openDropdown === item.label}
+                  timeout="auto"
+                  unmountOnExit
+                >
                   <List component="div" disablePadding>
                     {item.subItems.map((subLabel) => (
                       <ListItemButton
@@ -190,9 +213,16 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                         ref={(el) => (refs.current[subLabel] = el)}
                         onClick={() => handleNavClick(subLabel)}
                         onKeyDown={(e) => handleKeyDown(e, subLabel)}
-                        sx={selectedTab === subLabel ? selectedStyle : { pl: 4, ...unselectedStyle }}
+                        sx={
+                          selectedTab === subLabel
+                            ? selectedStyle
+                            : { pl: 4, ...unselectedStyle }
+                        }
                       >
-                        <ListItemText primary={subLabel}   primaryTypographyProps={{ fontSize: "15px" }}/>
+                        <ListItemText
+                          primary={subLabel}
+                          primaryTypographyProps={{ fontSize: "15px" }}
+                        />
                       </ListItemButton>
                     ))}
                   </List>
@@ -206,12 +236,21 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
                 ref={(el) => (refs.current[item.label] = el)}
                 onClick={() => handleNavClick(item.label)}
                 onKeyDown={(e) => handleKeyDown(e, item.label)}
-                sx={selectedTab === item.label ? selectedStyle : unselectedStyle}
+                sx={
+                  selectedTab === item.label ? selectedStyle : unselectedStyle
+                }
               >
-                <ListItemIcon sx={{ color: selectedTab === item.label ? "#182848" : "white" }}>
+                <ListItemIcon
+                  sx={{
+                    color: selectedTab === item.label ? "#182848" : "white",
+                  }}
+                >
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText primary={item.label}  primaryTypographyProps={{ fontSize: "15px" }}/>
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{ fontSize: "15px" }}
+                />
               </ListItemButton>
             );
           }
@@ -230,14 +269,22 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
         </Box>
       )}
 
-      <Drawer anchor="left" open={mobileOpen} onClose={toggleDrawer} ModalProps={{ keepMounted: true }}>
+      <Drawer
+        anchor="left"
+        open={mobileOpen}
+        onClose={toggleDrawer}
+        ModalProps={{ keepMounted: true }}
+      >
         {renderSidebarContent()}
       </Drawer>
 
-      {!isMobile && <Box sx={{ height: "100vh", zIndex: 1100 }}>{renderSidebarContent()}</Box>}
+      {!isMobile && (
+        <Box sx={{ height: "100vh", zIndex: 1100 }}>
+          {renderSidebarContent()}
+        </Box>
+      )}
     </>
   );
 };
-
 
 export default Sidebar;

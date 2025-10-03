@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Table,
@@ -15,6 +15,9 @@ import {
   useMediaQuery,
   useTheme,
   Collapse,
+  Button,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -22,6 +25,20 @@ import FilterData from "../shared/FilterData";
 import { getPaymentByOrganization } from "../../services/PaymentModeService";
 import { getUserById } from "../../services/UserService";
 import { useAuth } from "../../context/AuthContext";
+import GetAppOutlinedIcon from "@mui/icons-material/GetAppOutlined";
+import { exportToExcel, exportToPDF } from "../shared/Export";
+import moment from "moment";
+import { PrintOutlined, WhatsApp } from "@mui/icons-material";
+import ReactToPrint from "react-to-print";
+import GenerateLedger from "../shared/GenerateLedger";
+
+const exportColumns = [
+  { label: "Date", key: "date" },
+  { label: "Narration", key: "narration" },
+  { label: "Dr", key: "dr" }, // Debit
+  { label: "Cr", key: "cr" }, // Credit
+  { label: "Closing Balance", key: "closingAmount" },
+];
 
 const SupplierLedger = () => {
   const { webuser } = useAuth();
@@ -29,6 +46,10 @@ const SupplierLedger = () => {
   const [rows, setRows] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openRows, setOpenRows] = useState({});
+  const [anchorEl, setAnchorEl] = useState(null);
+  const openExportMenu = Boolean(anchorEl);
+  const [showPrint, setShowPrint] = useState(false);
+  const [printData, setPrintData] = useState();
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
@@ -49,8 +70,10 @@ const SupplierLedger = () => {
     if (!mainUser?.organization_id?._id) return;
     try {
       const data = await getPaymentByOrganization(mainUser.organization_id._id);
-      
-      const bills = data.data.filter((bill) => bill.forPayment?.toLowerCase() === "purchase");
+
+      const bills = data.data.filter(
+        (bill) => bill.forPayment.toLowerCase() === "purchase"
+      );
       setRows(bills);
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -60,7 +83,7 @@ const SupplierLedger = () => {
   useEffect(() => {
     refresh();
   }, [mainUser]);
-  
+
   // group payments by supplier
   const groupedPayments = {};
   rows.forEach((p) => {
@@ -80,7 +103,7 @@ const SupplierLedger = () => {
     ({ payments }) => {
       const matchesSearch = payments.some(
         (row) =>
-          row.paymentType?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+          row.paymentType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           row.client_id.name
             ?.toLowerCase()
             .includes(searchQuery.toLocaleLowerCase()) ||
@@ -94,6 +117,69 @@ const SupplierLedger = () => {
   const toggleRow = (clientId) => {
     setOpenRows((prev) => ({ ...prev, [clientId]: !prev[clientId] }));
   };
+  const handleExportClose = () => {
+    setAnchorEl(null);
+  };
+  const handleExportClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleExportPrint = (client, payments) => {
+    const billData = {
+      client,
+      payments,
+    };
+    setPrintData(billData);
+    setShowPrint(true); // Show bill for printing
+    setTimeout(() => {
+      window.print();
+      setShowPrint(false); // Optional
+    }, 500);
+  };
+
+  const handleExport = (type, client, payments) => {
+    const exportData = payments.map((p) => ({
+      date: p.date ? moment(p.date).format("DD/MM/YYYY") : "--",
+      narration: p.narration || "--",
+      dr: (p?.balance ?? 0).toString(), // Convert number to string
+      cr: (p?.advanceAmount ?? 0).toString(), // Convert number to string
+      closingAmount: (p?.closingAmount ?? 0).toString(),
+    }));
+
+    const fileName = `Supplier Ledger - ${client.name}`;
+
+    if (type === "pdf") {
+      exportToPDF(exportData, exportColumns, fileName);
+    } else {
+      exportToExcel(exportData, exportColumns, fileName);
+    }
+
+    handleExportClose();
+  };
+  const handleWhatsAppClick = (client, payments) => {
+    const phoneNumber = client.phone_number;
+
+    if (!phoneNumber) {
+      setSnackbarMessage("No phone number available for this supplier");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    const message = `Dear ${client?.name || "Valued Supplier"},
+
+This is a reminder regarding your pending payment of ${
+      client.openingAmount || "N/A"
+    }.
+
+Please complete the payment at your earliest convenience.
+
+Thank you,
+${mainUser?.organization_id?.name || "Our Company"}`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <>
       <Box sx={{ p: isExtraSmallScreen ? 1 : 3 }}>
@@ -127,7 +213,13 @@ const SupplierLedger = () => {
                   <strong>Supplier</strong>
                 </TableCell>
                 <TableCell align="center">
+                  <strong>Opening Amount</strong>
+                </TableCell>
+                <TableCell align="center">
                   <strong>Total Transactions</strong>
+                </TableCell>
+                <TableCell align="center">
+                  <strong>Action</strong>
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -147,28 +239,80 @@ const SupplierLedger = () => {
                         )}
                       </IconButton>
                     </TableCell>
+                    <TableCell align="center">{client?.name || ""}</TableCell>
                     <TableCell align="center">
-                      {client?.name || ""}
+                      {client?.openingAmount}
                     </TableCell>
                     <TableCell align="center">{payments.length}</TableCell>
+                    <TableCell align="center">
+                      <IconButton
+                        color="inherit"
+                        onClick={() => handleWhatsAppClick(client, payments)}
+                      >
+                        <WhatsApp style={{ color: "#25D366" }}  />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
 
                   {/* Expanded Ledger */}
                   <TableRow>
-                    <TableCell colSpan={3} sx={{ p: 0, border: 0 }}>
+                    <TableCell colSpan={5} sx={{ p: 0, border: 0 }}>
                       <Collapse
                         in={openRows[client._id]}
                         timeout="auto"
                         unmountOnExit
                       >
                         <Box m={2}>
-                          <Typography
-                            variant="subtitle1"
-                            fontWeight="bold"
-                            gutterBottom
+                          <Box display="flex" justifyContent="space-between">
+                            <Typography
+                              variant="subtitle1"
+                              fontWeight="bold"
+                              gutterBottom
+                            >
+                              Transactions
+                            </Typography>
+                            <Box
+                              display="flex"
+                              justifyContent="space-between"
+                              gap={2}
+                            >
+                              <Button
+                                variant="outlined"
+                                onClick={handleExportClick}
+                              >
+                                <GetAppOutlinedIcon titleAccess="Download As" />
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                onClick={() =>
+                                  handleExportPrint(client, payments)
+                                }
+                              >
+                                <PrintOutlined titleAccess="Print" />
+                              </Button>
+                            </Box>
+                          </Box>
+                          <Menu
+                            anchorEl={anchorEl}
+                            open={openExportMenu}
+                            onClose={handleExportClose}
                           >
-                            Transactions
-                          </Typography>
+                            <MenuItem
+                              onClick={() =>
+                                handleExport("pdf", client, payments)
+                              }
+                            >
+                              PDF
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() =>
+                                handleExport("excel", client, payments)
+                              }
+                            >
+                              Excel
+                            </MenuItem>
+                          </Menu>
+
                           <Table size="small">
                             <TableHead>
                               <TableRow>
@@ -192,38 +336,7 @@ const SupplierLedger = () => {
                             <TableBody>
                               {payments.map((p, index) => {
                                 const dr = 0;
-                                const cr= 0;
-                                // const previous = payments[index - 1];
-                                // const previousBillNumber =
-                                //   previous?.purchasebill?.bill_number;
-                                // const currentBillNumber =
-                                //   p.purchasebill?.bill_number;
-
-                                // const openingBalance =
-                                //   index === 0 ? 0 : previous.closingAmount || 0;
-                                // const total = p.purchasebill?.grandTotal || 0;
-                                // const moneyReceived =
-                                //   Number(p.advanceAmount) || 0;
-                                // const moneyGiven = 0;
-
-                                // let closingAmount;
-
-                                // if (index === 0) {
-                                //   closingAmount =
-                                //     total - moneyReceived + moneyGiven;
-                                // } else if (
-                                //   currentBillNumber === previousBillNumber
-                                // ) {
-                                //   closingAmount =
-                                //     openingBalance - moneyReceived + moneyGiven;
-                                // } else {
-                                //   closingAmount =
-                                //     openingBalance + total - moneyReceived;
-                                // }
-
-                                // // Save for next iteration (if needed)
-                                // p.closingAmount = closingAmount;
-
+                                const cr = 0;
                                 return (
                                   <TableRow key={p._id}>
                                     <TableCell align="center">
@@ -264,6 +377,12 @@ const SupplierLedger = () => {
           </Table>
         </TableContainer>
       </Box>
+
+      {showPrint && printData && (
+        <div className="print-only">
+          <GenerateLedger bill={printData} type={"Supplier"} />
+        </div>
+      )}
     </>
   );
 };

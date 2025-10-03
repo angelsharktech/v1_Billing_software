@@ -53,6 +53,32 @@ const ViewBill = ({ open, data, handleCloseView }) => {
       console.log("No valid ID found in data prop");
     }
   }, [data]);
+  const sanitizeNumber = (v) => {
+    if (v === null || v === undefined || v === "") return 0;
+    if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+    const cleaned = String(v).replace(/[,%]/g, "").trim();
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  };
+ // Calculate discounted taxable value for one product
+const getDiscountedAmount = (item) => {
+  
+  const price = sanitizeNumber(item.unitPrice);
+  const qty = sanitizeNumber(item.qty);
+  const base = price * qty;
+
+  if (!item.discount) return base;
+
+  const discountStr = item.discount.toString();
+
+  if (discountStr.includes("%")) {
+    const percent = parseFloat(discountStr) || 0;
+    return base - (base * percent) / 100;
+  } else {
+    const flat = parseFloat(discountStr) || 0;
+    return base - flat;
+  }
+};
   const cgst = bill?.products.reduce((acc, p) => {
     const val = parseFloat(p.cgst) || 0;  // ensure number
     return acc + val;
@@ -143,18 +169,19 @@ const ViewBill = ({ open, data, handleCloseView }) => {
                   <TableCell
                     sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
                   >
-                    Unit Price
-                  </TableCell>
-                  <TableCell
-                    sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
-                  >
-                    Discount %
-                  </TableCell>
-                  <TableCell
-                    sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
-                  >
                     Price
                   </TableCell>
+                   <TableCell
+                    sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
+                  >
+                    Qty
+                  </TableCell>
+                  <TableCell
+                    sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
+                  >
+                    Discount
+                  </TableCell>
+                 
                   {bill?.billType === "gst" && (
                     <TableCell
                       sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
@@ -184,11 +211,7 @@ const ViewBill = ({ open, data, handleCloseView }) => {
                       IGST
                     </TableCell>
                   )}
-                  <TableCell
-                    sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
-                  >
-                    Qty
-                  </TableCell>
+                 
                   <TableCell
                     sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
                   >
@@ -214,11 +237,12 @@ const ViewBill = ({ open, data, handleCloseView }) => {
                       ₹{item.unitPrice}
                     </TableCell>
                     <TableCell sx={{ border: "1px solid #ccc" }}>
-                      {item.discount}
+                      {item.qty}
                     </TableCell>
                     <TableCell sx={{ border: "1px solid #ccc" }}>
-                      ₹{item.price}
+                      {item.discount.includes('%')?item.discount : '₹' + item.discount}
                     </TableCell>
+                   
                     {bill?.billType === "gst" && (
                       <TableCell sx={{ border: "1px solid #ccc" }}>
                         {item.gstPercent}
@@ -239,14 +263,12 @@ const ViewBill = ({ open, data, handleCloseView }) => {
                         ₹{item.igst.toFixed(2)}
                       </TableCell>
                     </>)}
+                    
                     <TableCell sx={{ border: "1px solid #ccc" }}>
-                      {item.qty}
+                      ₹{getDiscountedAmount(item)}
                     </TableCell>
                     <TableCell sx={{ border: "1px solid #ccc" }}>
-                      ₹{(item.price * item.qty).toFixed(2)}
-                    </TableCell>
-                    <TableCell sx={{ border: "1px solid #ccc" }}>
-                      ₹{(item.cgst > 0 ? item.price * item.qty + item.cgst + item.sgst : item.price * item.qty + item.igst).toFixed(2)}
+                      ₹{(item.cgst > 0 ? getDiscountedAmount(item) + item.cgst + item.sgst : getDiscountedAmount(item) + item.igst).toFixed(2)}
                     </TableCell>
                   </TableRow>
                 ))}

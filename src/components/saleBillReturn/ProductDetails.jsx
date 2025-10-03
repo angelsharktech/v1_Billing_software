@@ -63,8 +63,6 @@ const ProductDetails = ({
   // ✅ Compute Totals
   const totalsMemo = useMemo(() => {
     const subtotal = selectedProducts.reduce((acc, p) => {
-      const price = sanitizeNumber(p.discountedPrice ?? p.price);
-      const qty = sanitizeNumber(p.qty);
       return acc + getDiscountedAmount(p);
     }, 0);
 
@@ -86,7 +84,7 @@ const ProductDetails = ({
     selectedProducts.forEach((p) => {
       const price = sanitizeNumber(p.discountedPrice ?? p.price);
       const qty = sanitizeNumber(p.qty);
-      const amount = price * qty;
+      const amount = getDiscountedAmount(p);
 
       const percentFromProduct = sanitizeNumber(p.gstPercent ?? p.gst);
       const parentPercent = sanitizeNumber(gstPercent);
@@ -128,17 +126,25 @@ const ProductDetails = ({
   const handleAddAndFocus = () => {
     handleAddProduct();
     setTimeout(() => {
-      const lastIndex = selectedProducts.length;
-      if (productRefs.current[lastIndex]) {
-        productRefs.current[lastIndex].focus();
-      }
-    }, 10);
+        const lastIndex = selectedProducts.length; // after push
+        if (productRefs.current[lastIndex]) {
+          productRefs.current[lastIndex].focus(); // Focus the new dropdown
+        }
+      }, 10);
   };
 
   // ✅ GST Calculation
   const calculateGST = (item) => {
     const gstRate = Number(item.gstPercent || 0);
-    const base = Number(item.discountedPrice || 0) * Number(item.qty || 0);
+    const discountStr = item.discountPercentage.toString();
+    let base = 0 ;
+  if (discountStr.includes("%")) {
+    const percent = parseFloat(discountStr) || 0;
+     base = Number(item.price || 0) * (item.qty) - percent;
+  } else {
+    const flat = parseFloat(discountStr) || 0;
+     base = Number(item.price || 0) * (item.qty) - flat ;
+  }
     const gstAmount = +(base * (gstRate / 100)).toFixed(2);
 
     if (isWithinState) {
@@ -169,7 +175,7 @@ const ProductDetails = ({
                   handleProductChange(index, "productName", e.target.value)
                 }
                 label="Select Product"
-                inputRef={(el) => (productRefs.current[index] = el)}
+               inputRef={(el) => (productRefs.current[index] = el)} 
               >
                 {products?.map((prod) => (
                   <MenuItem key={prod._id} value={prod.name}>
@@ -415,7 +421,7 @@ const ProductDetails = ({
           </Grid> */}
           <Grid item xs={12} sm={6}>
             <TextField
-              label="Received Amount"
+              label="Payment Amount"
               type="number"
               fullWidth
               value={Math.max(

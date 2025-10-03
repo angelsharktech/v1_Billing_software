@@ -395,6 +395,13 @@ const PurchaseBillForm = ({
           ...vendor,
           _id: res.data.data._id,
         };
+        setIsExistingVendor(true);
+        setVendor({
+          _id: res.data.data._id,
+          name: res.data.data.name,
+          address: res.data.data.address || "",
+          phone_number: res.data.data.phone_number,
+        });
       }
 
       for (let prod of selectedProducts) {
@@ -447,18 +454,18 @@ const PurchaseBillForm = ({
         const rate = percentFromProduct || Number(gstPercent) || 0;
 
         // calculate GST amounts
-        const gstAmount = +(lineAmount * (rate / 100)).toFixed(2);
+        const gstAmount = +(discountPrice * (rate / 100)).toFixed(2);
         const cgstAmount = isWithinState ? +(gstAmount / 2).toFixed(2) : 0;
         const sgstAmount = isWithinState ? +(gstAmount / 2).toFixed(2) : 0;
         const igstAmount = !isWithinState ? +gstAmount.toFixed(2) : 0;
-        const lineTotal = +(lineAmount + gstAmount).toFixed(2);
+        const lineTotal = +(discountPrice + gstAmount).toFixed(2);
 
         return {
           _id: product._id,
           name: product.productName || product.name || "",
           hsnCode: product.hsnCode || "",
           qty,
-           price: discountPrice, // price used for subtotal
+          price: discountPrice, // price used for subtotal
           unitPrice: unitPrice, // original price if you keep both
           discount: product.discountPercentage || "",
           gstPercent: rate, // percent (important)
@@ -470,7 +477,7 @@ const PurchaseBillForm = ({
           printAs: product?.printAs,
         };
       });
-
+       
       // compute totals from finalProducts (single source of truth)
       const computedSubtotal = +finalProducts
         .reduce((acc, p) => acc + Number(p.qty) * Number(p.price), 0)
@@ -646,7 +653,7 @@ const PurchaseBillForm = ({
         setGstDetails={setGstDetails}
         gstDetails={gstDetails}
         errors={errors}
-         billType={billType}
+        billType={billType}
         setErrors={setErrors}
         supplierList={users.filter(
           (u) =>

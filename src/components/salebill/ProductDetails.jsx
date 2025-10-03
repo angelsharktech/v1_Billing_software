@@ -64,8 +64,6 @@ const ProductDetails = ({
   // ✅ Compute Totals
   const totalsMemo = useMemo(() => {
     const subtotal = selectedProducts.reduce((acc, p) => {
-      const price = sanitizeNumber(p.price);
-      const qty = sanitizeNumber(p.qty);
       return acc + getDiscountedAmount(p);
     }, 0);
 
@@ -87,7 +85,7 @@ const ProductDetails = ({
     selectedProducts.forEach((p) => {
       const price = sanitizeNumber(p.discountedPrice ?? p.price);
       const qty = sanitizeNumber(p.qty);
-      const amount = price * qty;
+      const amount = getDiscountedAmount(p);
 
       const percentFromProduct = sanitizeNumber(p.gstPercent ?? p.gst);
       const parentPercent = sanitizeNumber(gstPercent);
@@ -130,19 +128,26 @@ const ProductDetails = ({
     handleAddProduct();
 
     setTimeout(() => {
-      const lastIndex = selectedProducts.length; // new product index
-      const rowBase = baseProductIndex + lastIndex * fieldsPerProduct;
-      const input = getRef(rowBase)?.current;
-      if (input) {
-        input.focus(); // ✅ focus on new Product Name
+      const lastIndex = selectedProducts.length; // after push
+      if (productRefs.current[lastIndex]) {
+        productRefs.current[lastIndex].focus(); // Focus the new dropdown
       }
-    }, 50);
+    }, 10);
   };
 
   // ✅ GST Calculation
   const calculateGST = (item) => {
     const gstRate = Number(item.gstPercent || 0);
-    const base = Number(item.discountedPrice || 0) * Number(item.qty || 0);
+    const discountStr = item.discountPercentage.toString();
+    let base = 0;
+    if (discountStr.includes("%")) {
+      const percent = parseFloat(discountStr) || 0;
+      base = Number(item.price || 0) * item.qty - percent;
+    } else {
+      const flat = parseFloat(discountStr) || 0;
+      base = Number(item.price || 0) * item.qty - flat;
+    }
+
     const gstAmount = +(base * (gstRate / 100)).toFixed(2);
 
     if (isWithinState) {
@@ -153,9 +158,6 @@ const ProductDetails = ({
     }
   };
 
-  const baseProductIndex = 14; // start after customer fields
-  const fieldsPerProduct = 12; // e.g. productName, hsn, qty, price, discount, discountedPrice, gst, delete
- 
   return (
     <Box mt={3}>
       <Typography variant="h6">Products</Typography>
@@ -176,6 +178,7 @@ const ProductDetails = ({
                   handleProductChange(index, "productName", e.target.value)
                 }
                 label="Select Product"
+                inputRef={(el) => (productRefs.current[index] = el)}
               >
                 {products?.map((prod) => (
                   <MenuItem key={prod._id} value={prod.name}>
@@ -253,30 +256,30 @@ const ProductDetails = ({
             </Grid>
 
             {/* Selling Price */}
-             {billType === "gst" && (
+            {billType === "gst" && (
               <>
-            <Grid item xs={12} sm={2}>
-              <TextField
-                label= "Taxable Value"
-                type="number"
-                sx={{ width: "120px" }}
-                value={getDiscountedAmount(item)}
-                // onChange={(e) =>
-                //   handleProductChange(index, "discountedPrice", e.target.value)
-                // }
-              />
-            </Grid>
-              <Grid item xs={12} sm={1.5}>
-                <TextField
-                  label="GST %"
-                  type="number"
-                  sx={{ width: "80px" }}
-                  value={item.gstPercent || ""}
-                  onChange={(e) =>
-                    handleProductChange(index, "gstPercent", e.target.value)
-                  }
-                />
-              </Grid>
+                <Grid item xs={12} sm={2}>
+                  <TextField
+                    label="Taxable Value"
+                    type="number"
+                    sx={{ width: "120px" }}
+                    value={getDiscountedAmount(item)}
+                    // onChange={(e) =>
+                    //   handleProductChange(index, "discountedPrice", e.target.value)
+                    // }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={1.5}>
+                  <TextField
+                    label="GST %"
+                    type="number"
+                    sx={{ width: "80px" }}
+                    value={item.gstPercent || ""}
+                    onChange={(e) =>
+                      handleProductChange(index, "gstPercent", e.target.value)
+                    }
+                  />
+                </Grid>
               </>
             )}
 

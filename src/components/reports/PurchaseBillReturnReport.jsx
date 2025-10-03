@@ -120,13 +120,13 @@ const PurchaseBillReturnReport = () => {
       if (start) start.setHours(0, 0, 0, 0);
       if (end) end.setHours(23, 59, 59, 999);
 
-      const billNumber = (bill?.bill_number || "")?.toLowerCase();
+      const billNumber = (bill?.bill_number || "").toLowerCase();
       const billStatus = (bill?.status);
-      // const billPayStatus = (bill?.paymentType)?.toLowerCase();
+      // const billPayStatus = (bill?.paymentType).toLowerCase();
       const billName = (
         bill.client_id?.name ||
         ""
-      )?.toLowerCase();
+      ).toLowerCase();
 
       const matchesDateRange =
         (!start || billDate >= start) && (!end || billDate <= end);
@@ -211,7 +211,7 @@ const PurchaseBillReturnReport = () => {
   );
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value?.toLowerCase()); // Case-insensitive search
+    setSearchQuery(e.target.value.toLowerCase()); // Case-insensitive search
   };
 
   const handleExportClick = (event) => {
@@ -350,6 +350,9 @@ const PurchaseBillReturnReport = () => {
                   <strong>HSN</strong>
                 </TableCell>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
+                  <strong>Product Code</strong>
+                </TableCell>
+                <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Invoice No.</strong>
                 </TableCell>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
@@ -360,6 +363,12 @@ const PurchaseBillReturnReport = () => {
                   <strong>GSTIN</strong>
                 </TableCell>
 
+                <TableCell sx={{ background: "#e0e0e0ff" }}>
+                  <strong>Rate</strong>
+                </TableCell>
+                <TableCell sx={{ background: "#e0e0e0ff" }}>
+                  <strong>Discount</strong>
+                </TableCell>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Taxable Amount</strong>
                 </TableCell>
@@ -392,12 +401,13 @@ const PurchaseBillReturnReport = () => {
                     <TableCell>{billIndex + 1}.{prodIndex + 1}</TableCell>
 
                     {/* Bill Date */}
-                    <TableCell>
-                      {bill.createdAt ? moment(bill.createdAt).format("DD/MM/YYYY") : "--"}
+                    <TableCell >
+                      {bill.billDate ? bill.billDate : "--"}
                     </TableCell>
 
                     {/* HSN from product */}
                     <TableCell>{product?.hsnCode || "N/A"}</TableCell>
+                    <TableCell>{product?.productCode || "N/A"}</TableCell>
 
                     {/* Bill Number */}
                     <TableCell>{bill?.bill_number || "N/A"}</TableCell>
@@ -412,6 +422,8 @@ const PurchaseBillReturnReport = () => {
                     <TableCell>{bill?.bill_to?.gstDetails?.gstNumber || "N/A"}</TableCell>
 
                     {/* Subtotal for that product (qty * price) */}
+                    <TableCell>{product?.unitPrice || "N/A"}</TableCell>
+                    <TableCell>{product?.discount.includes('%')?product?.discount : '₹' + product?.discount || "N/A"}</TableCell>
                     <TableCell>{product?.price || "N/A"}</TableCell>
                     <TableCell>{product?.gstPercent || "0"}</TableCell>
 
