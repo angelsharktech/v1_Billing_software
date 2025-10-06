@@ -25,8 +25,14 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import CloseIcon from "@mui/icons-material/Close";
+import { useAuth } from "../../context/AuthContext";
+import { getUserById } from "../../services/UserService";
+import moment from "moment";
 
-const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
+const AddQuotationDialog = ({ open, handleClose, refresh }) => {
+  const { webuser } = useAuth();
+  const [mainUser, setMainUser] = useState(null);
   const today = new Date();
   const dd = String(today.getDate()).padStart(2, "0");
   const mm = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-based
@@ -38,13 +44,14 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
     quotationNo: "",
     // date: new Date().toLocaleDateString("en-GB"),
     date: formatted,
+    // date: moment(new Date()).format('DD/MM/YYYY'),
     validUpTo: "",
     customer: {
       name: "",
       email: "",
       phone: "",
       address: "",
-      terms:""
+      terms: "",
     },
     status: "Draft",
     products: [{ productName: "", quantity: 1, unitPrice: 0, tax: 18 }],
@@ -57,9 +64,19 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getUserById(webuser?.id);
+      setMainUser(user);
+    };
+    fetchUser();
+  }, [webuser]);
+
+  useEffect(() => {
     const fetchQuotation = async () => {
       try {
-        const res = await generateQuotationNoByOrganization(mainUser?.organization_id?._id);
+        const res = await generateQuotationNoByOrganization(
+          mainUser?.organization_id?._id
+        );
 
         setFormData((prev) => ({
           ...prev,
@@ -81,6 +98,16 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
         [name]: value,
       },
     }));
+  };
+  const handleRefresh = async () => {
+    setFormData({
+      quotationNo: "",
+      customer: { name: "", email: "", phone: "", address: "" },
+      status: "Draft",
+      products: [{ productName: "", quantity: 1, unitPrice: 0, tax: 18 }],
+    });
+
+    handleClose();
   };
 
   // handle product field changes
@@ -148,17 +175,7 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
           setSnackbarOpen(true);
           setSnackbarMessage(response.message);
           const quotationData = await getQuotationById(response.quotation._id);
-
-          // const quotationData = {
-          //   ...formData,
-          //   products: updatedProducts,
-          //   organization_name: mainUser?.organization_id,
-          //   firm_name: mainUser?.activeFirm,
-          //   subtotal: subtotal.toFixed(2),
-          //   taxTotal: taxTotal.toFixed(2),
-          //   grandTotal: grandTotal.toFixed(2),
-          //   createdBy: mainUser?._id,
-          // };
+         
           setPrintData(quotationData);
           setShowPrint(true); // Show bill for printing
           setTimeout(() => {
@@ -166,7 +183,7 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
             setShowPrint(false); // Optional
           }, 500);
           setFormData({
-            quotationNo: `Q-${Date.now()}`,
+            quotationNo: "",
             customer: { name: "", email: "", phone: "", address: "" },
             status: "Draft",
             products: [{ productName: "", quantity: 1, unitPrice: 0, tax: 18 }],
@@ -191,6 +208,18 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
     <>
       <Dialog open={open} handleClose={handleClose} fullWidth maxWidth="md">
         <DialogTitle>Add Quotation</DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <DialogContent dividers>
           <Grid container spacing={2}>
             {/* Quotation Number + Date */}
@@ -234,7 +263,6 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
                 />
               </LocalizationProvider>
             </Grid>
-          
 
             {/* Customer Details */}
             <Grid container spacing={2}>
@@ -426,28 +454,26 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
                 Grand Total: {grandTotal.toFixed(2)}
               </Typography>
             </Grid>
-              <Divider />
-          
-           
+            <Divider />
           </Grid>
-           <Grid item xs={12} mt={4}>
-              <Typography>Terms and Conditions :</Typography>
-              <TextField
-                    fullWidth
-                    multiline
-                    rows={2}
-                    // label="Address"
-                    name="terms"
-                    value={formData.terms}
-                    onChange={(e) =>
-                  setFormData({ ...formData, terms: e.target.value })
-                }
-                  />
-            </Grid>
+          <Grid item xs={12} mt={4}>
+            <Typography>Terms and Conditions :</Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={2}
+              // label="Address"
+              name="terms"
+              value={formData.terms}
+              onChange={(e) =>
+                setFormData({ ...formData, terms: e.target.value })
+              }
+            />
+          </Grid>
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleClose} sx={{ color: "#182848" }}>
+          <Button onClick={handleRefresh} sx={{ color: "#182848" }}>
             Cancel
           </Button>
           <Button
@@ -462,7 +488,7 @@ const AddQuotationDialog = ({ open, handleClose, refresh, mainUser }) => {
 
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={3000}
+        autoHideDuration={1000}
         handleClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >

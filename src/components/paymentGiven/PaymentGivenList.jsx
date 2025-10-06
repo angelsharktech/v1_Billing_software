@@ -119,7 +119,7 @@ const paymentGivenInputRef = useRef(null);
           <Typography variant="body2">
             Date: {new Date(payment.date).toLocaleDateString()}
           </Typography>
-          <Typography variant="body2">Advance: ₹ {payment.advanceAmount}</Typography>
+          <Typography variant="body2">Advance: ₹  {Number(payment.advanceAmount || 0).toFixed(2)}</Typography>
         </Box>
         <IconButton size="small" color="error" onClick={() => handleDelete(payment._id)}>
           <DeleteIcon fontSize="small" />
@@ -216,7 +216,11 @@ const paymentGivenInputRef = useRef(null);
                       {row.client_id?.name || ''}
                     </TableCell>
                     <TableCell align="center">{row.paymentType}</TableCell>
-                    <TableCell align="center">₹ {row.balance > 0 ? row.balance : row.advanceAmount  || 0}</TableCell>
+                    <TableCell align="center">₹ {Number(
+                        row.balance > 0
+                          ? row.balance
+                          : row.advanceAmount || 0
+                      ).toFixed(2)}</TableCell>
                     <TableCell align="center">
                       <IconButton color="error" onClick={() => handleDelete(row._id)}>
                         <DeleteIcon />

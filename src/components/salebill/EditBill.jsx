@@ -71,17 +71,17 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
           setBill({
             ...billData,
             paymentType: "full",
-            fullPaid: billData.grandTotal || 0,
+            fullPaid: Number(billData.grandTotal || 0).toFixed(2),
           });
-          setAdvance(billData.balance);
+          setAdvance(Number(billData.balance || 0).toFixed(2));
           setBalance(0);
         } else {
           setBill(billData);
-          setAdvance(Number(billData.advance || 0));
-          const calculatedBalance =
-            Number(billData.grandTotal || 0) -
-            Number(billData.fullPaid || 0) -
-            Number(billData.advance || 0);
+          const adv = Number(billData.advance || 0);
+          const grand = Number(billData.grandTotal || 0);
+          const fullPaid = Number(billData.fullPaid || 0);
+          const calculatedBalance = Number(grand - fullPaid - adv).toFixed(2);
+          setAdvance(adv.toFixed(2));
           setBalance(calculatedBalance);
         }
       } catch (err) {
@@ -95,8 +95,9 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
   }, [data]);
 
   useEffect(() => {
-    const fullPayment = balance === 0 ? bill?.grandTotal : 0;
-    setFullPay(fullPayment);
+    const fullPayment =
+      Number(balance) === 0 ? Number(bill?.grandTotal || 0) : 0;
+    setFullPay(Number(fullPayment.toFixed(2)));
   }, [advance, balance]);
 
   const handleAdvanceChange = async (e) => {
@@ -104,20 +105,17 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
       return;
     } // 16.08.25
 
-    const newAdvance = parseFloat(e.target.value || "0");
-
-    // Calculate total advance (existing advance + new advance)
-    const totalAdvance = (bill?.advance || 0) + newAdvance;
-
-    // Calculate new balance
-    const newBalance =
-      (bill?.grandTotal || 0) - totalAdvance - (bill?.fullPaid || 0);
+    const newAdvance = Number(parseFloat(e.target.value || "0").toFixed(2));
+    const totalAdvance = Number((bill?.advance || 0) + newAdvance).toFixed(2);
+    const newBalance = Number(
+      (bill?.grandTotal || 0) - totalAdvance - (bill?.fullPaid || 0)
+    ).toFixed(2);
 
     setAdvance(newAdvance); // Store just the new advance amount
 
     if (newBalance <= 0) {
       setBalance(0);
-      setFullPay(bill?.grandTotal || 0);
+      setFullPay(Number(bill?.grandTotal || 0).toFixed(2));
     } else {
       setBalance(newBalance);
       setFullPay(0);
@@ -126,7 +124,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
 
   const updateBill = async () => {
     try {
-      const billTotal = bill?.grandTotal || 0;
+      const billTotal = Number(bill?.grandTotal || 0).toFixed(2);
       let updatedData = {};
       let paymentType = "";
       let financeName = "";
@@ -146,8 +144,10 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
       } else {
         // Normal case
         const newAdvance = advance || 0;
-        const totalAdvance = (bill?.advance || 0) + newAdvance;
-        const remainingBalance = billTotal - totalAdvance;
+        const totalAdvance = Number((bill?.advance || 0) + newAdvance).toFixed(
+          2
+        );
+        const remainingBalance = Number(billTotal - totalAdvance).toFixed(2);
 
         const isFullPayment = remainingBalance <= 0;
 
@@ -174,7 +174,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
               ? paymentDetails.advpaymode
               : paymentDetails.fullMode,
           // amount: paymentType === "advance" ? advance : bill?.grandTotal || 0,
-          amount: advance,
+          amount: Number(advance).toFixed(2),
           client_id: bill?.bill_to?._id, // customer_id
           salebill: bill?._id, // sale_bill_id
           organization: bill?.org?._id || bill?.organization?._id, // fallback if org is saved in different path
@@ -191,9 +191,9 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
           paymentPayload.chequeNumber = paymentDetails.chequeNumber;
         }
         if (
-          paymentDetails.advpaymode?.toLowerCase() === "online transfer" ||
-          paymentDetails.balancePayMode?.toLowerCase() === "online transfer" ||
-          paymentDetails.fullMode?.toLowerCase() === "online transfer"
+          paymentDetails.advpaymode.toLowerCase() === "online transfer" ||
+          paymentDetails.balancePayMode.toLowerCase() === "online transfer" ||
+          paymentDetails.fullMode.toLowerCase() === "online transfer"
         ) {
           paymentPayload = {
             ...paymentPayload,
@@ -303,7 +303,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
               <Grid item xs={6}>
                 <TextField
                   label="Sub Total"
-                  value={bill.subtotal?.toFixed(2)}
+                  value={Number(bill.subtotal || 0).toFixed(2)}
                   fullWidth
                   disabled
                 />
@@ -311,7 +311,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
               <Grid item xs={6}>
                 <TextField
                   label="GST Total"
-                  value={bill.gstTotal?.toFixed(2)}
+                  value={Number(bill.gstTotal || 0).toFixed(2)} 
                   fullWidth
                   disabled
                 />
@@ -319,7 +319,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
               <Grid item xs={6}>
                 <TextField
                   label="Grand Total"
-                  value={bill.grandTotal?.toFixed(2)}
+                  value={Number(bill.grandTotal || 0).toFixed(2)}
                   fullWidth
                   disabled
                 />
@@ -329,7 +329,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
                 <TextField
                   label="Advance"
                   type="number"
-                  value={bill?.advance}
+                  value={Number(bill.advance || 0).toFixed(2)}
                   fullWidth
                   disabled
                 />
@@ -348,7 +348,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
                   <Grid item xs={6}>
                     <TextField
                       label="Balance"
-                      value={balance.toFixed(2)}
+                      value={Number(balance || 0).toFixed(2)}
                       fullWidth
                       disabled
                     />
@@ -461,7 +461,7 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
               <Grid item xs={6}>
                 <TextField
                   label="Full Paid"
-                  value={bill.fullPaid ? bill.fullPaid : fullPay?.toFixed(2)}
+                  value={Number(bill.fullPaid || fullPay || 0).toFixed(2)}
                   fullWidth
                   disabled
                 />

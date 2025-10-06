@@ -55,13 +55,13 @@ const SaleBillList = () => {
   const handleClose = () => setOpen(false);
   const handleCloseView = () => setView(false);
 
-const saleInputRef = useRef(null);
+  const saleInputRef = useRef(null);
 
-useEffect(() => {
-  if (saleInputRef.current) {
-    saleInputRef.current.focus();
-  }
-}, []);
+  useEffect(() => {
+    if (saleInputRef.current) {
+      saleInputRef.current.focus();
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -96,7 +96,7 @@ useEffect(() => {
       });
       setBills(FilteredBill);
     }
-  };  
+  };
 
   const filteredBills = useMemo(() => {
     return bills.filter((bill) => {
@@ -137,17 +137,19 @@ useEffect(() => {
     setEdit(true);
   };
   const handleCancelBill = async (id) => {
-    try {
-      const response = await cancelSaleBill(id, { status: "cancelled" });
-      if (response.success === true) {
-        setSnackbarMessage("Bill cancelled successfully!");
+    if (window.confirm("Are you sure you want to delete this bill?")) {
+      try {
+        const response = await cancelSaleBill(id, { status: "cancelled" });
+        if (response.success === true) {
+          setSnackbarMessage("Bill cancelled successfully!");
+          setSnackbarOpen(true);
+          fetchBills(); // Refresh the bill list after cancellation
+        }
+      } catch (error) {
+        console.error("Error cancel bill:", error);
+        setSnackbarMessage("Failed to cancel bill");
         setSnackbarOpen(true);
-        fetchBills(); // Refresh the bill list after cancellation
       }
-    } catch (error) {
-      console.error("Error cancel bill:", error);
-      setSnackbarMessage("Failed to cancel bill");
-      setSnackbarOpen(true);
     }
   };
   return (
@@ -163,10 +165,13 @@ useEffect(() => {
             Sale Summary
           </Typography>
           <Box display="flex" alignItems="center" gap={2} mb={2} mr={4}>
-             <Button
+            <Button
               // accessKey="s"
               variant="contained"
-              sx={{background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff" }}
+              sx={{
+                background: "linear-gradient(135deg, #182848, #324b84ff)",
+                color: "#fff",
+              }}
               onClick={handleOpen}
               ref={saleInputRef}
             >
@@ -184,10 +189,7 @@ useEffect(() => {
               inputProps={{
                 max: moment().format("DD-MM-YYYY"), // Disable future dates
               }}
-              
             />
-
-           
           </Box>
         </Box>
 
@@ -216,8 +218,8 @@ useEffect(() => {
                   <strong>Bill Date</strong>
                 </TableCell>
                 <TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
-                                  <strong>Bill Total (₹)</strong>
-                                </TableCell>
+                  <strong>Bill Total (₹)</strong>
+                </TableCell>
                 {/*<TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
                   <strong>Received Amount (₹)</strong>
                 </TableCell>
@@ -256,8 +258,8 @@ useEffect(() => {
                       : "--"}
                   </TableCell>
                   <TableCell align="center">
-                                      {bill.grandTotal?.toFixed(2) || "0.00"}
-                                    </TableCell>
+                    {bill.grandTotal?.toFixed(2) || "0.00"}
+                  </TableCell>
                   {/* <TableCell align="center">
                     {bill.advance?.toFixed(2) || "0.00"}
                   </TableCell>
@@ -356,7 +358,11 @@ useEffect(() => {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
-          severity={snackbarMessage === "Bill cancelled successfully!" ? "success" : "error"}
+          severity={
+            snackbarMessage === "Bill cancelled successfully!"
+              ? "success"
+              : "error"
+          }
           variant="filled"
           onClose={() => setSnackbarOpen(false)}
         >

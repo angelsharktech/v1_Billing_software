@@ -162,7 +162,7 @@ const PurchaseBillForm = ({
 
     if (isGST) {
       const rate = Number(gstPercent) || 0;
-      gstTotal = +(subtotal * (rate / 100));
+      gstTotal = Number((subtotal * (rate / 100)).toFixed(2));
       if (isWithinState) {
         cgst = +(gstTotal / 2);
         sgst = +(gstTotal / 2);
@@ -170,7 +170,7 @@ const PurchaseBillForm = ({
         igst = +gstTotal;
       }
     }
-    const grandTotal = +(subtotal + gstTotal);
+    const grandTotal = Number((subtotal + gstTotal).toFixed(2));
 
     setTotals({
       subtotal: +subtotal,
@@ -293,11 +293,11 @@ const PurchaseBillForm = ({
       let discountedPrice = price;
       if (discountStr.includes("%")) {
         const percent = parseFloat(discountStr.replace("%", ""));
-        discountedPrice = price - (price * percent) / 100;
+        discountedPrice = Number((price - (price * percent) / 100).toFixed(2));
       } else {
         const flatDiscount = parseFloat(discountStr);
         if (!isNaN(flatDiscount)) {
-          discountedPrice = price - flatDiscount;
+          discountedPrice = Number((price - flatDiscount).toFixed(2));
         }
       }
 
@@ -380,7 +380,7 @@ const PurchaseBillForm = ({
           ...vendor,
           _id: res.user.id || res?.data?.id || res?.data?._id,
         };
-         setIsExistingVendor(true);
+        setIsExistingVendor(true);
         setVendor({
           _id: res.data.data._id,
           name: res.data.data.name,
@@ -532,7 +532,9 @@ const PurchaseBillForm = ({
           paymentType: paymentMode,
           narration: "Purachase Return",
           advanceAmount: finalTotals.grandTotal,
-          closingAmount: finalVendor.openingAmount - finalTotals.grandTotal,
+          closingAmount: Number(
+            (Number(finalVendor.openingAmount) - Number(finalTotals.grandTotal)).toFixed(2)
+          ),
         };
 
         const paymentResult2 = await addPayment(paymentPayload2);
@@ -545,9 +547,9 @@ const PurchaseBillForm = ({
           return;
         } else {
           const res = await updateUser(finalVendor._id, {
-            openingAmount:
-              Number(finalVendor.openingAmount) -
-              Number(finalTotals.grandTotal),
+            openingAmount: Number(
+              (Number(finalVendor.openingAmount) - Number(finalTotals.grandTotal)).toFixed(2)
+            ),
           });
         }
 
@@ -602,7 +604,7 @@ const PurchaseBillForm = ({
         setGstDetails={setGstDetails}
         gstDetails={gstDetails}
         errors={errors}
-        billType = {billType}
+        billType={billType}
         supplierList={users.filter(
           (u) =>
             u.role_id?.name?.toLowerCase() === "vendor" &&

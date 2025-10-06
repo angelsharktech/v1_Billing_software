@@ -51,7 +51,7 @@ const AddPaymentReceived = ({
     ).find((u) => u._id === selectedUserId);
 
     // Example: assume user object has openingBalance field
-    const openingBalance = selectedUser?.openingAmount || 0;
+    const openingBalance = Number(selectedUser?.openingAmount || 0).toFixed(2);
 
     setPayment({
       ...payment,
@@ -64,13 +64,15 @@ const AddPaymentReceived = ({
   // When amount changes -> recalc closing balance
   const handleAmountChange = (e) => {
     const value = e.target.value;
+   const opening = Number(payment.openingAmount || 0);
+
+    const closing =
+      userType === "customer" ? opening - value : opening + value;
+
     setPayment({
       ...payment,
-      advanceAmount: value,
-      closingAmount:
-        userType === "customer"
-          ? payment.openingAmount - Number(value)
-          : payment.openingAmount + Number(value), // ✅ auto calc
+      advanceAmount: value.toFixed(2),
+      closingAmount: closing.toFixed(2),
     });
   };
   // Fetch users (customers + suppliers)
@@ -98,21 +100,28 @@ const AddPaymentReceived = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newPayment = {
-      paymentType: payment.paymentType,
-      ...(userType === "customer"
-        ? { advanceAmount: payment.advanceAmount }
-        : { balance: payment.advanceAmount }),
-
-      date: payment.date,
-      client_id: payment.user,
-      organization: organizationId || null,
-      forPayment: userType === "customer" ? "sale" : "purchase", // ✅ differentiate
-      createdBy: webuser?.id || null,
-      narration: "Payment Received",
-      closingAmount: payment.closingAmount,
+    const formattedPayment = {
+      ...payment,
+      advanceAmount: Number(Number(payment.advanceAmount || 0).toFixed(2)),
+      openingAmount: Number(Number(payment.openingAmount || 0).toFixed(2)),
+      closingAmount: Number(Number(payment.closingAmount || 0).toFixed(2)),
     };
 
+    const newPayment = {
+      paymentType: formattedPayment.paymentType,
+      ...(userType === "customer"
+        ? { advanceAmount: formattedPayment.advanceAmount }
+        : { balance: formattedPayment.advanceAmount }),
+
+      date: formattedPayment.date,
+      client_id: formattedPayment.user,
+      organization: organizationId || null,
+      forPayment: userType === "customer" ? "sale" : "purchase",
+      createdBy: webuser?.id || null,
+      narration: "Payment Received",
+      closingAmount: formattedPayment.closingAmount,
+    };
+    
     try {
       setLoading(true);
       const savedPayment = await addPayment(newPayment);

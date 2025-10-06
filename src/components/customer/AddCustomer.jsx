@@ -129,10 +129,10 @@ const handleRefreshClose =async () =>{
 }
   const handleSubmit = async () => {
     const customerRole = roles.find(
-      (role) => role.name?.toLowerCase() === "customer"
+      (role) => role.name.toLowerCase() === "customer"
     );
     const customerposition = positions.find(
-      (pos) => pos.name?.toLowerCase() === "customer"
+      (pos) => pos.name.toLowerCase() === "customer"
     );
 
     const phoneExists = users.find(
@@ -157,12 +157,12 @@ const handleRefreshClose =async () =>{
       ...formData,
       gstDetails,
       organization_id: mainUser.organization_id?._id,
-      email: formData.name.replace(/\s+/g, "")?.toLowerCase() + "@example.com",
+      email: formData.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
       password:
-        formData.name.replace(/\s+/g, "")?.toLowerCase() + "@example.com",
+        formData.name.replace(/\s+/g, "").toLowerCase() + "@example.com",
       role_id: customerRole._id,
       position_id: customerposition._id,
-      // openingAmount: formData.openingAmount,
+      openingAmount: Number(formData.openingAmount || 0).toFixed(2),
       // gstRegistered: isGstApplicable
     };
     try {
@@ -184,7 +184,7 @@ const handleRefreshClose =async () =>{
           narration: "Opening Balance",
           client_id: result.data.data._id,
           forPayment: "sale",
-          closingAmount: result.data.data.openingAmount,
+         closingAmount: Number(result.data.data.openingAmount).toFixed(2),
         };
         const res = await addPayment(paymentPayload);
 
@@ -212,6 +212,8 @@ const handleRefreshClose =async () =>{
       });
       setErrors({ phone_number: "" });
     } catch (error) {
+      console.log("**", error);
+
       setSnackbarMessage(error);
       setSnackbarOpen(true);
     }
@@ -258,19 +260,6 @@ const handleRefreshClose =async () =>{
               </Grid>
             ))}
           </Grid>
-          {/* <Box mt={2}>
-            <label>
-              <input
-                type="checkbox"
-                checked={isGstApplicable}
-                onChange={(e) => setIsGstApplicable(e.target.checked)}
-                style={{ marginRight: 8 }}
-              />
-              Is GST Applicable?
-            </label>
-          </Box> */}
-
-          {/* {isGstApplicable && ( */}
           <Typography variant="h6" mt={2}>
             GST Details
           </Typography>

@@ -29,7 +29,6 @@ import GetAppOutlinedIcon from "@mui/icons-material/GetAppOutlined";
 import { exportToExcel, exportToPDF } from "../shared/Export";
 import moment from "moment";
 import { PrintOutlined, WhatsApp } from "@mui/icons-material";
-import ReactToPrint from "react-to-print";
 import GenerateLedger from "../shared/GenerateLedger";
 
 const exportColumns = [
@@ -166,7 +165,7 @@ const SupplierLedger = () => {
 
     const message = `Dear ${client?.name || "Valued Supplier"},
 
-This is a reminder regarding your pending payment of ${
+This is a reminder regarding your pending payment of ₹ ${
       client.openingAmount || "N/A"
     }.
 
@@ -213,7 +212,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                   <strong>Supplier</strong>
                 </TableCell>
                 <TableCell align="center">
-                  <strong>Closing Balance</strong>
+                  <strong>Closing Amount</strong>
                 </TableCell>
                 <TableCell align="center">
                   <strong>Total Transactions</strong>

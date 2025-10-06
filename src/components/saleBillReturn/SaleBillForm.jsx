@@ -395,18 +395,6 @@ const SaleBillForm = ({
           return;
         }
       }
-    
-      if (billType === "gst") {
-        if (
-          gstDetails.gstNumber === "" &&
-          gstDetails.legalName === "" &&
-          gstDetails.state === ""
-        ) {
-          setSnackbarMessage("Please Fill Gst Details");
-          setSnackbarOpen(true);
-          return;
-        }
-      }
       // ---------- compute finalProducts & totals (replace your existing block) ----------
       const finalProducts = selectedProducts.map((product) => {
         const qty = Number(product.qty) || 0;
@@ -443,8 +431,8 @@ const SaleBillForm = ({
           name: product.productName || product.name || "",
           hsnCode: product.hsnCode || "",
           qty,
-          price: discountPrice, // price used for subtotal
-          unitPrice: unitPrice, // original price if you keep both
+          price: Number(discountPrice).toFixed(2), // price used for subtotal
+          unitPrice: Number(unitPrice).toFixed(2), // original price if you keep both
           discount: product.discountPercentage || "",
           gstPercent: rate, // percent (important)
           gstAmount, // amount in ₹
@@ -493,13 +481,13 @@ const SaleBillForm = ({
         qty: selectedProducts.length,
         paymentType: paymentType,
         advance: 0,
-        balance: finalTotals.grandTotal,
+        balance: Number(finalTotals.grandTotal).toFixed(2),
         isReturn: true,
         balancePayMode:
           (paymentDetails.balancePayMode || "") +
           "-" +
           (paymentDetails.financeName || ""),
-        fullPaid: Number(paymentDetails.fullPaid) || 0,
+        fullPaid: Number(paymentDetails.fullPaid).toFixed(2) || 0,
         subtotal: finalTotals.subtotal,
         discount: 0,
         // include gstPercent at top-level if your schema expects it:
@@ -530,7 +518,7 @@ const SaleBillForm = ({
       if (res.success === true) {
         setSnackbarMessage("Sale bill created successfully!");
         setSnackbarOpen(true);
-
+       
         const billData = await getSaleBillById(res.data._id);
 
         let paymentPayload2 = {
@@ -540,8 +528,8 @@ const SaleBillForm = ({
           forPayment: "Sale",
           paymentType: paymentMode,
           narration: "Sale Return",
-          advanceAmount: finalTotals.grandTotal,
-          closingAmount: finalCustomer?.openingAmount - finalTotals.grandTotal,
+          advanceAmount:Number(finalTotals.grandTotal).toFixed(2),
+          closingAmount:Number(Number(finalCustomer?.openingAmount) - Number(finalTotals.grandTotal)).toFixed(2),
         };
 
         const paymentResult2 = await addPayment(paymentPayload2);
@@ -556,10 +544,11 @@ const SaleBillForm = ({
           //  update user
           const res = await updateUser(finalCustomer._id, {
             openingAmount:
-              Number(finalCustomer.openingAmount) -
-              Number(finalTotals.grandTotal),
+             Number(
+              (Number(finalCustomer.openingAmount) -
+                Number(finalTotals.grandTotal)).toFixed(2))
           });
-
+         
           setPrintData(billData.data);
           setShowPrint(true); // Show bill for printing
           setTimeout(() => {
@@ -616,7 +605,7 @@ const SaleBillForm = ({
         isWithinState={isWithinState}
         setIsWithinState={setIsWithinState}
         totals={totals}
-        billDate={billDate}
+         billDate={billDate}
         setBillDate={setBillDate}
       />
       {/* Step 2: Product Details */}

@@ -50,7 +50,6 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
     utrId: "", // for online transfer 16.08.25
     financeName: "", //16.08.25
     balancePayMode: "", // for balance payment if needed
-   
   });
 
   useEffect(() => {
@@ -58,25 +57,23 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
       try {
         const res = await getPurchaseBillById(data?._id);
         const billData = res.data;
-        if(billData.balancePayMode?.toLowerCase().includes('finance')){
+        if (billData.balancePayMode.toLowerCase().includes("finance")) {
           // Extract finance name
-      const parts = billData.balancePayMode.split("-");
-      const financeName = parts.length > 1 ? parts[1] : "";
+          const parts = billData.balancePayMode.split("-");
+          const financeName = parts.length > 1 ? parts[1] : "";
           setPaymentDetails({
             ...paymentDetails,
             advpaymode: parts[0],
             financeName: financeName,
-          
           });
-           setBill({
-        ...billData,
-        paymentType: "full",
-        fullPaid: billData.grandTotal || 0,
-      });
-          setAdvance(billData.balance );
+          setBill({
+            ...billData,
+            paymentType: "full",
+            fullPaid: billData.grandTotal || 0,
+          });
+          setAdvance(billData.balance);
           setBalance(0);
-
-        }else{
+        } else {
           setBill(billData);
           setAdvance(Number(billData.advance || 0));
           const calculatedBalance =
@@ -99,73 +96,79 @@ const EditBill = ({ open, data, handleCloseEdit, refresh }) => {
 
   useEffect(() => {
     const fullPayment = balance === 0 ? bill?.grandTotal : 0;
-    setFullPay(fullPayment);
+    setFullPay(Number(fullPayment?.toFixed(2)));
   }, [advance, balance]);
 
-const handleAdvanceChange = async (e) => {
+  const handleAdvanceChange = async (e) => {
     //  skip manual advance changes for finance bills
-  if (bill?.balancePayMode?.toLowerCase().includes("finance")) {
-    return;
-  } // 16.08.25
-
-  const newAdvance = parseFloat(e.target.value || "0");
-  
-  // Calculate total advance (existing advance + new advance)
-  const totalAdvance = (bill?.advance || 0) + newAdvance;
-  
-  // Calculate new balance
-  const newBalance = (bill?.grandTotal || 0) - totalAdvance - (bill?.fullPaid || 0);
-
-  setAdvance(newAdvance); // Store just the new advance amount
-  
-  if (newBalance <= 0) {
-    setBalance(0);
-    setFullPay(bill?.grandTotal || 0);
-  } else {
-    setBalance(newBalance);
-    setFullPay(0);
-  }
-};
-
-const updateBill = async () => {
-  try {
-    const billTotal = bill?.grandTotal || 0;
-    let updatedData = {};
-    let paymentType = "";
-    let financeName = "";
-
-    // Special case: Finance
     if (bill?.balancePayMode?.toLowerCase().includes("finance")) {
-      const parts = bill.balancePayMode.split("-");
-      financeName = parts.length > 1 ? parts[1] : "";
+      return;
+    } // 16.08.25
 
-      updatedData = {
-        advance: 0,
-        balance: 0,
-        paymentType: "full",
-        fullPaid: billTotal,
-      };
-      paymentType = "full";
-      paymentDetails.fullMode = "finance"; // Set full payment mode to finance 18.08.25
-    } else {
-      // Normal case
-      const newAdvance = advance || 0;
-      const totalAdvance = (bill?.advance || 0) + newAdvance;
-      const remainingBalance = billTotal - totalAdvance;
+    const newAdvance = parseFloat(e.target.value || "0");
 
-      const isFullPayment = remainingBalance <= 0;
+    // Calculate total advance (existing advance + new advance)
+    const totalAdvance = (bill?.advance || 0) + newAdvance;
 
-      updatedData = {
-        advance: isFullPayment ? 0 : totalAdvance,
-        balance: isFullPayment ? 0 : remainingBalance,
-        paymentType: isFullPayment ? "full" : "advance",
-        fullPaid: isFullPayment ? billTotal : 0,
-      };
-      paymentType = updatedData.paymentType;
-    }
-    
-    const res = await updatePurchaseBill(bill._id, updatedData);
-      
+    // Calculate new balance
+    const newBalance =
+      (bill?.grandTotal || 0) - totalAdvance - (bill?.fullPaid || 0);
+
+    setAdvance(Number(newAdvance.toFixed(2)));
+    setBalance(Number(newBalance < 0 ? 0 : newBalance.toFixed(2)));
+    setFullPay(
+      newBalance <= 0 ? Number((bill?.grandTotal || 0).toFixed(2)) : 0
+    );
+    // Store just the new advance amount
+
+    // if (newBalance <= 0) {
+    //   setBalance(0);
+    //   setFullPay(bill?.grandTotal || 0);
+    // } else {
+    //   setBalance(newBalance);
+    //   setFullPay(0);
+    // }
+  };
+
+  const updateBill = async () => {
+    try {
+      const billTotal = Number((bill?.grandTotal || 0).toFixed(2));
+      let updatedData = {};
+      let paymentType = "";
+      let financeName = "";
+
+      // Special case: Finance
+      if (bill?.balancePayMode?.toLowerCase().includes("finance")) {
+        const parts = bill.balancePayMode.split("-");
+        financeName = parts.length > 1 ? parts[1] : "";
+
+        updatedData = {
+          advance: 0,
+          balance: 0,
+          paymentType: "full",
+          fullPaid: billTotal,
+        };
+        paymentType = "full";
+        paymentDetails.fullMode = "finance"; // Set full payment mode to finance 18.08.25
+      } else {
+        // Normal case
+        const newAdvance = advance || 0;
+        const totalAdvance = (bill?.advance || 0) + newAdvance;
+        const remainingBalance = billTotal - totalAdvance;
+
+        const isFullPayment = remainingBalance <= 0;
+
+        updatedData = {
+          advance: Number((isFullPayment ? 0 : totalAdvance).toFixed(2)),
+          balance: Number((isFullPayment ? 0 : remainingBalance).toFixed(2)),
+          paymentType: isFullPayment ? "full" : "advance",
+          fullPaid: Number((isFullPayment ? billTotal : 0).toFixed(2)),
+        };
+        paymentType = updatedData.paymentType;
+      }
+
+      const res = await updatePurchaseBill(bill._id, updatedData);
+
       if (res.success === true) {
         setSnackbarMessage("Purchase bill Updated !");
         setSnackbarOpen(true);
@@ -179,7 +182,7 @@ const updateBill = async () => {
               ? paymentDetails.advpaymode
               : paymentDetails.fullMode,
           // amount: paymentType === "advance" ? advance : bill?.grandTotal || 0,
-          amount:advance,
+          amount: advance,
           client_id: bill?.bill_to?._id, // customer_id
           purchasebill: bill?._id, // purchase_bill_id
           organization: bill?.org?._id || bill?.organization?._id, // fallback if org is saved in different path
@@ -194,22 +197,25 @@ const updateBill = async () => {
           paymentPayload.bankName = paymentDetails.bankName;
           paymentPayload.chequeNumber = paymentDetails.chequeNumber;
         } else if (
-            paymentDetails.advpaymode?.toLowerCase() === "online transfer" ||
-            paymentDetails.balancePayMode?.toLowerCase()==="online transfer" ||
-            paymentDetails.fullMode?.toLowerCase() === "online transfer"
-          ) {
-            paymentPayload = {
-              ...paymentPayload,
-              utrId: paymentDetails.utrId,
-            };
-          }else if (paymentDetails.advpaymode === "finance" || paymentDetails.fullMode === "finance" ) {
+          paymentDetails.advpaymode.toLowerCase() === "online transfer" ||
+          paymentDetails.balancePayMode.toLowerCase() === "online transfer" ||
+          paymentDetails.fullMode.toLowerCase() === "online transfer"
+        ) {
+          paymentPayload = {
+            ...paymentPayload,
+            utrId: paymentDetails.utrId,
+          };
+        } else if (
+          paymentDetails.advpaymode === "finance" ||
+          paymentDetails.fullMode === "finance"
+        ) {
           paymentPayload.financeName = paymentDetails.financeName;
-        }else {
+        } else {
           paymentPayload.description = `${
             paymentType === "advance" ? "Advance" : "Full"
           } payment for Bill`;
         }
-        
+
         try {
           const paymentResult = await addPayment(paymentPayload);
           if (paymentResult?.success) {
@@ -302,7 +308,7 @@ const updateBill = async () => {
               <Grid item xs={6}>
                 <TextField
                   label="Sub Total"
-                  value={bill.subtotal?.toFixed(2)}
+                  value={Number(bill.subtotal || 0).toFixed(2)}
                   fullWidth
                   disabled
                 />
@@ -310,7 +316,7 @@ const updateBill = async () => {
               <Grid item xs={6}>
                 <TextField
                   label="GST Total"
-                  value={bill.gstTotal?.toFixed(2)}
+                  value={Number(bill.gstTotal || 0).toFixed(2)}
                   fullWidth
                   disabled
                 />
@@ -318,7 +324,7 @@ const updateBill = async () => {
               <Grid item xs={6}>
                 <TextField
                   label="Grand Total"
-                  value={bill.grandTotal?.toFixed(2)}
+                  value={Number(bill.grandTotal || 0).toFixed(2)}
                   fullWidth
                   disabled
                 />
@@ -328,7 +334,7 @@ const updateBill = async () => {
                 <TextField
                   label="Advance"
                   type="number"
-                  value={bill.advance}
+                  value={Number(bill.advance || 0).toFixed(2)}
                   // onChange={handleAdvanceChange}
                   fullWidth
                   disabled
@@ -340,7 +346,7 @@ const updateBill = async () => {
                     <TextField
                       label="Remaining amount"
                       type="number"
-                      value={advance}
+                      value={Number(advance || 0).toFixed(2)}
                       onChange={handleAdvanceChange}
                       fullWidth
                     />
@@ -348,14 +354,14 @@ const updateBill = async () => {
                   <Grid item xs={6}>
                     <TextField
                       label="Balance"
-                      value={balance.toFixed(2)}
+                      value={Number(balance || 0).toFixed(2)}
                       fullWidth
                       disabled
                     />
                   </Grid>
                 </>
               )}
-              {advance < bill?.grandTotal &&(
+              {advance < bill?.grandTotal && (
                 <>
                   <Grid item xs={12} sm={3}>
                     <TextField
@@ -459,8 +465,8 @@ const updateBill = async () => {
 
               <Grid item xs={6}>
                 <TextField
-                  label="Full Paid"
-                  value={bill.fullPaid ? bill.fullPaid : fullPay?.toFixed(2)}
+                  label="Full Paid"                  
+                  value={Number(bill.fullPaid || fullPay || 0).toFixed(2)}
                   fullWidth
                   disabled
                 />

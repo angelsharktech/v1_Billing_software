@@ -154,10 +154,10 @@ const AddVendor = ({ open, handleClose, refresh }) => {
   const handleSubmit = async () => {
     try {
       const vendorRole = roles.find(
-        (role) => role.name?.toLowerCase() === "vendor"
+        (role) => role.name.toLowerCase() === "vendor"
       );
       const vendorposition = positions.find(
-        (pos) => pos.name?.toLowerCase() === "vendor"
+        (pos) => pos.name.toLowerCase() === "vendor"
       );
       const phoneExists = users.find(
         (u) => u.phone_number === formData.phone_number
@@ -186,6 +186,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
         password: formData.name + "@example.com",
         role_id: vendorRole._id,
         position_id: vendorposition._id,
+        openingAmount: Number(formData.openingAmount || 0).toFixed(2),
         // gstRegistered: isGstApplicable
       };
 
@@ -196,7 +197,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
           narration: "Opening Balance",
           client_id: result.data.data?._id,
           forPayment: "purchase",
-          closingAmount: result.data.data.openingAmount,
+           closingAmount: Number(result.data.data.openingAmount).toFixed(2),
         };
 
         const res = await addPayment(paymentPayload);

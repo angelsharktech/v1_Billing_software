@@ -19,8 +19,8 @@ import { useAuth } from "../context/AuthContext";
 import CreateSaleBill from "../components/salebill/CreateSaleBill";
 import CreatePurchaseBill from "../components/purchasebill/CreatePurchaseBill";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import ReceiptIcon from "@mui/icons-material/Receipt";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 const Item = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -28,7 +28,6 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
   borderRadius: 10,
   boxShadow: theme.shadows[3],
- 
 }));
 
 const StatCard = ({ title, value, icon, color }) => (
@@ -43,7 +42,7 @@ const StatCard = ({ title, value, icon, color }) => (
     }}
   >
     <Box display="flex" alignItems="center" justifyContent="space-between">
-      <Box sx={{ width: "150px", height: "120px" ,gap:'10px'}}>
+      <Box sx={{ width: "150px", height: "120px", gap: "10px" }}>
         <Typography variant="h6">{title}</Typography>
         <Typography variant="h4">{value}</Typography>
       </Box>
@@ -71,12 +70,11 @@ const Home = () => {
   const handleClosePurchaseBill = () => setOpenPurchaseBill(false);
 
   // Parse billDate "DD-MM-YYYY" → JS Date
- const parseBillDate = (billDateStr) => {
-  if (!billDateStr) return null;
-  const [year, month, day] = billDateStr.split("-").map(Number);
-  return new Date(year, month - 1, day);
-};
-
+  const parseBillDate = (billDateStr) => {
+    if (!billDateStr) return null;
+    const [year, month, day] = billDateStr.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
   useEffect(() => {
     fetchCounts(); // initial load
 
@@ -111,9 +109,12 @@ const Home = () => {
       return billDate.toDateString() === today.toDateString();
     };
 
-    const todaySales = saleBillsData.filter((b) => isToday(b.billDate));
-    const todayPurchases = purchaseBillsData.filter((b) =>
-      isToday(b.billDate)
+    const todaySales = saleBillsData.filter(
+      (b) => isToday(b.billDate) && b.isReturn === false && b.status === "draft"
+    );
+
+    const todayPurchases = purchaseBillsData.filter(
+      (b) => isToday(b.billDate) && b.isReturn === false && b.status === "draft"
     );
 
     const todaySaleAmount = todaySales.reduce(
@@ -183,7 +184,12 @@ const Home = () => {
 
     saleBills.forEach((bill) => {
       const billDate = parseBillDate(bill.billDate);
-      if (billDate && filterFn(billDate)) {
+      if (
+        billDate &&
+        filterFn(billDate) &&
+        bill.isReturn === false && // <-- add this
+        bill.status === "draft"
+      ) {
         const month = billDate.getMonth();
         sale[month] += bill.grandTotal || 0;
       }
@@ -191,7 +197,12 @@ const Home = () => {
 
     purchaseBills.forEach((bill) => {
       const billDate = parseBillDate(bill.billDate);
-      if (billDate && filterFn(billDate)) {
+      if (
+        billDate &&
+        filterFn(billDate) &&
+        bill.isReturn === false && // <-- add this
+        bill.status === "draft"
+      ) {
         const month = billDate.getMonth();
         purchase[month] += bill.grandTotal || 0;
       }
@@ -292,9 +303,19 @@ const Home = () => {
                 Sale Overview - {range}
               </Typography>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={filteredChartData} barCategoryGap="10%" barSize={40}>
+                <BarChart
+                  data={filteredChartData}
+                  barCategoryGap="10%"
+                  barSize={40}
+                >
                   <defs>
-                    <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="blueGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="0%" stopColor="#3477eb" />
                       <stop offset="100%" stopColor="#25f5ee" />
                     </linearGradient>
@@ -315,9 +336,19 @@ const Home = () => {
                 Purchase Overview - {range}
               </Typography>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={filteredChartData} barCategoryGap="10%" barSize={40}>
+                <BarChart
+                  data={filteredChartData}
+                  barCategoryGap="10%"
+                  barSize={40}
+                >
                   <defs>
-                    <linearGradient id="yellowGradient" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="yellowGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="0%" stopColor="#f5f125" />
                       <stop offset="100%" stopColor="#9ff01d" />
                     </linearGradient>

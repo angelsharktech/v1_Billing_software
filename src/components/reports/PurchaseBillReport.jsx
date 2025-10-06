@@ -37,9 +37,12 @@ const exportColumns = [
   { label: "#", key: "index" },
   { label: "Bill\nDate", key: "billDate" },
   { label: "HSN", key: "hsn" },
+  { label: "Product\nCode", key: "productCode" },
   { label: "Invoice\nNo.", key: "invoiceNo" },
   { label: "Customer\nName", key: "customerName" },
   { label: "GSTIN", key: "gstNo" },
+  { label: "Rate", key: "rate" },
+  { label: "discount", key: "discount" },
   { label: "Taxable\nAmount", key: "taxableAmount" },
   { label: "Gst\nRate", key: "gstRate" },
   { label: "Total\nGst", key: "totalGst" },
@@ -47,7 +50,6 @@ const exportColumns = [
   { label: "SGST", key: "sgst" },
   { label: "IGST", key: "igst" },
   { label: "Bill\nTotal ", key: "billTotal" },
-
 ];
 
 const PurchaseBillReport = () => {
@@ -98,10 +100,11 @@ const PurchaseBillReport = () => {
 
       // const allBills = data.data.docs || [];
       const allBills = data.data || [];
-      const filteredBills = allBills.docs.filter((bill) => bill.isReturn === false);
-      
-      setBills(filteredBills);
+      const filteredBills = allBills.docs.filter(
+        (bill) => bill.isReturn === false
+      );
 
+      setBills(filteredBills);
     } catch (err) {
       console.error("Failed to fetch sale bills:", err);
       setError("Failed to load sale bills");
@@ -113,7 +116,7 @@ const PurchaseBillReport = () => {
   const filteredBills = useMemo(() => {
     return bills.filter((bill) => {
       if (!bill.createdAt) return false;
-      // const isReturn = bill.isReturn 
+      // const isReturn = bill.isReturn
       const billDate = new Date(bill.createdAt);
       const start = startDate ? new Date(startDate) : null;
       const end = endDate ? new Date(endDate) : null;
@@ -122,12 +125,9 @@ const PurchaseBillReport = () => {
       if (end) end.setHours(23, 59, 59, 999);
 
       const billNumber = (bill?.bill_number || "").toLowerCase();
-      const billStatus = (bill?.status);
+      const billStatus = bill?.status;
       // const billPayStatus = (bill?.paymentType).toLowerCase();
-      const billName = (
-        bill.client_id?.name ||
-        "" 
-      ).toLowerCase();
+      const billName = (bill.client_id?.name || "").toLowerCase();
 
       const matchesDateRange =
         (!start || billDate >= start) && (!end || billDate <= end);
@@ -136,12 +136,12 @@ const PurchaseBillReport = () => {
         !searchQuery ||
         billNumber.includes(searchQuery) ||
         billName.includes(searchQuery) ||
-        billStatus.includes(searchQuery)
+        billStatus.includes(searchQuery);
       // billPayStatus.includes(searchQuery);
 
       const matchesGST = !gstFilter || bill?.billType === gstFilter;
 
-      return matchesDateRange && matchesSearch && matchesGST ;
+      return matchesDateRange && matchesSearch && matchesGST;
     });
   }, [bills, startDate, endDate, searchQuery, gstFilter]);
 
@@ -183,16 +183,17 @@ const PurchaseBillReport = () => {
       filteredBills.map((bill, index) => ({
         index: index + 1,
         hsn: `${bill?.products?.map((p) => p.hsnCode) || "N/A"}`,
+        productCode: `${bill?.products?.map((p) => p.productCode) || "N/A"}`,
         gstNo: `${bill?.bill_to?.gstDetails?.gstNumber || "N/A"}`,
+        rate: `${bill?.products?.map((p) => p.unitPrice) || "N/A"}`,
+        discount: `${bill?.products?.map((p) => p.discount) || 0}`,
         taxableAmount: `${bill?.subtotal || "N/A"}`,
         gstRate: `${bill?.products?.[0]?.gstPercent || "0"}`,
         totalGst: `${bill?.gstTotal || "0"}`,
         cgst: `${bill?.products?.[0]?.cgst || "0"}`,
         sgst: `${bill?.products?.[0]?.sgst || "0"}`,
         igst: `${bill?.products?.[0]?.igst || "0"}`,
-        customerName: `${bill.bill_to?.name ||
-          "" 
-          }`,
+        customerName: `${bill.bill_to?.name || ""}`,
         invoiceNo: bill?.bill_number || "",
         billDate: moment(bill.createdAt).format("DD/MM/YYYY") || "",
         billTotal: bill?.grandTotal || 0,
@@ -254,7 +255,11 @@ const PurchaseBillReport = () => {
           <Typography variant="h5" fontWeight={600} mb={2}>
             Purchase Report
           </Typography>
-          <FilterData value={searchQuery} onChange={handleSearchChange} autoFocusOnMount />
+          <FilterData
+            value={searchQuery}
+            onChange={handleSearchChange}
+            autoFocusOnMount
+          />
           <Box display="flex" alignItems="center" gap={2} mb={2} mr={2}>
             <TextField
               label="Start Date"
@@ -291,7 +296,7 @@ const PurchaseBillReport = () => {
               variant="outlined"
               // sx={{ ml: 2 }}
               onClick={handleExportClick}
-            // endIcon={<MoreVertIcon />}
+              // endIcon={<MoreVertIcon />}
             >
               <GetAppOutlinedIcon titleAccess="Download As" />
             </Button>
@@ -339,7 +344,7 @@ const PurchaseBillReport = () => {
           }}
         >
           <Table stickyHeader>
-            <TableHead >
+            <TableHead>
               <TableRow>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>#</strong>
@@ -359,10 +364,13 @@ const PurchaseBillReport = () => {
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Customer Name</strong>
                 </TableCell>
-
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>GSTIN</strong>
-                </TableCell>
+                {(gstFilter === "gst" || gstFilter === "") && (
+                  <>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>GSTIN</strong>
+                    </TableCell>
+                  </>
+                )}
 
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Rate</strong>
@@ -373,22 +381,26 @@ const PurchaseBillReport = () => {
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Taxable Amount</strong>
                 </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>Gst Rate</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>Total Gst</strong>
-                </TableCell>
+                {(gstFilter === "gst" || gstFilter === "") && (
+                  <>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>Gst Rate</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>Total Gst</strong>
+                    </TableCell>
 
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>CGST</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>SGST</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>IGST</strong>
-                </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>CGST</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>SGST</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>IGST</strong>
+                    </TableCell>
+                  </>
+                )}
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Bill Total (₹)</strong>
                 </TableCell>
@@ -399,11 +411,13 @@ const PurchaseBillReport = () => {
                 bill?.products?.map((product, prodIndex) => (
                   <TableRow key={`${billIndex}-${prodIndex}`}>
                     {/* Serial Number (can show combined index or product index) */}
-                    <TableCell>{billIndex + 1}.{prodIndex + 1}</TableCell>
+                    <TableCell>
+                      {billIndex + 1}.{prodIndex + 1}
+                    </TableCell>
 
                     {/* Bill Date */}
                     <TableCell>
-                      {bill.billDate ?moment(bill.billDate).format("DD/MM/YYYY") : "--"}
+                      {bill.billDate ? bill.billDate : "--"}
                     </TableCell>
 
                     {/* HSN from product */}
@@ -414,46 +428,55 @@ const PurchaseBillReport = () => {
                     <TableCell>{bill?.bill_number || "N/A"}</TableCell>
 
                     {/* Customer Name */}
-                    <TableCell>
-                      {bill.bill_to?.name }
-                    </TableCell>
+                    <TableCell>{bill.bill_to?.name}</TableCell>
 
                     {/* GST Number */}
-                    <TableCell>{bill?.bill_to?.gstDetails?.gstNumber || "N/A"}</TableCell>
+                    {(gstFilter === "gst" || gstFilter === "") && (
+                        <>
+                    <TableCell>
+                      {bill?.bill_to?.gstDetails?.gstNumber || "N/A"}
+                    </TableCell>
+                        </>)}
 
                     {/* Subtotal for that product (qty * price) */}
                     <TableCell>{product?.unitPrice || "N/A"}</TableCell>
-                    <TableCell>{product?.discount.includes('%')?product?.discount : '₹' + product?.discount || "N/A"}</TableCell>
+                    <TableCell>
+                      {product?.discount.includes("%")
+                        ? product?.discount
+                        : "₹" + product?.discount || "N/A"}
+                    </TableCell>
                     <TableCell>{product?.price || "N/A"}</TableCell>
-                    <TableCell>{product?.gstPercent || "0"}</TableCell>
-
+                    {(gstFilter === "gst" || gstFilter === "") && (
+                        <>
+                      <TableCell>{product?.gstPercent || "0"}</TableCell>
                     {/* GST Total for that product */}
-                    <TableCell>{product?.cgst > 0 ? product?.cgst + product?.sgst : product?.igst}</TableCell>
+                    <TableCell>
+                      {product?.cgst > 0
+                        ? product?.cgst + product?.sgst
+                        : product?.igst}
+                    </TableCell>
 
                     {/* CGST */}
-                    <TableCell>
-                      {product?.cgst}
-                    </TableCell>
+                    <TableCell>{product?.cgst}</TableCell>
 
                     {/* SGST */}
-                    <TableCell>
-                      {product?.sgst}
-                    </TableCell>
+                    <TableCell>{product?.sgst}</TableCell>
 
                     {/* IGST */}
-                    <TableCell>
-                      {product?.igst}
-                    </TableCell>
+                    <TableCell>{product?.igst}</TableCell>
+                        </>)}
+
 
                     {/* Grand Total (product-wise) */}
                     <TableCell>
-                      {product?.cgst > 0 ? product?.price + product?.cgst + product?.sgst : product?.price + product?.igst}
+                      {product?.cgst > 0
+                        ? product?.price + product?.cgst + product?.sgst
+                        : product?.price + product?.igst}
                     </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
-
           </Table>
         </TableContainer>
       </Box>

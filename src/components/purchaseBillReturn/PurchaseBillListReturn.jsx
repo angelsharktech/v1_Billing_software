@@ -139,17 +139,19 @@ const PurchaseBillListReturn = () => {
   };
 
   const handleCancelBill = async (id) => {
-    try {
-      const response = await cancelPurchaseBill(id, { status: "cancelled" });
-      if (response.success === true) {
-        setSnackbarMessage("Bill cancelled successfully!");
+    if (window.confirm("Are you sure you want to delete this bill?")) {
+      try {
+        const response = await cancelPurchaseBill(id, { status: "cancelled" });
+        if (response.success === true) {
+          setSnackbarMessage("Bill cancelled successfully!");
+          setSnackbarOpen(true);
+          fetchBills(); // Refresh the bill list after cancellation
+        }
+      } catch (error) {
+        console.error("Error cancel bill:", error);
+        setSnackbarMessage("Failed to cancel bill");
         setSnackbarOpen(true);
-        fetchBills(); // Refresh the bill list after cancellation
       }
-    } catch (error) {
-      console.error("Error cancel bill:", error);
-      setSnackbarMessage("Failed to cancel bill");
-      setSnackbarOpen(true);
     }
   };
 
@@ -164,15 +166,8 @@ const PurchaseBillListReturn = () => {
 
     const message = `Dear ${bill.bill_to?.name || "Valued Supplier"},
 
-This is a reminder regarding your pending payment for Invoice No: ${
-      bill.bill_number || "N/A"
-    }.
-
-Invoice Amount: ₹${bill.grandTotal?.toFixed(2) || "0.00"}
-Amount Paid: ₹${(
-      Number(bill.advance || 0) + Number(bill.fullPaid || 0)
-    ).toFixed(2)}
-Balance Amount: ₹${bill.balance?.toFixed(2) || "0.00"}
+This is a reminder regarding your pending payment for 
+Balance Amount: ₹ ${bill.balance?.toFixed(2) || "0.00"}
 
 Please complete the payment at your earliest convenience.
 
@@ -197,7 +192,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
             Purchase Return Summary
           </Typography>
           <Box display="flex" alignItems="center" gap={2} mb={2} mr={4}>
-             <Button
+            <Button
               // accessKey="p"
               variant="contained"
               sx={{
@@ -218,9 +213,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
                 setStartDate(e.target.value);
               }}
               size="small"
-              
             />
-           
           </Box>
         </Box>
 

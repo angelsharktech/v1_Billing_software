@@ -166,7 +166,7 @@ const CustomerLedger = () => {
 
     const message = `Dear ${client?.name || "Valued Customer"},
 
-This is a reminder regarding your pending payment of ${
+This is a reminder regarding your pending payment of ₹ ${
       client.openingAmount || "N/A"
     }.
 

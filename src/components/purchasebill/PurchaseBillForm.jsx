@@ -465,8 +465,8 @@ const PurchaseBillForm = ({
           name: product.productName || product.name || "",
           hsnCode: product.hsnCode || "",
           qty,
-          price: discountPrice, // price used for subtotal
-          unitPrice: unitPrice, // original price if you keep both
+          price: Number(discountPrice.toFixed(2)), // subtotal contribution
+          unitPrice: Number(unitPrice.toFixed(2)), // original price if you keep both
           discount: product.discountPercentage || "",
           gstPercent: rate, // percent (important)
           gstAmount, // amount in ₹
@@ -477,10 +477,10 @@ const PurchaseBillForm = ({
           printAs: product?.printAs,
         };
       });
-       
+
       // compute totals from finalProducts (single source of truth)
       const computedSubtotal = +finalProducts
-        .reduce((acc, p) => acc +  Number(p.price), 0)
+        .reduce((acc, p) => acc + Number(p.price), 0)
         .toFixed(2);
       const computedGstTotal = +finalProducts
         .reduce((acc, p) => acc + (Number(p.gstAmount) || 0), 0)
@@ -515,8 +515,8 @@ const PurchaseBillForm = ({
         billDate: billDate,
         qty: selectedProducts.length,
         paymentType: paymentType,
-        advance: advanceAmount || 0,
-        balance: finalTotals.grandTotal - advanceAmount,
+        advance: Number((advanceAmount || 0).toFixed(2)),
+        balance: Number((finalTotals.grandTotal - advanceAmount).toFixed(2)),
         subtotal: finalTotals.subtotal,
         discount: 0,
         gstPercent: Number(gstPercent) || 0,
@@ -571,8 +571,10 @@ const PurchaseBillForm = ({
           forPayment: "purchase",
           paymentType: paymentMode,
           narration: "Purchase",
-          balance: finalTotals.grandTotal,
-          closingAmount: finalVendor?.openingAmount + finalTotals.grandTotal,
+          balance: Number(finalTotals.grandTotal.toFixed(2)),
+          closingAmount: Number(
+            (Number(finalVendor.openingAmount) + Number(finalTotals.grandTotal)).toFixed(2)
+          ),
         };
         const paymentResult = await addPayment(paymentPayload);
 
@@ -583,8 +585,10 @@ const PurchaseBillForm = ({
           forPayment: "purchase",
           paymentType: paymentMode,
           narration: "Payment to Supplier",
-          advanceAmount: advanceAmount,
-          closingAmount: paymentResult.data?.closingAmount - advanceAmount,
+          advanceAmount: Number((advanceAmount || 0).toFixed(2)),
+          closingAmount: Number(
+            (paymentResult.data?.closingAmount - advanceAmount).toFixed(2)
+          ),
         };
 
         const paymentResult2 = await addPayment(paymentPayload2);
@@ -595,9 +599,12 @@ const PurchaseBillForm = ({
           return;
         } else {
           const res = await updateUser(finalVendor._id, {
-            openingAmount:
-              Number(finalVendor.openingAmount) +
-              Number(finalTotals.grandTotal - advanceAmount),
+            openingAmount: Number(
+              (
+               Number( finalVendor.openingAmount) +
+                (Number(finalTotals.grandTotal) - Number(advanceAmount))
+              ).toFixed(2)
+            ),
           });
         }
 

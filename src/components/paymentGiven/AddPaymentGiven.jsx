@@ -56,21 +56,22 @@ const AddPaymentGiven = ({
     setPayment({
       ...payment,
       user: selectedUserId,
-      openingAmount: openingBalance,
-      closingAmount: openingBalance, // initial same as opening
+      openingAmount: openingBalance.toFixed(2),
+      closingAmount: openingBalance.toFixed(2), // initial same as opening
     });
   };
 
   // When amount changes -> recalc closing balance
   const handleAmountChange = (e) => {
     const value = e.target.value;
+    const opening = Number(payment.openingAmount || 0);
+
+    const closing = userType === "customer" ? opening + value : opening - value;
+
     setPayment({
       ...payment,
-      advanceAmount: value,
-      closingAmount:
-        userType === "customer"
-          ? payment.openingAmount + Number(value)
-          : payment.openingAmount - Number(value), // ✅ auto calc
+      advanceAmount: value.toFixed(2),
+      closingAmount: closing.toFixed(2),
     });
   };
   // Fetch users (customers + suppliers)
@@ -98,20 +99,28 @@ const AddPaymentGiven = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newPayment = {
-      paymentType: payment.paymentType,
-      ...(userType === "customer"
-        ? { balance: payment.advanceAmount }
-        : {advanceAmount : payment.advanceAmount }),
+    const formattedPayment = {
+    ...payment,
+    // Ensure all amounts are stored with 2 decimals and as numbers
+    advanceAmount: Number(Number(payment.advanceAmount || 0).toFixed(2)),
+    openingAmount: Number(Number(payment.openingAmount || 0).toFixed(2)),
+    closingAmount: Number(Number(payment.closingAmount || 0).toFixed(2)),
+  };
 
-      date: payment.date,
-      client_id: payment.user,
-      organization: organizationId || null,
-      forPayment: userType === "customer" ? "sale" : "purchase", // ✅ differentiate
-      createdBy: webuser?.id || null,
-      narration: "Payment Given",
-      closingAmount: payment.closingAmount,
-    };
+  const newPayment = {
+    paymentType: formattedPayment.paymentType,
+    ...(userType === "customer"
+      ? { balance: formattedPayment.advanceAmount }
+      : { advanceAmount: formattedPayment.advanceAmount }),
+
+    date: formattedPayment.date,
+    client_id: formattedPayment.user,
+    organization: organizationId || null,
+    forPayment: userType === "customer" ? "sale" : "purchase",
+    createdBy: webuser?.id || null,
+    narration: "Payment Given",
+    closingAmount: formattedPayment.closingAmount,
+  };
 
     try {
       setLoading(true);
@@ -133,18 +142,18 @@ const AddPaymentGiven = ({
   return (
     <>
       <DialogTitle>Payment Given</DialogTitle>
-        <IconButton
-                  aria-label="close"
-                  onClick={onClose}
-                  sx={{
-                    position: "absolute",
-                    right: 8,
-                    top: 8,
-                    color: (theme) => theme.palette.grey[500],
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
+      <IconButton
+        aria-label="close"
+        onClick={onClose}
+        sx={{
+          position: "absolute",
+          right: 8,
+          top: 8,
+          color: (theme) => theme.palette.grey[500],
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent dividers>
         <Box display="flex" flexDirection="column" gap={2} mt={1}>
           {/* Radio: Customer or Supplier */}

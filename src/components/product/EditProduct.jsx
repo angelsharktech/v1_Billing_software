@@ -159,6 +159,7 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
       };
 
       const res = await updateProductById(data._id, updatedData);
+      console.log(res)
       if (res) {
         setSnackbarMessage("Product Updated!");
         setSnackbarOpen(true);
