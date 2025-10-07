@@ -31,6 +31,8 @@ import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import CreditScoreIcon from "@mui/icons-material/CreditScore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getOrganizationById } from "../services/Organization";
+import { getUserById } from "../services/UserService";
 
 const navItems = [
   { label: "Dashboard", icon: <DashboardIcon /> },
@@ -91,6 +93,7 @@ const unselectedStyle = {
 const Sidebar = ({ selectedTab, setSelectedTab }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [org, setOrg] = useState({name:"",logo:''})
   const { webuser, logoutUser } = useAuth();
   const navigate = useNavigate();
 
@@ -100,6 +103,22 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
   const refs = useRef([]); // Refs for focusable items
 
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
+ useEffect(() => {
+    const fetchOrganization = async () => {
+      const res = await getUserById(webuser.id);
+      const result = await getOrganizationById(res.organization_id._id);
+      setOrg({
+        name: result.name || "",
+         logo: result.logo
+        ? `${import.meta.env.VITE_API_BASE_URL}${result.logo?.replace(
+            /\\/g,
+            "/"
+          )}`
+        : "",
+      })
+    }
+    fetchOrganization();
+  }, [webuser]);
 
   const handleNavClick = (label) => {
     if (label === "Logout") {
@@ -167,7 +186,8 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
         <Typography fontSize={28} noWrap component="div" mr={2}>
           Angel Bill
         </Typography>
-        <Avatar sx={{ width: 65, height: 65 ,marginTop:'15px' }} />
+        <Avatar  src={org.logo} sx={{ width: 65, height: 65 ,marginTop:'15px' }} />
+        <Typography fontSize={15} noWrap component="div" mt={2}>{org.name}</Typography>
       </Box>
 
       <List style={{ fontSize: "1px",marginTop:'20px' }}>

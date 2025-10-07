@@ -12,3 +12,26 @@ export const getAllOrganization = async () => {
     throw error;
   }
 };
+export const getOrganizationById = async (id) => {
+  try {    
+    const response = await axios.get(`${API_URL}${id}`);    
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching single organization:", error);
+    throw error;
+  }
+};
+export const UpdateOrganization = async (id,data) => {
+  try {    
+    const response = await axios.put(`${API_URL}${id}`,data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });    
+    return response.data;
+  } catch (error) {
+    console.error("Error updating organization:", error);
+    throw error;
+  }
+};

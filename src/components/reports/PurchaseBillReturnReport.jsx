@@ -254,7 +254,9 @@ const PurchaseBillReturnReport = () => {
           <Typography variant="h5" fontWeight={600} mb={2} pt={5}>
             Purchase Return Report
           </Typography>
-          {/* <FilterData value={searchQuery} onChange={handleSearchChange} />
+        </Box>
+        <Box display="flex" alignItems="center" gap={2} mb={2} mr={2}>
+          <FilterData value={searchQuery} onChange={handleSearchChange} />
           <Box display="flex" alignItems="center" gap={2} mb={2} mr={2}>
             <TextField
               label="Start Date"
@@ -289,16 +291,14 @@ const PurchaseBillReturnReport = () => {
             </TextField>
             <Button
               variant="outlined"
-              // sx={{ ml: 2 }}
               onClick={handleExportClick}
-            // endIcon={<MoreVertIcon />}
             >
               <GetAppOutlinedIcon titleAccess="Download As" />
             </Button>
-          </Box> */}
+          </Box>
         </Box>
 
-        {/* <Menu
+         <Menu
           anchorEl={anchorEl}
           open={openExportMenu}
           onClose={handleExportClose}
@@ -327,7 +327,7 @@ const PurchaseBillReturnReport = () => {
           >
             Excel
           </MenuItem>
-        </Menu> */}
+        </Menu> 
 
         <TableContainer
           component={Paper}
@@ -360,9 +360,13 @@ const PurchaseBillReturnReport = () => {
                   <strong>Customer Name</strong>
                 </TableCell>
 
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>GSTIN</strong>
-                </TableCell>
+                {(gstFilter === "gst" || gstFilter === "") && (
+                  <>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>GSTIN</strong>
+                    </TableCell>
+                  </>
+                )}
 
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Rate</strong>
@@ -373,22 +377,26 @@ const PurchaseBillReturnReport = () => {
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Taxable Amount</strong>
                 </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>Gst Rate</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>Total Gst</strong>
-                </TableCell>
+                {(gstFilter === "gst" || gstFilter === "") && (
+                  <>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>Gst Rate</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>Total Gst</strong>
+                    </TableCell>
 
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>CGST</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>SGST</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>IGST</strong>
-                </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>CGST</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>SGST</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>IGST</strong>
+                    </TableCell>
+                  </>
+                )}
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Bill Total (₹)</strong>
                 </TableCell>
@@ -419,9 +427,13 @@ const PurchaseBillReturnReport = () => {
                     <TableCell>{bill.bill_to?.name + " "}</TableCell>
 
                     {/* GST Number */}
-                    <TableCell>
-                      {bill?.bill_to?.gstDetails?.gstNumber || "N/A"}
-                    </TableCell>
+                    {(gstFilter === "gst" || gstFilter === "") && (
+                      <>
+                        <TableCell>
+                          {bill?.bill_to?.gstDetails?.gstNumber || "N/A"}
+                        </TableCell>
+                      </>
+                    )}
 
                     {/* Subtotal for that product (qty * price) */}
                     <TableCell>{product?.unitPrice || "N/A"}</TableCell>
@@ -431,23 +443,26 @@ const PurchaseBillReturnReport = () => {
                         : "₹" + product?.discount || "N/A"}
                     </TableCell>
                     <TableCell>{product?.price || "N/A"}</TableCell>
-                    <TableCell>{product?.gstPercent || "0"}</TableCell>
+                    {(gstFilter === "gst" || gstFilter === "") && (
+                      <>
+                        <TableCell>{product?.gstPercent || "0"}</TableCell>
+                        {/* GST Total for that product */}
+                        <TableCell>
+                          {product?.cgst > 0
+                            ? product?.cgst + product?.sgst
+                            : product?.igst}
+                        </TableCell>
 
-                    {/* GST Total for that product */}
-                    <TableCell>
-                      {product?.cgst > 0
-                        ? product?.cgst + product?.sgst
-                        : product?.igst}
-                    </TableCell>
+                        {/* CGST */}
+                        <TableCell>{product?.cgst}</TableCell>
 
-                    {/* CGST */}
-                    <TableCell>{product?.cgst}</TableCell>
+                        {/* SGST */}
+                        <TableCell>{product?.sgst}</TableCell>
 
-                    {/* SGST */}
-                    <TableCell>{product?.sgst}</TableCell>
-
-                    {/* IGST */}
-                    <TableCell>{product?.igst}</TableCell>
+                        {/* IGST */}
+                        <TableCell>{product?.igst}</TableCell>
+                      </>
+                    )}
 
                     {/* Grand Total (product-wise) */}
                     <TableCell>

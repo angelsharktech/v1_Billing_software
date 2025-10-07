@@ -23,28 +23,13 @@ import CustomerLedger from "../components/ledger/CustomerLedger";
 import SupplierLedger from "../components/ledger/SupplierLedger";
 import SaleBillReturn from "../components/SaleBillReturn";
 import PurchaseBillReturn from "../components/PurchaseBillReturn";
+import Settings from "../components/setting/Settings";
 
 
 
 
 const Dashboard = () => {
   const [selectedTab, setSelectedTab] = useState("Dashboard");
-
-  // // Global keyboard shortcuts
-  // useEffect(() => {
-  //   const handleKeyDown = (e) => {
-  //     if (e.altKey && e.key === "s") {
-  //       e.preventDefault();
-  //       setIsSaleBillOpen(true); // open SaleBill modal
-  //     }
-  //     if (e.altKey && e.key === "q") {
-  //       e.preventDefault();
-  //       setIsQuotationOpen(true); // open Quotation modal
-  //     }
-  //   };
-  //   window.addEventListener("keydown", handleKeyDown);
-  //   return () => window.removeEventListener("keydown", handleKeyDown);
-  // }, []);
 
   const renderContent = () => {
     switch (selectedTab) {
@@ -79,13 +64,12 @@ const Dashboard = () => {
       case "Sale Report":
         return <SaleBillReport/>
 
-    
-
-
       case "Purchase Report":
         return <PurchaseBillReport/>
+
       case "HSN Report":
         return <HsnReport />
+
       case "Quotation":
         return <Quotation />
 
@@ -100,6 +84,9 @@ const Dashboard = () => {
 
       case "Supplier Ledger":
         return <SupplierLedger />
+        
+        case "Settings":
+          return <Settings />
 
       default:
         return <h2></h2>;
@@ -108,7 +95,7 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Navbar />
+      <Navbar setSelectedTab={setSelectedTab}/>
       <Sidebar selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
       <GlobalModals />
       <Box

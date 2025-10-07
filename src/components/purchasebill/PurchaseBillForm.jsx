@@ -192,7 +192,7 @@ const PurchaseBillForm = ({
         const data = await getAllProducts();
         const prod = (data?.data || []).filter(
           (p) =>
-            p?.organization_id === mainUser?.organization_id?._id
+            p?.organization_id === mainUser?.organization_id?._id 
         );
         setProducts(prod);
       } catch (error) {

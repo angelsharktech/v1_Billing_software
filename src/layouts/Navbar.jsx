@@ -14,17 +14,24 @@ import {
   Menu,
   MenuItem,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Link, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../context/AuthContext";
+import Settings from "../components/setting/Settings";
+import { PersonOffOutlined, SettingsApplications } from "@mui/icons-material";
 
-const Navbar = () => {
+const Navbar = ({ setSelectedTab }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { webuser, logoutUser } = useAuth();
   const navigate = useNavigate();
    const [anchorEl, setAnchorEl] = useState(null);
+     const [openSettings, setOpenSettings] = useState(false);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -54,6 +61,12 @@ const Navbar = () => {
     logoutUser();
     navigate("/login");
   };
+   const handleOpenSettings = () => {
+    handleMenuClose();
+    setOpenSettings(true);
+  };
+
+  const handleCloseSettings = () => setOpenSettings(false);
   return (
     <>
      <AppBar
@@ -85,6 +98,13 @@ const Navbar = () => {
           {webuser.name +" "}
         </Typography>
         <Divider></Divider>
+         <MenuItem  onClick={() => {
+            setSelectedTab("Settings");
+            handleMenuClose()}}>
+            <SettingsApplications fontSize="small" sx={{ mr: 1 }} />
+            Settings 
+          </MenuItem>
+        <Divider></Divider>
           <MenuItem onClick={handleLogout}>
             <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
             Logout
@@ -104,6 +124,8 @@ const Navbar = () => {
       >
         {drawer}
       </Drawer>
+        {/* ✅ Settings Dialog */}
+    {/* <Settings openSettings={openSettings} handleCloseSettings={handleCloseSettings}/> */}
     </>
   );
 };
