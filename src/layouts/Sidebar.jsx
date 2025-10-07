@@ -183,14 +183,14 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center" ,flexDirection:'column'}}>
-        <Typography fontSize={28} noWrap component="div" mr={2}>
+        {/* <Typography fontSize={28} noWrap component="div" mr={2}>
           Angel Bill
-        </Typography>
-        <Avatar  src={org.logo} sx={{ width: 65, height: 65 ,marginTop:'15px' }} />
+        </Typography> */}
+        <Avatar  src={org.logo} sx={{ width: 65, height: 65,marginTop:2 }} />
         <Typography fontSize={15} noWrap component="div" mt={2}>{org.name}</Typography>
       </Box>
 
-      <List style={{ fontSize: "1px",marginTop:'20px' }}>
+      <List style={{ fontSize: "1px" }}>
         {navItems.map((item) => {
           if (item.subItems) {
             return (

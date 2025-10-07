@@ -86,7 +86,7 @@ const CustomerDetails = ({
         </Grid>
         <Grid item xs={12} sm={4}width={200}>
           <TextField
-            label="Opening Balance"
+            label="Current Balance"
             fullWidth
             value={customer.openingAmount}
             onChange={(e) =>

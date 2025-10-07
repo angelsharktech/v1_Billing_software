@@ -30,8 +30,8 @@ const Navbar = ({ setSelectedTab }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { webuser, logoutUser } = useAuth();
   const navigate = useNavigate();
-   const [anchorEl, setAnchorEl] = useState(null);
-     const [openSettings, setOpenSettings] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [openSettings, setOpenSettings] = useState(false);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -61,7 +61,7 @@ const Navbar = ({ setSelectedTab }) => {
     logoutUser();
     navigate("/login");
   };
-   const handleOpenSettings = () => {
+  const handleOpenSettings = () => {
     handleMenuClose();
     setOpenSettings(true);
   };
@@ -69,49 +69,62 @@ const Navbar = ({ setSelectedTab }) => {
   const handleCloseSettings = () => setOpenSettings(false);
   return (
     <>
-     <AppBar
-      position="fixed"
-      sx={{
-        background: "linear-gradient(135deg, #182848, #324b84ff)",
-        color: "#fff",
-        borderBottomRightRadius: 40,
-      }}
-    >
-      <Toolbar sx={{ justifyContent: "flex-end" }}>
-        <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-          <Avatar sx={{ width: 35, height: 35 ,marginRight:'35px' }} >U</Avatar>
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-        >
-          <Typography fontWeight="bold" fontSize={14} align="ceter" padding={2}>
-          {webuser.name +" "}
-        </Typography>
-        <Divider></Divider>
-         <MenuItem  onClick={() => {
-            setSelectedTab("Settings");
-            handleMenuClose()}}>
-            <SettingsApplications fontSize="small" sx={{ mr: 1 }} />
-            Settings 
-          </MenuItem>
-        <Divider></Divider>
-          <MenuItem onClick={handleLogout}>
-            <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
-            Logout
-          </MenuItem>
-        </Menu>
-      </Toolbar>
-    </AppBar>
+      <AppBar
+        position="fixed"
+        sx={{
+          background: "linear-gradient(135deg, #182848, #324b84ff)",
+          color: "#fff",
+          borderBottomRightRadius: 40,
+        }}
+      >
+        <Toolbar sx={{ justifyContent: "flex-end" }}>
+          <Typography fontSize={28} noWrap component="div" mr={2}>
+            Angel Bill
+          </Typography>
+          <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+            <Avatar sx={{ width: 35, height: 35, marginRight: "35px" }}>
+              U
+            </Avatar>
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+          >
+            <Typography
+              fontWeight="bold"
+              fontSize={14}
+              align="ceter"
+              padding={2}
+            >
+              {webuser.name + " "}
+            </Typography>
+            <Divider></Divider>
+            <MenuItem
+              onClick={() => {
+                setSelectedTab("Settings");
+                handleMenuClose();
+              }}
+            >
+              <SettingsApplications fontSize="small" sx={{ mr: 1 }} />
+              Settings
+            </MenuItem>
+            <Divider></Divider>
+            <MenuItem onClick={handleLogout}>
+              <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+              Logout
+            </MenuItem>
+          </Menu>
+        </Toolbar>
+      </AppBar>
 
       <Drawer
         anchor="left"
@@ -124,8 +137,8 @@ const Navbar = ({ setSelectedTab }) => {
       >
         {drawer}
       </Drawer>
-        {/* ✅ Settings Dialog */}
-    {/* <Settings openSettings={openSettings} handleCloseSettings={handleCloseSettings}/> */}
+      {/* ✅ Settings Dialog */}
+      {/* <Settings openSettings={openSettings} handleCloseSettings={handleCloseSettings}/> */}
     </>
   );
 };
