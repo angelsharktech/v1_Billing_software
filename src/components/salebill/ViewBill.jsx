@@ -310,6 +310,9 @@ const getDiscountedAmount = (item) => {
             <Typography variant="h6" fontWeight="bold" mt={1}>
               Total: ₹{bill?.grandTotal.toFixed(2)}
             </Typography>
+            <Typography variant="h6" fontWeight="bold" mt={1}>
+              Balance: ₹{bill?.balance.toFixed(2)}
+            </Typography>
           </Grid>
           <Box mt={3} display="flex" justifyContent="flex-end">
             <Button variant="contained" onClick={handlePrint}>
