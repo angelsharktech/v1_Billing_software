@@ -75,7 +75,11 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
           }}
         >
           {/* Logo on the left */}
-          <Avatar src={logo} sx={{ width: 150, height: 150, mr: 20 }} />
+          <img
+            src={logo}
+            alt="Logo"
+            style={{ height: "150px", width: "150px", objectFit: "contain" }}
+          />
 
           {/* Text on the right */}
           <Box textAlign={"center"}>

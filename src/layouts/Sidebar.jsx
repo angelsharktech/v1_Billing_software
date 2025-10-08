@@ -93,7 +93,7 @@ const unselectedStyle = {
 const Sidebar = ({ selectedTab, setSelectedTab }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [org, setOrg] = useState({name:"",logo:''})
+  const [org, setOrg] = useState({ name: "", logo: "" });
   const { webuser, logoutUser } = useAuth();
   const navigate = useNavigate();
 
@@ -103,20 +103,20 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
   const refs = useRef([]); // Refs for focusable items
 
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
- useEffect(() => {
+  useEffect(() => {
     const fetchOrganization = async () => {
       const res = await getUserById(webuser.id);
       const result = await getOrganizationById(res.organization_id._id);
       setOrg({
         name: result.name || "",
-         logo: result.logo
-        ? `${import.meta.env.VITE_API_BASE_URL}${result.logo?.replace(
-            /\\/g,
-            "/"
-          )}`
-        : "",
-      })
-    }
+        logo: result.logo
+          ? `${import.meta.env.VITE_API_BASE_URL}${result.logo?.replace(
+              /\\/g,
+              "/"
+            )}`
+          : "",
+      });
+    };
     fetchOrganization();
   }, [webuser]);
 
@@ -182,12 +182,26 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
         position: "fixed",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center" ,flexDirection:'column'}}>
+      <Box
+        sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}
+      >
         {/* <Typography fontSize={28} noWrap component="div" mr={2}>
           Angel Bill
         </Typography> */}
-        <Avatar  src={org.logo} sx={{ width: 100, height: 100,marginTop:2 }} />
-        <Typography fontSize={15} noWrap component="div" mt={2}>{org.name}</Typography>
+        {/* <Avatar  src={org.logo} sx={{ width: 100, height: 100,marginTop:2 }} /> */}
+        <img
+          src={org.logo}
+          alt="Logo"
+          style={{
+            height: "100px",
+            width: "100px",
+            objectFit: "contain",
+            borderRadius: "15px",
+          }}
+        />
+        <Typography fontSize={15} noWrap component="div" mt={2}>
+          {org.name}
+        </Typography>
       </Box>
 
       <List style={{ fontSize: "1px" }}>
