@@ -41,8 +41,8 @@ const QuotationPrint = React.forwardRef(({ quotation }, ref) => {
             {quotation?.createdBy?.name +
               " " }
           </p> */}
-          <p>{quotation?.createdBy?.address}</p>
-          <p>{quotation?.createdBy?.phone_number}</p>
+          <p>Address : {quotation?.organization_id?.address}</p>
+          <p>Contact Number : {quotation?.organization_id?.phone_number}</p>
         </div>
         <div style={{ textAlign: "right" }}>
           <h2 style={{ color: "#182848", margin: "5" }}>QUOTATION</h2>

@@ -78,7 +78,7 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
           <img
             src={logo}
             alt="Logo"
-            style={{ height: "150px", width: "150px", objectFit: "contain" }}
+            style={{ height: "150px", width: "150px",marginRight:'15%', objectFit: "contain" }}
           />
 
           {/* Text on the right */}
@@ -92,7 +92,10 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
             </Typography>
 
             <Typography variant="body2" fontWeight="bold">
-              {bill.createdBy?.address}
+              {bill.org?.address}
+            </Typography>
+            <Typography variant="body2" fontWeight="bold">
+              {bill.org?.phone_number}
             </Typography>
           </Box>
         </Box>
