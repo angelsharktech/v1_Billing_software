@@ -33,9 +33,7 @@ const CustomerDetails = ({
           freeSolo // allows typing values not in list
           options={customerList}
           getOptionLabel={(option) =>
-            typeof option === "string"
-              ? option
-              : option.name + " " 
+            typeof option === "string" ? option : option.name + " "
           }
           value={
             customerList.find((s) => s.name === customer.name) ||
@@ -116,7 +114,7 @@ const CustomerDetails = ({
         <Grid container spacing={2} mt={1}>
           {billType === "gst" && (
             <>
-              {Object.entries(gstDetails).map(([key, value],i) => (
+              {Object.entries(gstDetails).map(([key, value], i) => (
                 <Grid item xs={12} sm={6} key={key} width={200}>
                   <TextField
                     fullWidth
@@ -136,9 +134,22 @@ const CustomerDetails = ({
                         ...prev,
                         [key]: newValue,
                       }));
-                   
+
+                      if (key === "gstNumber") {
+                        const gstPattern =
+                          /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+                        if (newValue && !gstPattern.test(newValue)) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            gstNumber: "Invalid GST number format",
+                          }));
+                        } else {
+                          setErrors((prev) => ({ ...prev, gstNumber: "" }));
+                        }
+                      }
                     }}
-                    
+                    error={key === "gstNumber" && Boolean(errors?.gstNumber)}
+                    helperText={key === "gstNumber" ? errors?.gstNumber : ""}
                     inputRef={getRef(9 + i)} // ✅ start index 9, increment for each GST field
                     onKeyDown={(e) => handleKeyDown(e, 9 + i, totalFields)}
                   />

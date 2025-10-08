@@ -62,19 +62,21 @@ const AddPaymentReceived = ({
   };
 
   // When amount changes -> recalc closing balance
-  const handleAmountChange = (e) => {
-    const value = e.target.value;
-   const opening = Number(payment.openingAmount || 0);
+ const handleAmountChange = (e) => {
+  const rawValue = e.target.value;
+  const value = parseFloat(rawValue) || 0; // safely convert to number
+  const opening = Number(payment.openingAmount || 0);
 
-    const closing =
-      userType === "customer" ? opening - value : opening + value;
+  const closing =
+    userType === "customer" ? opening - value : opening + value;
 
-    setPayment({
-      ...payment,
-      advanceAmount: value.toFixed(2),
-      closingAmount: closing.toFixed(2),
-    });
-  };
+  setPayment({
+    ...payment,
+    advanceAmount: rawValue, // keep it as string for typing
+    closingAmount: closing.toFixed(2),
+  });
+};
+
   // Fetch users (customers + suppliers)
   useEffect(() => {
     const fetchUsers = async () => {

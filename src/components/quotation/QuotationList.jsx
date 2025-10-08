@@ -31,7 +31,9 @@ import { useAuth } from "../../context/AuthContext";
 import { getUserById } from "../../services/UserService";
 import moment from "moment/moment";
 import QuotationPrint from "../shared/QuotationPrint";
-import {  getQuotationsByOrganization } from "../../services/QuotationService";
+import { getQuotationsByOrganization } from "../../services/QuotationService";
+import { Visibility } from "@mui/icons-material";
+import ViewQuotation from "./ViewQuotation";
 
 const QuotationList = () => {
   const { webuser } = useAuth();
@@ -45,13 +47,15 @@ const QuotationList = () => {
   const [deletedQuotation, setDeletedQuotation] = useState(null);
   const [showPrint, setShowPrint] = useState(false);
   const [printData, setPrintData] = useState();
-const quoteInputRef = useRef(null);
+  const [data, setData] = useState();
+  const [view, setView] = useState(false);
+  const quoteInputRef = useRef(null);
 
-useEffect(() => {
-  if (quoteInputRef.current) {
-    quoteInputRef.current.focus();
-  }
-}, []);
+  useEffect(() => {
+    if (quoteInputRef.current) {
+      quoteInputRef.current.focus();
+    }
+  }, []);
   useEffect(() => {
     const fetchUser = async () => {
       const user = await getUserById(webuser?.id);
@@ -84,12 +88,14 @@ useEffect(() => {
     }
   };
   const handleCloseEdit = () => setOpenEditDialog(false);
+  const handleCloseView = () => setView(false);
 
   const handleDelete = (id) => {
     const quotationToDelete = quotations.find((quote) => quote.id === id);
     setDeletedQuotation(quotationToDelete);
     setQuotations(quotations.filter((quote) => quote.id !== id));
     setSnackbarOpen(true);
+    fetchQuotations();
   };
 
   const handleUndoDelete = () => {
@@ -103,9 +109,12 @@ useEffect(() => {
     setCurrentQuotation(quotation);
     setOpenEditDialog(true);
   };
-
+  const handleView = (rowData) => {
+    setData(rowData);
+    setView(true);
+  };
   const handlePrint = (data) => {
-    try {      
+    try {
       setPrintData(data);
       setShowPrint(true); // Show quotation for printing
       setTimeout(() => {
@@ -179,8 +188,10 @@ useEffect(() => {
               <TableCell sx={{ fontWeight: "bold" }}>Valid Up To</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Customer Name</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Total (₹)</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
+              {/* <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell> */}
+              <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -211,14 +222,21 @@ useEffect(() => {
                   </TableCell>
                   <TableCell>{quote.customer.name}</TableCell>
                   <TableCell>{quote.grandTotal}</TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <Chip
                       label={quote.status}
                       color={getStatusColor(quote.status)}
                       size="small"
                     />
-                  </TableCell>
-                  <TableCell>
+                  </TableCell> */}
+                  <TableCell align="center">
+                    <IconButton
+                      color="primary"
+                      aria-label="edit"
+                      onClick={() => handleView(quote._id)}
+                    >
+                      <Visibility style={{ color: "#1976d2" }} />
+                    </IconButton>
                     <IconButton
                       color="primary"
                       aria-label="edit"
@@ -226,19 +244,19 @@ useEffect(() => {
                     >
                       <EditIcon />
                     </IconButton>
-                    {/* <IconButton
-                    color="error"
-                    aria-label="delete"
-                    onClick={() => handleDelete(quote._id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton> */}
                     <IconButton
                       color="success"
                       aria-label="print"
                       onClick={() => handlePrint(quote)}
                     >
                       <PrintIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      aria-label="delete"
+                      onClick={() => handleDelete(quote._id)}
+                    >
+                      <DeleteIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -308,10 +326,30 @@ useEffect(() => {
         </Table>
       </TableContainer>
 
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+          // action={
+          //   <Button color="inherit" size="small" onClick={handleUndoDelete}>
+          //     UNDO
+          //   </Button>
+          // }
+        >
+          Quotation {deletedQuotation?.id} has been deleted.
+        </Alert>
+      </Snackbar>
+
       <AddQuotationDialog
         open={openAddDialog}
         handleClose={() => setOpenAddDialog(false)}
-        mainUser={mainUser}
         refresh={fetchQuotations}
       />
       <EditQuotationDialog
@@ -320,32 +358,8 @@ useEffect(() => {
         refresh={fetchQuotations}
         quotation={currentQuotation}
       />
-      {/* <PrintInvoiceDialog
-        open={openPrintDialog}
-        onClose={() => setOpenPrintDialog(false)}
-        quotation={currentQuotation}
-      /> */}
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-          action={
-            <Button color="inherit" size="small" onClick={handleUndoDelete}>
-              UNDO
-            </Button>
-          }
-        >
-          Quotation {deletedQuotation?.id} has been deleted.
-        </Alert>
-      </Snackbar>
-
+      <ViewQuotation open={view} data={data} handleCloseView={handleCloseView} />
       {showPrint && printData && (
         <div className="print-only">
           <QuotationPrint quotation={printData} />

@@ -342,7 +342,7 @@ const PurchaseBillForm = ({
     try {
       let finalVendor = { ...vendor };
 
-      if (!vendor.phone_number || !vendor.name) {
+      if (!vendor.phone_number || !vendor.name || vendor.phone_number?.length > 10) {
         setSnackbarMessage("Please fill vendor details!");
         setSnackbarOpen(true);
         return;
@@ -359,7 +359,28 @@ const PurchaseBillForm = ({
           return;
         }
       }
+ // ✅ GST number validation (before creating new customer)
+    if (billType === "gst") {
+      const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
+      if (!gstDetails.gstNumber) {
+        setSnackbarMessage("GST Number is required for GST Bill!");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      if (!gstRegex.test(gstDetails.gstNumber)) {
+        setSnackbarMessage("Invalid GST Number format!");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      if (!gstDetails.legalName || !gstDetails.state) {
+        setSnackbarMessage("Please fill Legal Name and State for GST!");
+        setSnackbarOpen(true);
+        return;
+      }
+    }
       // register vendor if not existing
       if (!isExistingVendor) {
         const vendorRole = roles.find(

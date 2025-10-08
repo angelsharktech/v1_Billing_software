@@ -186,7 +186,7 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
         {/* <Typography fontSize={28} noWrap component="div" mr={2}>
           Angel Bill
         </Typography> */}
-        <Avatar  src={org.logo} sx={{ width: 65, height: 65,marginTop:2 }} />
+        <Avatar  src={org.logo} sx={{ width: 100, height: 100,marginTop:2 }} />
         <Typography fontSize={15} noWrap component="div" mt={2}>{org.name}</Typography>
       </Box>
 

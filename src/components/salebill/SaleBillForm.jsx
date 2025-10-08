@@ -411,7 +411,7 @@ const SaleBillForm = ({
     try {
       let finalCustomer = { ...customer };
 
-      if (!customer.phone_number || !customer.name) {
+      if (!customer.phone_number || !customer.name || customer.phone_number?.length > 10) {
         setSnackbarMessage("Please fill customer details!");
         setSnackbarOpen(true);
         return;
@@ -424,6 +424,28 @@ const SaleBillForm = ({
           return;
         }
       }
+  // ✅ GST number validation (before creating new customer)
+    if (billType === "gst") {
+      const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+      if (!gstDetails.gstNumber) {
+        setSnackbarMessage("GST Number is required for GST Bill!");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      if (!gstRegex.test(gstDetails.gstNumber)) {
+        setSnackbarMessage("Invalid GST Number format!");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      if (!gstDetails.legalName || !gstDetails.state) {
+        setSnackbarMessage("Please fill Legal Name and State for GST!");
+        setSnackbarOpen(true);
+        return;
+      }
+    }
 
       if (!isExistingCustomer) {
         const customerRole = roles.find(
@@ -466,20 +488,13 @@ const SaleBillForm = ({
           address: res.data.data.address || "",
           phone_number: res.data.data.phone_number,
         });
+        setGstDetails({
+          gstNumber: res.data.data.gstDetails.gstNumber,
+          legalName: res.data.data.gstDetails.legalName,
+          state: res.data.data.gstDetails.state,
+        });
       
       }
-
-      if (billType === "gst"){
-          if(gstDetails.gstNumber === "" &&
-        gstDetails.legalName === "" &&
-        gstDetails.state === ""){
-          setSnackbarMessage("Please Fill Gst Details");
-          setSnackbarOpen(true);
-          return;
-
-        }
-         
-    }
       // ---------- compute finalProducts & totals (replace your existing block) ----------
       const finalProducts = selectedProducts.map((product) => {
         const qty = Number(product.qty) || 0;

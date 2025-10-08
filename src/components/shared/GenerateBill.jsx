@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Avatar,
   Box,
   Divider,
   Grid,
@@ -14,24 +15,27 @@ import {
 } from "@mui/material";
 
 const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
-
   // ✅ Unified handling
   const isGST = bill.billType?.toLowerCase() === "gst";
 
   const cgst = bill?.products.reduce((acc, p) => {
-    const val = parseFloat(p.cgst) || 0;  // ensure number
+    const val = parseFloat(p.cgst) || 0; // ensure number
     return acc + val;
   }, 0);
   const sgst = bill?.products.reduce((acc, p) => {
-    const val = parseFloat(p.sgst) || 0;  // ensure number
+    const val = parseFloat(p.sgst) || 0; // ensure number
     return acc + val;
   }, 0);
   const igst = bill?.products.reduce((acc, p) => {
-    const val = parseFloat(p.igst) || 0;  // ensure number
+    const val = parseFloat(p.igst) || 0; // ensure number
     return acc + val;
   }, 0);
   const customer = bill.biller || bill.bill_to;
   const orgName = typeof bill.org === "string" ? bill.org : bill.org?.name;
+  const logo = `${import.meta.env.VITE_API_BASE_URL}${bill.org?.logo?.replace(
+    /\\/g,
+    "/"
+  )}`;
   const orgId = typeof bill.org === "string" ? bill.org : bill.org?._id;
 
   // const firmName = typeof bill.firm_id === "string" ? bill.firm_id : bill.firm_id?.name;
@@ -44,7 +48,7 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
     igst: bill.igst,
     grandTotal: bill.grandTotal,
   };
- 
+
   return (
     // <Box sx={{ p: 4, minHeight: "100vh" }}>
     <Paper
@@ -70,9 +74,11 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
             ml: 9,
           }}
         >
+          {/* Logo on the left */}
+          <Avatar src={logo} sx={{ width: 150, height: 150, mr: 20 }} />
 
-          {/* Text content on right */}
-          <Box sx={{ ml: 3 ,textAlign:'center' }} >
+          {/* Text on the right */}
+          <Box textAlign={"center"}>
             <Typography
               variant="h5"
               fontWeight="bold"
@@ -84,7 +90,6 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
             <Typography variant="body2" fontWeight="bold">
               {bill.createdBy?.address}
             </Typography>
-
           </Box>
         </Box>
 
@@ -104,7 +109,13 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
             </Typography>
             <Typography p={0.5}>{customer?.address}</Typography>
             <Typography p={0.5}>{customer?.phone_number}</Typography>
-            <Typography p={0.5}>GSTIN: {customer?.gstDetails?.gstNumber}</Typography>
+            {bill.billType?.toLowerCase() === "gst" && (
+              <>
+                <Typography p={0.5}>
+                  GSTIN: {customer?.gstDetails?.gstNumber}
+                </Typography>
+              </>
+            )}
           </Grid>
           {/* </Grid> */}
           <hr></hr>
@@ -116,7 +127,6 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
             <Typography p={0.5}>
               <strong>Date: {new Date().toLocaleDateString()}</strong>
             </Typography>
-           
           </Grid>
         </Grid>
       </Box>
@@ -221,29 +231,29 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
               {/* Group headers */}
               {cgst > 0 && (
                 <>
-                <TableCell
-                  colSpan={2}
-                  align="center"
-                  sx={{
-                    border: "1px solid #ccc",
-                    fontWeight: "bold",
-                    width: "9%",
-                  }}
-                >
-                  CGST
-                </TableCell>
-              
-                <TableCell
-                  colSpan={2}
-                  align="center"
-                  sx={{
-                    border: "1px solid #ccc",
-                    fontWeight: "bold",
-                    width: "9%",
-                  }}
-                >
-                  SGST
-                </TableCell>
+                  <TableCell
+                    colSpan={2}
+                    align="center"
+                    sx={{
+                      border: "1px solid #ccc",
+                      fontWeight: "bold",
+                      width: "9%",
+                    }}
+                  >
+                    CGST
+                  </TableCell>
+
+                  <TableCell
+                    colSpan={2}
+                    align="center"
+                    sx={{
+                      border: "1px solid #ccc",
+                      fontWeight: "bold",
+                      width: "9%",
+                    }}
+                  >
+                    SGST
+                  </TableCell>
                 </>
               )}
               {igst > 0 && (
@@ -389,19 +399,18 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
                     <TableCell
                       sx={{ border: "1px solid #ccc", textAlign: "center" }}
                     >
-                      {item.gstPercent/2 || 0}
+                      {item.gstPercent / 2 || 0}
                     </TableCell>
                     <TableCell
                       sx={{ border: "1px solid #ccc", textAlign: "right" }}
                     >
                       {item.cgst?.toFixed(2) || "0.00"}
                     </TableCell>
-                  
-                  
+
                     <TableCell
                       sx={{ border: "1px solid #ccc", textAlign: "center" }}
                     >
-                      {item.gstPercent/2  || 0}
+                      {item.gstPercent / 2 || 0}
                     </TableCell>
                     <TableCell
                       sx={{ border: "1px solid #ccc", textAlign: "right" }}
@@ -431,7 +440,9 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
                 <TableCell
                   sx={{ border: "1px solid #ccc", textAlign: "right" }}
                 >
-                  {cgst> 0 ? (item.price + item.cgst + item.sgst)?.toFixed(2) : (item.price + item.igst )?.toFixed(2)}
+                  {cgst > 0
+                    ? (item.price + item.cgst + item.sgst)?.toFixed(2)
+                    : (item.price + item.igst)?.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
@@ -439,67 +450,65 @@ const GenerateBill = React.forwardRef(({ bill, billName }, ref) => {
         </Table>
       </TableContainer>
 
-      
-       <div
-          style={{ width: "35%", border: "1px solid #ccc", marginTop: "10px" }}
+      <div
+        style={{ width: "35%", border: "1px solid #ccc", marginTop: "10px" }}
+      >
+        <table
+          width="100%"
+          cellPadding="8"
+          style={{ borderCollapse: "collapse" }}
         >
-          <table
-            width="100%"
-            cellPadding="8"
-            style={{ borderCollapse: "collapse" }}
-          >
-            <tbody>
-              <tr>
-                <td>Subtotal</td>
-                <td style={{ textAlign: "right" }}>
-                  ₹ {bill.subtotal?.toFixed(2)}
-                </td>
-              </tr>
+          <tbody>
+            <tr>
+              <td>Subtotal</td>
+              <td style={{ textAlign: "right" }}>
+                ₹ {bill.subtotal?.toFixed(2)}
+              </td>
+            </tr>
             {cgst > 0 && (
               <>
-              <tr>
-                <td>CGST </td>
-                <td style={{ textAlign: "right" }}> ₹ {cgst}</td>
-              </tr>
-              <tr>
-                <td>SGST </td>
-                <td style={{ textAlign: "right" }}>₹ {sgst}</td>
-              </tr>
+                <tr>
+                  <td>CGST </td>
+                  <td style={{ textAlign: "right" }}> ₹ {cgst}</td>
+                </tr>
+                <tr>
+                  <td>SGST </td>
+                  <td style={{ textAlign: "right" }}>₹ {sgst}</td>
+                </tr>
               </>
             )}
-            {igst > 0 &&(
-
+            {igst > 0 && (
               <tr>
                 <td>IGST: </td>
                 <td style={{ textAlign: "right" }}>₹ {igst}</td>
               </tr>
             )}
 
-              <tr style={{ fontWeight: "bold" }}>
-                <td>Total</td>
-                <td style={{ textAlign: "right" }}>
-                  ₹{bill.grandTotal?.toFixed(2)}
-                </td>
-              </tr>
-             
-              <tr style={{ fontWeight: "bold" }}>
-                <td>Paid Amount</td>
-                <td style={{ textAlign: "right" }}>
-                   ₹ {bill.advance > 0 ? bill.advance?.toFixed(2) : bill.grandTotal}
-                </td>
-              </tr>
-              {bill.balance > 0 && (
+            <tr style={{ fontWeight: "bold" }}>
+              <td>Total</td>
+              <td style={{ textAlign: "right" }}>
+                ₹{bill.grandTotal?.toFixed(2)}
+              </td>
+            </tr>
+
+            <tr style={{ fontWeight: "bold" }}>
+              <td>Paid Amount</td>
+              <td style={{ textAlign: "right" }}>
+                ₹{" "}
+                {bill.advance > 0 ? bill.advance?.toFixed(2) : bill.grandTotal}
+              </td>
+            </tr>
+            {bill.balance > 0 && (
               <tr style={{ fontWeight: "bold" }}>
                 <td>Balance</td>
                 <td style={{ textAlign: "right" }}>
                   ₹{bill.balance?.toFixed(2)}
                 </td>
-              </tr>)}
-             
-            </tbody>
-          </table>
-        
-        </div>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Signature */}
       <Box display="flex" justifyContent="center" mt={4}>

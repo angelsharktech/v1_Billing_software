@@ -1,8 +1,13 @@
 import { Box, Paper } from "@mui/material";
+import moment from "moment";
 
 import React from "react";
 
 const QuotationPrint = React.forwardRef(({ quotation }, ref) => {
+  const logo = `${import.meta.env.VITE_API_BASE_URL}${quotation?.organization_id?.logo?.replace(
+    /\\/g,
+    "/"
+  )}`;
   const termsArray = quotation?.terms
     ?.split(/\d+\./) // split on "1." "2." etc
     ?.map((term) => term.trim()) // remove spaces
@@ -23,14 +28,19 @@ const QuotationPrint = React.forwardRef(({ quotation }, ref) => {
     >
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
+         <img
+            src={logo}
+            alt="Logo"
+            style={{ height: "150px", width: "150px", objectFit: "contain" }}
+          />
+        <div style={{textAlign:"center"}}>
           <h2 style={{ color: "#182848", margin: "5" }}>
             {quotation?.organization_id?.name}
           </h2>
-          <p>
+          {/* <p>
             {quotation?.createdBy?.name +
               " " }
-          </p>
+          </p> */}
           <p>{quotation?.createdBy?.address}</p>
           <p>{quotation?.createdBy?.phone_number}</p>
         </div>
@@ -44,7 +54,11 @@ const QuotationPrint = React.forwardRef(({ quotation }, ref) => {
             <tbody>
               <tr>
                 <td>Date</td>
-                <td>{new Date(quotation.createdAt).toLocaleDateString()}</td>
+                <td>{moment(quotation?.date).format('DD/MM/YYYY')}</td>
+              </tr>
+              <tr>
+                <td>Valid Up To</td>
+                <td>{(moment(quotation?.validUpTo).format('DD/MM/YYYY') || "-")}</td>
               </tr>
               <tr>
                 <td>Quote #</td>
@@ -145,6 +159,7 @@ const QuotationPrint = React.forwardRef(({ quotation }, ref) => {
           </table>
         </div>
       </div>
+      {termsArray ? (<>
        <div
             style={{
               textAlign: "left",
@@ -159,6 +174,7 @@ const QuotationPrint = React.forwardRef(({ quotation }, ref) => {
               ))}
             </ol>
           </div>
+          </>): (<></>)}
     </Paper>
   );
 });

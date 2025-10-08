@@ -17,6 +17,7 @@ import { Delete, Add } from "@mui/icons-material";
 import moment from "moment";
 import { updateQuotation } from "../../services/QuotationService";
 import QuotationPrint from "../shared/QuotationPrint";
+import CloseIcon from "@mui/icons-material/Close";
 
 // Example API import
 // import { updateQuotation } from "../../services/quotationService";
@@ -24,6 +25,7 @@ import QuotationPrint from "../shared/QuotationPrint";
 const EditQuotationDialog = ({ open, onClose, quotation, refresh }) => {
   const [formData, setFormData] = useState({
     quotationNo: "",
+    validUpTo:"",
     date: "",
     customer: { name: "", email: "", phone: "", address: "" },
     status: "",
@@ -40,8 +42,13 @@ const EditQuotationDialog = ({ open, onClose, quotation, refresh }) => {
   useEffect(() => {
     if (quotation) {
       setFormData({
-        quotationNo: quotation.quotationNo || "",
-        date: moment(quotation.date).format("YYYY-MM-DD"),
+        quotationNo: quotation.quotationNo || "",         
+        date: quotation.date
+        ? moment(quotation.date).format("YYYY-MM-DD")
+        : "",
+      validUpTo: quotation.validUpTo
+        ? moment(quotation.validUpTo).format("YYYY-MM-DD")
+        : "",
         customer: quotation.customer || {
           name: "",
           email: "",
@@ -49,7 +56,7 @@ const EditQuotationDialog = ({ open, onClose, quotation, refresh }) => {
           address: "",
           terms :"",
         },
-        status: quotation.status || "Draft",
+        status: quotation.status ,
         products: quotation.products || [],
         subtotal: quotation.subtotal || 0,
         taxTotal: quotation.taxTotal || 0,
@@ -148,7 +155,13 @@ const EditQuotationDialog = ({ open, onClose, quotation, refresh }) => {
   const handleSubmit = async () => {
     try {
       // call API
-      const response = await updateQuotation(quotation._id, formData);
+      const payload = {
+      ...formData,
+      date: new Date(formData.date),
+      validUpTo: new Date(formData.validUpTo),
+    };
+    
+      const response = await updateQuotation(quotation._id, payload);
 
       if (response.status === true) {
         setSnackbarOpen(true);
@@ -169,6 +182,18 @@ const EditQuotationDialog = ({ open, onClose, quotation, refresh }) => {
     <>
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
         <DialogTitle>Edit Quotation</DialogTitle>
+         <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -186,6 +211,17 @@ const EditQuotationDialog = ({ open, onClose, quotation, refresh }) => {
                 label="Date"
                 name="date"
                 value={formData.date}
+                onChange={handleChange}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                type="date"
+                label="Valid Up To"
+                name="validUpTo"
+                 value={formData.validUpTo || ""}
                 onChange={handleChange}
                 fullWidth
                 InputLabelProps={{ shrink: true }}
@@ -379,13 +415,13 @@ const EditQuotationDialog = ({ open, onClose, quotation, refresh }) => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} sx={{ color: "#2F4F4F" }}>
+          <Button onClick={onClose} sx={{ color: "#182848" }}>
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
             variant="contained"
-            sx={{ backgroundColor: "#2F4F4F", color: "#fff" }}
+            sx={{ backgroundColor: "#182848", color: "#fff" }}
           >
             Save
           </Button>

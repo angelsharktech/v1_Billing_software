@@ -93,52 +93,58 @@ const VendorDetails = ({
         </Grid>
         <Grid item xs={12} sm={4} width={200}>
           <TextField
-            label="Current Balance"
             fullWidth
+            label="Current Balance "
             value={vendor.openingAmount}
             onChange={(e) =>
               setVendor({ ...vendor, openingAmount: e.target.value })
             }
             disabled={isExistingVendor}
-           
           />
         </Grid>
         {/* Vendor Gst Details */}
         {billType === "gst" && (
           <>
-            <Grid item xs={12} sm={4} width={200}>
-              <TextField
-                label="GST Number"
-                fullWidth
-                value={gstDetails?.gstNumber || ""}
-                onChange={(e) =>
-                  setGstDetails({ ...gstDetails, gstNumber: e.target.value })
-                }
-                disabled={isExistingVendor}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4} width={200}>
-              <TextField
-                label="Legal Name"
-                fullWidth
-                value={gstDetails?.legalName || ""}
-                onChange={(e) =>
-                  setGstDetails({ ...gstDetails, legalName: e.target.value })
-                }
-                disabled={isExistingVendor}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4} width={200}>
-              <TextField
-                label="State"
-                fullWidth
-                value={gstDetails?.state || ""}
-                onChange={(e) =>
-                  setGstDetails({ ...gstDetails, state: e.target.value })
-                }
-                disabled={isExistingVendor}
-              />
-            </Grid>
+            {Object.entries(gstDetails).map(([key, value], i) => (
+              <Grid item xs={12} sm={6} key={key} width={200}>
+                <TextField
+                  fullWidth
+                  label={
+                    key === "legalName"
+                      ? "Business Name"
+                      : key
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (s) => s.toUpperCase())
+                  }
+                  name={key}
+                  value={value}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+
+                    setGstDetails((prev) => ({
+                      ...prev,
+                      [key]: newValue,
+                    }));
+
+                    if (key === "gstNumber") {
+                      const gstPattern =
+                        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+                      if (newValue && !gstPattern.test(newValue)) {
+                        setErrors((prev) => ({
+                          ...prev,
+                          gstNumber: "Invalid GST number format",
+                        }));
+                      } else {
+                        setErrors((prev) => ({ ...prev, gstNumber: "" }));
+                      }
+                    }
+                  }}
+                  error={key === "gstNumber" && Boolean(errors?.gstNumber)}
+                  helperText={key === "gstNumber" ? errors?.gstNumber : ""}
+                 
+                />
+              </Grid>
+            ))}
           </>
         )}
         {/* <Grid item xs={12} sm={4} width={200}>

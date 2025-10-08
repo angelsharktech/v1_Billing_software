@@ -177,6 +177,11 @@ const AddVendor = ({ open, handleClose, refresh }) => {
         setSnackbarOpen(true);
         return;
       }
+      if (formData.phone_number.length > 10) {
+      setSnackbarMessage("Enter Valid Phone Number!");
+      setSnackbarOpen(true);
+      return;
+    }
       const payload = {
         ...formData,
         bankDetails,
