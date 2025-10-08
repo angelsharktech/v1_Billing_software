@@ -33,8 +33,6 @@ const style = {
 };
 
 const ViewBill = ({ open, data, handleCloseView }) => {
-
-
   const [bill, setBill] = useState();
   const [printData, setPrintData] = useState();
   const [showPrint, setShowPrint] = useState(false);
@@ -62,35 +60,34 @@ const ViewBill = ({ open, data, handleCloseView }) => {
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
   };
- // Calculate discounted taxable value for one product
-const getDiscountedAmount = (item) => {
-  
-  const price = sanitizeNumber(item.unitPrice);
-  const qty = sanitizeNumber(item.qty);
-  const base = price * qty;
+  // Calculate discounted taxable value for one product
+  const getDiscountedAmount = (item) => {
+    const price = sanitizeNumber(item.unitPrice);
+    const qty = sanitizeNumber(item.qty);
+    const base = price * qty;
 
-  if (!item.discount) return base;
+    if (!item.discount) return base;
 
-  const discountStr = item.discount.toString();
+    const discountStr = item.discount.toString();
 
-  if (discountStr.includes("%")) {
-    const percent = parseFloat(discountStr) || 0;
-    return base - (base * percent) / 100;
-  } else {
-    const flat = parseFloat(discountStr) || 0;
-    return base - flat;
-  }
-};
+    if (discountStr.includes("%")) {
+      const percent = parseFloat(discountStr) || 0;
+      return base - (base * percent) / 100;
+    } else {
+      const flat = parseFloat(discountStr) || 0;
+      return base - flat;
+    }
+  };
   const cgst = bill?.products.reduce((acc, p) => {
-    const val = parseFloat(p.cgst) || 0;  // ensure number
+    const val = parseFloat(p.cgst) || 0; // ensure number
     return acc + val;
   }, 0);
   const sgst = bill?.products.reduce((acc, p) => {
-    const val = parseFloat(p.sgst) || 0;  // ensure number
+    const val = parseFloat(p.sgst) || 0; // ensure number
     return acc + val;
   }, 0);
   const igst = bill?.products.reduce((acc, p) => {
-    const val = parseFloat(p.igst) || 0;  // ensure number
+    const val = parseFloat(p.igst) || 0; // ensure number
     return acc + val;
   }, 0);
 
@@ -102,7 +99,7 @@ const getDiscountedAmount = (item) => {
         window.print();
         setShowPrint(false); // Optional
       }, 500);
-    } catch (error) { }
+    } catch (error) {}
   };
   if (!open) return null;
   return (
@@ -129,7 +126,6 @@ const getDiscountedAmount = (item) => {
               Invoice Number: {bill?.bill_number} <br />
               Date: {moment(bill?.createdAt).format("DD/MM/YYYY")}
             </Typography>
-
           </Box>
           {/* Invoice Info */}
           <Box mt={3}>
@@ -177,7 +173,7 @@ const getDiscountedAmount = (item) => {
                   >
                     Price
                   </TableCell>
-                   <TableCell
+                  <TableCell
                     sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
                   >
                     Qty
@@ -186,7 +182,7 @@ const getDiscountedAmount = (item) => {
                     sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
                   >
                     Discount
-                  </TableCell> 
+                  </TableCell>
                   {bill?.billType === "gst" && (
                     <TableCell
                       sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
@@ -216,8 +212,6 @@ const getDiscountedAmount = (item) => {
                       IGST
                     </TableCell>
                   )}
-
-                 
 
                   <TableCell
                     sx={{ border: "1px solid #ccc", fontWeight: "bold" }}
@@ -250,10 +244,11 @@ const getDiscountedAmount = (item) => {
                       {item.qty}
                     </TableCell>
                     <TableCell sx={{ border: "1px solid #ccc" }}>
-                      {item.discount.includes('%')?item.discount : '₹' + item.discount}
-                    </TableCell> 
+                      {item.discount.includes("%")
+                        ? item.discount
+                        : "₹" + item.discount}
+                    </TableCell>
                     {bill?.billType === "gst" && (
-
                       <TableCell sx={{ border: "1px solid #ccc" }}>
                         {item.gstPercent}
                       </TableCell>
@@ -269,18 +264,23 @@ const getDiscountedAmount = (item) => {
                         </TableCell>
                       </>
                     )}
-                    {igst > 0 && (<>
-                      <TableCell sx={{ border: "1px solid #ccc" }}>
-                        ₹{item.igst.toFixed(2)}
-                      </TableCell>
-                    </>)}
-                    
+                    {igst > 0 && (
+                      <>
+                        <TableCell sx={{ border: "1px solid #ccc" }}>
+                          ₹{item.igst.toFixed(2)}
+                        </TableCell>
+                      </>
+                    )}
 
                     <TableCell sx={{ border: "1px solid #ccc" }}>
                       ₹{getDiscountedAmount(item)}
                     </TableCell>
                     <TableCell sx={{ border: "1px solid #ccc" }}>
-                      ₹{(item.cgst > 0 ? getDiscountedAmount(item) + item.cgst + item.sgst : getDiscountedAmount(item) + item.igst).toFixed(2)}
+                      ₹
+                      {(item.cgst > 0
+                        ? getDiscountedAmount(item) + item.cgst + item.sgst
+                        : getDiscountedAmount(item) + item.igst
+                      ).toFixed(2)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -312,7 +312,6 @@ const getDiscountedAmount = (item) => {
                 )}
               </>
             )}
-
 
             <Typography variant="h6" fontWeight="bold" mt={1}>
               Total: ₹{bill?.grandTotal.toFixed(2)}
@@ -386,11 +385,11 @@ const getDiscountedAmount = (item) => {
               </Grid>
             </Grid>
           </Box> */}
-          <Box mt={3} display="flex" justifyContent="flex-end">
+          {/* <Box mt={3} display="flex" justifyContent="flex-end">
             <Button variant="contained" onClick={handlePrint}>
               Print
             </Button>
-          </Box>
+          </Box> */}
         </Box>
       </Modal>
 

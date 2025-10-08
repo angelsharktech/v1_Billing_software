@@ -382,11 +382,11 @@ const getDiscountedAmount = (item) => {
               </Grid>
             </Grid>
           </Box> */}
-          <Box mt={3} display="flex" justifyContent="flex-end">
+          {/* <Box mt={3} display="flex" justifyContent="flex-end">
             <Button variant="contained" onClick={handlePrint}>
               Print
             </Button>
-          </Box>
+          </Box> */}
         </Box>
       </Modal>
 

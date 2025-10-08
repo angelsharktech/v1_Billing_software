@@ -229,6 +229,7 @@ const getDiscountedAmount = (item) => {
                   >
                     Total
                   </TableCell>
+                  
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -314,11 +315,11 @@ const getDiscountedAmount = (item) => {
               Balance: ₹{bill?.balance.toFixed(2)}
             </Typography>
           </Grid>
-          <Box mt={3} display="flex" justifyContent="flex-end">
+          {/* <Box mt={3} display="flex" justifyContent="flex-end">
             <Button variant="contained" onClick={handlePrint}>
               Print
             </Button>
-          </Box>
+          </Box> */}
         </Box>
       </Modal>
 

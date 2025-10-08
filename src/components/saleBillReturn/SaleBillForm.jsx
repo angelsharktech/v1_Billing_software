@@ -383,7 +383,7 @@ const SaleBillForm = ({
     try {
       let finalCustomer = { ...customer };
 
-      if (!customer.phone_number || !customer.name) {
+      if (!customer.phone_number || !customer.name || customer.phone_number?.length > 10) {
         setSnackbarMessage("Please fill customer details!");
         setSnackbarOpen(true);
         return;
@@ -480,8 +480,8 @@ const SaleBillForm = ({
         billDate: billDate,
         qty: selectedProducts.length,
         paymentType: paymentType,
-        advance: 0,
-        balance: Number(finalTotals.grandTotal).toFixed(2),
+        advance: Number(finalTotals.grandTotal).toFixed(2),
+        balance: 0,
         isReturn: true,
         balancePayMode:
           (paymentDetails.balancePayMode || "") +

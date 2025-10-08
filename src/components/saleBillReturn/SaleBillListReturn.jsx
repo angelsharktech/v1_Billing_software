@@ -22,6 +22,7 @@ import moment from "moment";
 import {
   cancelSaleBill,
   getAllSaleBills,
+  getSaleBillById,
   getSaleBillByOrganization,
 } from "../../services/SaleBillService";
 import CreateSaleBill from "./CreateSaleReturn";
@@ -34,6 +35,8 @@ import { useAuth } from "../../context/AuthContext";
 import { getUserById } from "../../services/UserService";
 import { useNavigate } from "react-router-dom";
 import CancelIcon from "@mui/icons-material/Cancel";
+import GenerateBill from "../shared/GenerateBill";
+import PrintIcon from "@mui/icons-material/Print";
 
 const SaleBillList = () => {
   const { webuser } = useAuth();
@@ -49,6 +52,8 @@ const SaleBillList = () => {
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState();
   const [edit, setEdit] = useState(false);
+   const [printData, setPrintData] = useState();
+    const [showPrint, setShowPrint] = useState(false);
 
   const handleCloseEdit = () => setEdit(false);
   const handleOpen = () => setOpen(true);
@@ -136,6 +141,18 @@ const SaleBillList = () => {
   const handleEditBill = (rowData) => {
     setEditData(rowData);
     setEdit(true);
+  };
+  const handlePrint = async (bill) => {
+    try {
+      const res = await getSaleBillById(bill._id);
+
+      setPrintData(res.data);
+      setShowPrint(true); // Show bill for printing
+      setTimeout(() => {
+        window.print();
+        setShowPrint(false); // Optional
+      }, 500);
+    } catch (error) {}
   };
   const handleCancelBill = async (id) => {
     if (window.confirm("Are you sure you want to delete this bill?")) {
@@ -308,6 +325,13 @@ const SaleBillList = () => {
                     >
                       <Visibility style={{ color: "#1976d2" }} />
                     </IconButton>
+                    <IconButton
+                      color="success"
+                      aria-label="print"
+                      onClick={() => handlePrint(bill)}
+                    >
+                      <PrintIcon />
+                    </IconButton>
                     {/* <IconButton
                       color="inherit"
                       onClick={() => handleEditBill(bill)}
@@ -383,6 +407,11 @@ const SaleBillList = () => {
         refresh={fetchBills}
       />
       <ViewBill open={view} data={data} handleCloseView={handleCloseView} />
+      {showPrint && printData && (
+        <div className="print-only">
+          <GenerateBill bill={printData} billName={"SALE"} />
+        </div>
+      )}
     </>
   );
 };

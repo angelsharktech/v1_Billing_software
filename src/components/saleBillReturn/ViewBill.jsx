@@ -304,11 +304,11 @@ const getDiscountedAmount = (item) => {
               Total: ₹{bill?.grandTotal.toFixed(2)}
             </Typography>
           </Grid>
-          <Box mt={3} display="flex" justifyContent="flex-end">
+          {/* <Box mt={3} display="flex" justifyContent="flex-end">
             <Button variant="contained" onClick={handlePrint}>
               Print
             </Button>
-          </Box>
+          </Box> */}
         </Box>
       </Modal>
 

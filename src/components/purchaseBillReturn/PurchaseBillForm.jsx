@@ -338,7 +338,7 @@ const PurchaseBillForm = ({
     try {
       let finalVendor = { ...vendor };
 
-      if (!vendor.phone_number || !vendor.name) {
+      if (!vendor.phone_number || !vendor.name || vendor.phone_number?.length > 10) {
         setSnackbarMessage("Please fill vendor details!");
         setSnackbarOpen(true);
         return;
@@ -474,8 +474,8 @@ const PurchaseBillForm = ({
         billDate: billDate,
         qty: selectedProducts.length,
         paymentType: paymentType,
-        advance: 0,
-        balance: finalTotals.grandTotal,
+        advance: Number(finalTotals.grandTotal).toFixed(2),
+        balance: 0,
         subtotal: finalTotals.subtotal,
         discount: 0,
         gstPercent: Number(gstPercent) || 0,
