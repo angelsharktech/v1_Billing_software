@@ -203,7 +203,6 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
           {org.name}
         </Typography>
       </Box>
-
       <List style={{ fontSize: "1px" }}>
         {navItems.map((item) => {
           if (item.subItems) {
