@@ -377,10 +377,10 @@ const SaleBillReport = () => {
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Discount</strong>
                 </TableCell>
+                  {(gstFilter === "gst" || gstFilter === "") && (<>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Taxable Amount</strong>
                 </TableCell>
-                  {(gstFilter === "gst" || gstFilter === "") && (<>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Gst Rate</strong>
                 </TableCell>
@@ -442,9 +442,9 @@ const SaleBillReport = () => {
                         ? product?.discount
                         : "₹" + product?.discount || "N/A"}
                     </TableCell>
-                    <TableCell>{product?.price || "N/A"}</TableCell>
                     {(gstFilter === "gst" || gstFilter === "") && (
-                        <>
+                      <>
+                      <TableCell>{product?.price || "N/A"}</TableCell>
                           <TableCell>{product?.gstPercent || "0"}</TableCell>
                           <TableCell>
                             {product?.cgst > 0
