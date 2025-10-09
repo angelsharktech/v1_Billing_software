@@ -490,7 +490,6 @@ const PurchaseBillForm = ({
         createdBy: mainUser._id,
         status: "draft",
       };
-
       const res = await addPurchaseBill(billPayload);
 
       // handle error returns from API
