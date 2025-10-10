@@ -203,7 +203,22 @@ const Sidebar = ({ selectedTab, setSelectedTab }) => {
           {org.name}
         </Typography>
       </Box>
-      <List style={{ fontSize: "1px" }}>
+      <List
+        sx={{
+          fontSize: "1px",
+          overflowY: "auto",
+          "&::-webkit-scrollbar": {
+            width: "1px", // ✅ scrollbar width
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#888", // scrollbar color
+            borderRadius: "6px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#555", // on hover
+          },
+        }}
+      >
         {navItems.map((item) => {
           if (item.subItems) {
             return (
