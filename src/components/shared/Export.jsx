@@ -40,7 +40,7 @@ export const exportToPDF = (data, columns, title = "Exported Data") => {
     body: tableBody,
     styles: {
       fontSize: 9,
-      cellPadding: 8,
+      cellPadding: 6,
       overflow: "linebreak",
     },
     headStyles: {
