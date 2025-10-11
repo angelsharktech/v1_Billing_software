@@ -112,6 +112,8 @@ const VendorDetails = ({
                   label={
                     key === "legalName"
                       ? "Business Name"
+                      : key === "gstNumber"
+                      ? "GST Number"
                       : key
                           .replace(/([A-Z])/g, " $1")
                           .replace(/^./, (s) => s.toUpperCase())
@@ -141,7 +143,6 @@ const VendorDetails = ({
                   }}
                   error={key === "gstNumber" && Boolean(errors?.gstNumber)}
                   helperText={key === "gstNumber" ? errors?.gstNumber : ""}
-                 
                 />
               </Grid>
             ))}

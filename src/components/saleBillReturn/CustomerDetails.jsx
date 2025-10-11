@@ -1,5 +1,12 @@
-import React from 'react';
-import { Box, Grid, TextField, Typography, Divider, Autocomplete } from '@mui/material';
+import React from "react";
+import {
+  Box,
+  Grid,
+  TextField,
+  Typography,
+  Divider,
+  Autocomplete,
+} from "@mui/material";
 
 const CustomerDetails = ({
   customer,
@@ -10,7 +17,7 @@ const CustomerDetails = ({
   setCustomer,
   billType,
   gstDetails,
-  setGstDetails ,
+  setGstDetails,
   customerList = [],
 }) => {
   return (
@@ -18,49 +25,46 @@ const CustomerDetails = ({
       <Typography variant="h6">Customer Details</Typography>
       <Divider />
       <Grid container spacing={2} mt={4}>
-          <Autocomplete
-            freeSolo // allows typing values not in list
-            options={customerList}
-            getOptionLabel={(option) =>
-              typeof option === "string"
-                ? option
-                : option.name + " "
+        <Autocomplete
+          freeSolo // allows typing values not in list
+          options={customerList}
+          getOptionLabel={(option) =>
+            typeof option === "string" ? option : option.name + " "
+          }
+          value={
+            customerList.find((s) => s.name === customer.name) ||
+            customer.name ||
+            "" // keep typed value for new customer
+          }
+          onChange={(event, newValue) => {
+            if (typeof newValue === "string") {
+              // User typed a new vendor name
+              handleCustomerSelection(newValue, "name");
+            } else if (newValue && newValue.name) {
+              // Selected existing vendor
+              handleCustomerSelection(newValue.name, "name");
             }
-            value={
-              customerList.find((s) => s.name === customer.name) ||
-              customer.name ||
-              "" // keep typed value for new customer
+          }}
+          onInputChange={(event, newInputValue) => {
+            // This handles typing live into the field
+            if (event && event.type === "change") {
+              handleCustomerSelection(newInputValue, "name");
             }
-            onChange={(event, newValue) => {
-              if (typeof newValue === "string") {
-                // User typed a new vendor name
-                handleCustomerSelection(newValue, "name");
-              } else if (newValue && newValue.name) {
-                // Selected existing vendor
-                handleCustomerSelection(newValue.name, "name");
-              }
-            }}
-            onInputChange={(event, newInputValue) => {
-              // This handles typing live into the field
-              if (event && event.type === "change") {
-                handleCustomerSelection(newInputValue, "name");
-              }
-            }}
-            ListboxProps={{
-              style: {
-                maxHeight: 300,
-                overflowY: "auto",
-              },
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Customer Name"
-                sx={{ width: "200px" }}
-              />
-            )}
-          />
-
+          }}
+          ListboxProps={{
+            style: {
+              maxHeight: 300,
+              overflowY: "auto",
+            },
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Customer Name"
+              sx={{ width: "200px" }}
+            />
+          )}
+        />
 
         <Grid item xs={12} sm={4} width={200}>
           <TextField
@@ -72,8 +76,8 @@ const CustomerDetails = ({
             helperText={errors.phone_number}
           />
         </Grid>
-       
-        <Grid item xs={12} sm={4}width={200}>
+
+        <Grid item xs={12} sm={4} width={200}>
           <TextField
             label="Address"
             fullWidth
@@ -84,7 +88,7 @@ const CustomerDetails = ({
             disabled={isExistingCustomer}
           />
         </Grid>
-        <Grid item xs={12} sm={4}width={200}>
+        <Grid item xs={12} sm={4} width={200}>
           <TextField
             label="Current Balance"
             fullWidth
@@ -95,28 +99,36 @@ const CustomerDetails = ({
             disabled={isExistingCustomer}
           />
         </Grid>
-        {billType === 'gst' && (<>
-        <Grid container spacing={2} mt={1}>
-          {Object.entries(gstDetails).map(([key, value]) => (
-            <Grid item xs={12} sm={6} key={key} width={200}>
-              <TextField
-                fullWidth
-                label={key
-                  .replace(/([A-Z])/g, " $1")
-                  .replace(/^./, (s) => s.toUpperCase())}
-                name={key}
-                value={value}
-                onChange={(e) =>
-                  setGstDetails((prev) => ({
-                    ...prev,
-                    [key]: e.target.value,
-                  }))
-                }
-              />
+        {billType === "gst" && (
+          <>
+            <Grid container spacing={2} mt={1}>
+              {Object.entries(gstDetails).map(([key, value]) => (
+                <Grid item xs={12} sm={6} key={key} width={200}>
+                  <TextField
+                    fullWidth
+                    label={
+                      key === "legalName"
+                        ? "Business Name"
+                        : key === "gstNumber"
+                        ? "GST Number"
+                        : key
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^./, (s) => s.toUpperCase())
+                    }
+                    name={key}
+                    value={value}
+                    onChange={(e) =>
+                      setGstDetails((prev) => ({
+                        ...prev,
+                        [key]: e.target.value,
+                      }))
+                    }
+                  />
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
-        </>)}
+          </>
+        )}
       </Grid>
     </Box>
   );
