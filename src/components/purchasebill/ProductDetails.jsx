@@ -459,7 +459,7 @@ const getDiscountedAmount = (item) => {
               value={Math.max(
                 totalsMemo.grandTotal - sanitizeNumber(advanceAmount),
                 0
-              )}
+              ).toFixed(2)}
               InputProps={{ readOnly: true }}
             />
           </Grid>
