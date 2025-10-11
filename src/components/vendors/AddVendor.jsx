@@ -71,6 +71,10 @@ const AddVendor = ({ open, handleClose, refresh }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [errors, setErrors] = useState({ phone_number: "" });
   const [state, setState] = useState([]);
+  const [bankErrors, setBankErrors] = useState({
+    accountNumber: "",
+    ifscCode: "",
+  });
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -120,6 +124,30 @@ const AddVendor = ({ open, handleClose, refresh }) => {
 
   const handleBankChange = (e) => {
     const { name, value } = e.target;
+    // Validation rules
+    if (name === "accountNumber") {
+      const accountRegex = /^[0-9]{9,18}$/;
+      if (!accountRegex.test(value)) {
+        setBankErrors((prev) => ({
+          ...prev,
+          accountNumber: "Account number must be 9–18 digits",
+        }));
+      } else {
+        setBankErrors((prev) => ({ ...prev, accountNumber: "" }));
+      }
+    }
+
+    if (name === "ifscCode") {
+      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+      if (!ifscRegex.test(value.toUpperCase())) {
+        setBankErrors((prev) => ({
+          ...prev,
+          ifscCode: "Invalid IFSC code format (e.g., HDFC0001234)",
+        }));
+      } else {
+        setBankErrors((prev) => ({ ...prev, ifscCode: "" }));
+      }
+    }
     setBankDetails((prev) => ({
       ...prev,
       [name]: value,
@@ -153,17 +181,10 @@ const AddVendor = ({ open, handleClose, refresh }) => {
   };
   const handleSubmit = async () => {
     try {
-      const vendorRole = roles.find(
-        (role) => role.name.toLowerCase() === "vendor"
-      );
-      const vendorposition = positions.find(
-        (pos) => pos.name.toLowerCase() === "vendor"
-      );
-      const phoneExists = users.find(
-        (u) => u.phone_number === formData.phone_number
-      );
-      if (phoneExists) {
-        setSnackbarMessage("Contact number already exists!");
+      if (bankErrors.accountNumber || bankErrors.ifscCode) {
+        setSnackbarMessage(
+          "Please correct invalid bank details before saving."
+        );
         setSnackbarOpen(true);
         return;
       }
@@ -178,10 +199,24 @@ const AddVendor = ({ open, handleClose, refresh }) => {
         return;
       }
       if (formData.phone_number.length > 10) {
-      setSnackbarMessage("Enter Valid Phone Number!");
-      setSnackbarOpen(true);
-      return;
-    }
+        setSnackbarMessage("Enter Valid Phone Number!");
+        setSnackbarOpen(true);
+        return;
+      }
+      const vendorRole = roles.find(
+        (role) => role.name.toLowerCase() === "vendor"
+      );
+      const vendorposition = positions.find(
+        (pos) => pos.name.toLowerCase() === "vendor"
+      );
+      const phoneExists = users.find(
+        (u) => u.phone_number === formData.phone_number
+      );
+      if (phoneExists) {
+        setSnackbarMessage("Contact number already exists!");
+        setSnackbarOpen(true);
+        return;
+      }
       const payload = {
         ...formData,
         bankDetails,
@@ -202,7 +237,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
           narration: "Opening Balance",
           client_id: result.data.data?._id,
           forPayment: "purchase",
-           closingAmount: Number(result.data.data.openingAmount).toFixed(2),
+          closingAmount: Number(result.data.data.openingAmount).toFixed(2),
         };
 
         const res = await addPayment(paymentPayload);
@@ -381,13 +416,18 @@ const AddVendor = ({ open, handleClose, refresh }) => {
                   name={key}
                   value={value}
                   onChange={handleBankChange}
+                  error={Boolean(bankErrors[key])}
+                  helperText={bankErrors[key]}
                 />
               </Grid>
             ))}
           </Grid>
 
           <Box mt={3} display="flex" justifyContent="flex-end">
-            <Button onClick={handleRefreshClose} sx={{ mr: 2, color: "#182848" }}>
+            <Button
+              onClick={handleRefreshClose}
+              sx={{ mr: 2, color: "#182848" }}
+            >
               Cancel
             </Button>
             <Button

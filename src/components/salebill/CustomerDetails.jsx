@@ -121,6 +121,8 @@ const CustomerDetails = ({
                     label={
                       key === "legalName"
                         ? "Business Name"
+                        : key === "gstNumber"
+                        ? "GST Number"
                         : key
                             .replace(/([A-Z])/g, " $1")
                             .replace(/^./, (s) => s.toUpperCase())
