@@ -76,6 +76,7 @@ const SaleBillForm = ({
       _id: "",
       productName: "",
       hsnCode: "",
+      productCode:"",
       qty: 1,
       price: 0,
       discountPercentage: "",
@@ -269,9 +270,10 @@ const SaleBillForm = ({
           _id: product._id,
           productName: product.name,
           hsnCode: product.hsnCode || "",
+          productCode: product.productCode || "",
           price: product.price,
-          discountPercentage: product.discountPercentage,
-          discountedPrice: discountPrice,
+          // discountPercentage: product.discountPercentage,
+          // discountedPrice: discountPrice,
           gstPercent: product.gstPercent || gstPercent || 0,
           isExisting: true,
         };
@@ -294,9 +296,10 @@ const SaleBillForm = ({
           _id: product._id,
           productName: product.name,
           hsnCode: product.hsnCode,
-          price,
-          discountPercentage: discountPercentage,
-          discountedPrice: discountPrice,
+          productCode: product.productCode,
+          price: product.price,
+          // discountPercentage: discountPercentage,
+          // discountedPrice: discountPrice,
           gstPercent: product.gstPercent || gstPercent || 0,
           isExisting: true,
         };
@@ -307,7 +310,35 @@ const SaleBillForm = ({
           isExisting: false,
         };
       }
-    } else if (field === "discountPercentage") {
+    }else if (field === "productCode") {
+      const product = products.find((p) => p.productCode === value);
+      if (product) {
+        console.log(product)
+        const price = product.compareAtPrice || 0;
+        const discountPrice = product.price;
+        const discountPercentage = ((price - discountPrice) / price) * 100;
+
+        updated[index] = {
+          ...item,
+          _id: product._id,
+          productName: product.name,
+          hsnCode: product.hsnCode,
+          productCode: product.productCode,
+          price:product.price,
+          // discountPercentage: discountPercentage,
+          // discountedPrice: discountPrice,
+          gstPercent: product.gstPercent || gstPercent || 0,
+          isExisting: true,
+        };
+      } else {
+        updated[index] = {
+          ...item,
+          productCode: value,
+          isExisting: false,
+        };
+      }
+    }
+     else if (field === "discountPercentage") {
       const discountStr = value;
       const price = parseFloat(item.price) || 0;
       let discountedPrice = price;

@@ -52,6 +52,7 @@ const PurchaseBillForm = ({
       _id: "",
       productName: "",
       hsnCode: "",
+      productCode:"",
       qty: 1,
       price: 0,
       discountPercentage: "",
@@ -273,6 +274,7 @@ const PurchaseBillForm = ({
           _id: product._id,
           productName: product.name,
           hsnCode: product.hsnCode || "",
+          productCode: product.productCode || "",
           price,
           discountPercentage: product.discountPercentage || "",
           discountedPrice: discountPrice,
@@ -319,6 +321,7 @@ const PurchaseBillForm = ({
       {
         productName: "",
         hsnCode: "",
+        productCode:"",
         qty: 1,
         price: 0,
         gstPercent: 0,
@@ -424,6 +427,7 @@ const PurchaseBillForm = ({
           _id: product._id,
           name: product.productName || product.name || "",
           hsnCode: product.hsnCode || "",
+          productCode: product.productCode || "",
           qty,
           price: discountPrice, // price used for subtotal
           unitPrice: unitPrice, // original price if you keep both
@@ -490,6 +494,7 @@ const PurchaseBillForm = ({
         createdBy: mainUser._id,
         status: "draft",
       };
+
       const res = await addPurchaseBill(billPayload);
 
       // handle error returns from API
@@ -561,6 +566,7 @@ const PurchaseBillForm = ({
           {
             productName: "",
             hsnCode: "",
+            productCode:"",
             qty: 0,
             price: 0,
             discountPercentage: "",

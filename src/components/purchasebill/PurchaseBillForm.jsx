@@ -55,6 +55,7 @@ const PurchaseBillForm = ({
       _id: "",
       productName: "",
       hsnCode: "",
+      productCode:'',
       qty: 1,
       price: 0,
       gstPercent: 0,
@@ -275,6 +276,7 @@ const PurchaseBillForm = ({
           _id: product._id,
           productName: product.name,
           hsnCode: product.hsnCode || "",
+          productCode: product.productCode || "",
           price,
           discountPercentage: product.discountPercentage || "",
           discountedPrice: discountPrice,
@@ -322,6 +324,7 @@ const PurchaseBillForm = ({
       {
         productName: "",
         hsnCode: "",
+        productCode:'',
         qty: 1,
         price: 0,
         gstPercent: 0,
@@ -430,6 +433,7 @@ const PurchaseBillForm = ({
             name: prod.productName,
             category: prod.category,
             hsnCode: prod.hsnCode,
+            productCode: prod.productCode,
             price: prod.discountedPrice,
             compareAtPrice: prod.price,
             printAs: prod.printAs,
@@ -484,6 +488,7 @@ const PurchaseBillForm = ({
           _id: product._id,
           name: product.productName || product.name || "",
           hsnCode: product.hsnCode || "",
+          productCode: product.productCode || "",
           qty,
           price: Number(discountPrice.toFixed(2)), // subtotal contribution
           unitPrice: Number(unitPrice.toFixed(2)), // original price if you keep both
@@ -637,6 +642,7 @@ const PurchaseBillForm = ({
           {
             productName: "",
             hsnCode: "",
+            productCode:"",
             qty: 0,
             price: 0,
             discountPercentage: "",

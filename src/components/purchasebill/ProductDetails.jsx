@@ -204,6 +204,27 @@ const getDiscountedAmount = (item) => {
               ></TextField>
             </Grid> */}
 
+            {/* Product Code */}
+            <Grid item xs={12} sm={1}>
+              <Autocomplete
+                freeSolo
+                options={
+                  [...new Set(products?.map((prod) => prod.productCode))] || []
+                } 
+                value={item.productCode || ""}
+                onChange={(event, newValue) => {
+                  handleProductChange(index, "productCode", newValue || "");
+                }}
+                onInputChange={(event, newInputValue, reason) => {
+                  if (reason === "input") {
+                    handleProductChange(index, "productCode", newInputValue);
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Product Code" sx={{ width: "150px" }} />
+                )}
+              />
+            </Grid>
             {/* HSN */}
             <Grid item xs={12} sm={1}>
               <Autocomplete
@@ -459,7 +480,7 @@ const getDiscountedAmount = (item) => {
               value={Math.max(
                 totalsMemo.grandTotal - sanitizeNumber(advanceAmount),
                 0
-              ).toFixed(2)}
+              )}
               InputProps={{ readOnly: true }}
             />
           </Grid>

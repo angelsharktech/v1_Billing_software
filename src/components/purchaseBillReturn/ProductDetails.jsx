@@ -185,6 +185,26 @@ const ProductDetails = ({
               </TextField>
             </Grid>
 
+            {/* Product Code */}
+            <Grid item xs={12} sm={1}>
+              <TextField
+                select
+                label="Product Code"
+                value={item.productCode}
+                onChange={(e) =>
+                  handleProductChange(index, "productCode", e.target.value)
+                }
+                sx={{ width: "150px" }}
+              >
+                {[...new Set(products?.map((prod) => prod.productCode))].map(
+                  (pcode) => (
+                    <MenuItem key={pcode} value={pcode}>
+                      {pcode}
+                    </MenuItem>
+                  )
+                )}
+              </TextField>
+            </Grid>
             {/* HSN */}
             <Grid item xs={12} sm={1}>
               <TextField
@@ -411,7 +431,7 @@ const ProductDetails = ({
                 value={Math.max(
                   totalsMemo.grandTotal - sanitizeNumber(advanceAmount),
                   0
-                ).toFixed(2)}
+                )}
                 InputProps={{ readOnly: true }}
               />
             </Grid>
