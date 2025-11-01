@@ -107,6 +107,18 @@ const EditCustomer = ({ open, data, handleCloseEdit, refresh }) => {
   };
 
   const handleUpdateUser = async () => {
+    if (gstDetails.gstNumber?.trim()) {
+      const inputGST = gstDetails.gstNumber.trim().toUpperCase();
+      const gstExists = users.find(
+        (u) => u.gstDetails?.gstNumber?.toUpperCase() === inputGST
+      );
+      if (gstExists) {
+        setSnackbarMessage("GST number already exists!");
+        setSnackbarOpen(true);
+        return;
+      }
+    }
+
     try {
       const updatedUser = {
         ...formData,

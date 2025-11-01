@@ -107,26 +107,26 @@ const AddCustomer = ({ open, handleClose, refresh }) => {
       [name]: value,
     }));
   };
-const handleRefreshClose =async () =>{
-  handleClose();
-   setFormData({
-        name: "",
-        phone_number: "",
-        country: "",
-        address: "",
-        city: "",
-        openingAmount: 0,
-        // bio: "",
-      });
-     
-      // setIsGstApplicable(false);
-      setGstDetails({
-        gstNumber: "",
-        legalName: "",
-        state: "",
-        stateCode: "",
-      });
-}
+  const handleRefreshClose = async () => {
+    handleClose();
+    setFormData({
+      name: "",
+      phone_number: "",
+      country: "",
+      address: "",
+      city: "",
+      openingAmount: 0,
+      // bio: "",
+    });
+
+    // setIsGstApplicable(false);
+    setGstDetails({
+      gstNumber: "",
+      legalName: "",
+      state: "",
+      stateCode: "",
+    });
+  };
   const handleSubmit = async () => {
     const customerRole = roles.find(
       (role) => role.name.toLowerCase() === "customer"
@@ -138,6 +138,14 @@ const handleRefreshClose =async () =>{
     const phoneExists = users.find(
       (u) => u.phone_number === formData.phone_number
     );
+    const gstExists = users.find(
+      (u) => u?.gstDetails?.gstNumber === gstDetails?.gstNumber
+    );
+    if (gstExists) {
+      setSnackbarMessage("GST number already exists!");
+      setSnackbarOpen(true);
+      return;
+    }
     if (phoneExists) {
       setSnackbarMessage("Phone number already exists!");
       setSnackbarOpen(true);
@@ -189,7 +197,7 @@ const handleRefreshClose =async () =>{
           narration: "Opening Balance",
           client_id: result.data.data._id,
           forPayment: "sale",
-         closingAmount: Number(result.data.data.openingAmount).toFixed(2),
+          closingAmount: Number(result.data.data.openingAmount).toFixed(2),
         };
         const res = await addPayment(paymentPayload);
 
