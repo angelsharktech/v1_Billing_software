@@ -364,12 +364,12 @@ const SaleBillReport = () => {
                   <strong>Customer Name</strong>
                 </TableCell>
                 {(gstFilter === "gst" || gstFilter === "") && (
-                    <>
-                      <TableCell sx={{ background: "#e0e0e0ff" }}>
-                        <strong>GSTIN</strong>
-                      </TableCell>
-                    </>
-                  )}
+                  <>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>GSTIN</strong>
+                    </TableCell>
+                  </>
+                )}
 
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Rate</strong>
@@ -377,34 +377,36 @@ const SaleBillReport = () => {
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Discount</strong>
                 </TableCell>
-                  {(gstFilter === "gst" || gstFilter === "") && (<>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Taxable Amount</strong>
                 </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>Gst Rate</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>Total Gst</strong>
-                </TableCell>
+                {(gstFilter === "gst" || gstFilter === "") && (
+                  <>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>Gst Rate</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>Total Gst</strong>
+                    </TableCell>
 
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>CGST</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>SGST</strong>
-                </TableCell>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>IGST</strong>
-                </TableCell>
-                  </>)}
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>CGST</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>SGST</strong>
+                    </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>IGST</strong>
+                    </TableCell>
+                  </>
+                )}
 
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Bill Total (₹)</strong>
                 </TableCell>
               </TableRow>
             </TableHead>
-             <TableBody>
+            <TableBody>
               {filteredBills.length > 0 ? (
                 <>
                   {filteredBills.map((bill, billIndex) =>
