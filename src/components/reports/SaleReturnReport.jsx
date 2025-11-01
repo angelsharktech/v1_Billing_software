@@ -369,11 +369,11 @@ const SaleReturnReport = () => {
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Discount</strong>
                 </TableCell>
+                <TableCell sx={{ background: "#e0e0e0ff" }}>
+                  <strong>Taxable Amount</strong>
+                </TableCell>
                 {(gstFilter === "gst" || gstFilter === "") && (
                   <>
-                    <TableCell sx={{ background: "#e0e0e0ff" }}>
-                      <strong>Taxable Amount</strong>
-                    </TableCell>
                     <TableCell sx={{ background: "#e0e0e0ff" }}>
                       <strong>Gst Rate</strong>
                     </TableCell>

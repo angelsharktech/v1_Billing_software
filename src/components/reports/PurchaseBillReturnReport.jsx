@@ -289,16 +289,13 @@ const PurchaseBillReturnReport = () => {
               <MenuItem value="gst">GST</MenuItem>
               <MenuItem value="nongst">Non-GST</MenuItem>
             </TextField>
-            <Button
-              variant="outlined"
-              onClick={handleExportClick}
-            >
+            <Button variant="outlined" onClick={handleExportClick}>
               <GetAppOutlinedIcon titleAccess="Download As" />
             </Button>
           </Box>
         </Box>
 
-         <Menu
+        <Menu
           anchorEl={anchorEl}
           open={openExportMenu}
           onClose={handleExportClose}
@@ -327,7 +324,7 @@ const PurchaseBillReturnReport = () => {
           >
             Excel
           </MenuItem>
-        </Menu> 
+        </Menu>
 
         <TableContainer
           component={Paper}
@@ -374,11 +371,11 @@ const PurchaseBillReturnReport = () => {
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Discount</strong>
                 </TableCell>
-                {(gstFilter === "gst" || gstFilter === "") && (
-                  <>
                 <TableCell sx={{ background: "#e0e0e0ff" }}>
                   <strong>Taxable Amount</strong>
                 </TableCell>
+                {(gstFilter === "gst" || gstFilter === "") && (
+                  <>
                     <TableCell sx={{ background: "#e0e0e0ff" }}>
                       <strong>Gst Rate</strong>
                     </TableCell>
@@ -402,7 +399,7 @@ const PurchaseBillReturnReport = () => {
                 </TableCell>
               </TableRow>
             </TableHead>
-             <TableBody>
+            <TableBody>
               {filteredBills.length > 0 ? (
                 <>
                   {filteredBills.map((bill, billIndex) =>
