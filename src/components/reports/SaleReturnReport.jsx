@@ -371,9 +371,9 @@ const SaleReturnReport = () => {
                 </TableCell>
                 {(gstFilter === "gst" || gstFilter === "") && (
                   <>
-                <TableCell sx={{ background: "#e0e0e0ff" }}>
-                  <strong>Taxable Amount</strong>
-                </TableCell>
+                    <TableCell sx={{ background: "#e0e0e0ff" }}>
+                      <strong>Taxable Amount</strong>
+                    </TableCell>
                     <TableCell sx={{ background: "#e0e0e0ff" }}>
                       <strong>Gst Rate</strong>
                     </TableCell>
@@ -398,73 +398,91 @@ const SaleReturnReport = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredBills.map((bill, billIndex) =>
-                bill?.products?.map((product, prodIndex) => (
-                  <TableRow key={`${billIndex}-${prodIndex}`}>
-                    {/* Serial Number (can show combined index or product index) */}
-                    <TableCell>
-                      {billIndex + 1}.{prodIndex + 1}
-                    </TableCell>
-
-                    {/* Bill Date */}
-                    <TableCell>
-                      {bill.billDate ? bill.billDate : "--"}
-                    </TableCell>
-
-                    {/* HSN from product */}
-                    <TableCell>{product?.hsnCode || "N/A"}</TableCell>
-                    <TableCell>{product?.productCode || "N/A"}</TableCell>
-
-                    {/* Bill Number */}
-                    <TableCell>{bill?.bill_number || "N/A"}</TableCell>
-
-                    {/* Customer Name */}
-                    <TableCell>{bill.bill_to?.name + " "}</TableCell>
-
-                    {/* GST Number */}
-                     {(gstFilter === "gst" || gstFilter === "") && (<>
-                    <TableCell>
-                      {bill?.bill_to?.gstDetails?.gstNumber || "N/A"}
-                    </TableCell>
-                     </>)}
-
-                    {/* Subtotal for that product (qty * price) */}
-                    <TableCell>{product?.unitPrice || "N/A"}</TableCell>
-                    <TableCell>
-                      {product?.discount.includes("%")
-                        ? product?.discount
-                        : "₹" + product?.discount || "N/A"}
-                    </TableCell>
-                    {(gstFilter === "gst" || gstFilter === "") && (
-                      <>
-                      <TableCell>{product?.price || "N/A"}</TableCell>
-                        <TableCell>{product?.gstPercent || "0"}</TableCell>
-
-                        {/* GST Total for that product */}
+              {filteredBills.length > 0 ? (
+                <>
+                  {filteredBills.map((bill, billIndex) =>
+                    bill?.products?.map((product, prodIndex) => (
+                      <TableRow key={`${billIndex}-${prodIndex}`}>
+                        {/* Serial Number (can show combined index or product index) */}
                         <TableCell>
-                          {product?.cgst > 0
-                            ? product?.cgst + product?.sgst
-                            : product?.igst}
+                          {billIndex + 1}.{prodIndex + 1}
                         </TableCell>
 
-                        {/* CGST */}
-                        <TableCell>{product?.cgst}</TableCell>
+                        {/* Bill Date */}
+                        <TableCell>
+                          {bill.billDate ? bill.billDate : "--"}
+                        </TableCell>
 
-                        {/* SGST */}
-                        <TableCell>{product?.sgst}</TableCell>
+                        {/* HSN from product */}
+                        <TableCell>{product?.hsnCode || "N/A"}</TableCell>
+                        <TableCell>{product?.productCode || "N/A"}</TableCell>
 
-                        {/* IGST */}
-                        <TableCell>{product?.igst}</TableCell>
-                      </>
-                    )}
-                    {/* Grand Total (product-wise) */}
-                    <TableCell>
-                      {product?.cgst > 0
-                        ? product?.price + product?.cgst + product?.sgst
-                        : product?.price + product?.igst}
+                        {/* Bill Number */}
+                        <TableCell>{bill?.bill_number || "N/A"}</TableCell>
+
+                        {/* Customer Name */}
+                        <TableCell>{bill.bill_to?.name + " "}</TableCell>
+
+                        {/* GST Number */}
+                        {(gstFilter === "gst" || gstFilter === "") && (
+                          <>
+                            <TableCell>
+                              {bill?.bill_to?.gstDetails?.gstNumber || "N/A"}
+                            </TableCell>
+                          </>
+                        )}
+
+                        {/* Subtotal for that product (qty * price) */}
+                        <TableCell>{product?.unitPrice || "N/A"}</TableCell>
+                        <TableCell>
+                          {product?.discount.includes("%")
+                            ? product?.discount
+                            : "₹" + product?.discount || "N/A"}
+                        </TableCell>
+                        <TableCell>{product?.price || "N/A"}</TableCell>
+                        {(gstFilter === "gst" || gstFilter === "") && (
+                          <>
+                            <TableCell>{product?.gstPercent || "0"}</TableCell>
+
+                            {/* GST Total for that product */}
+                            <TableCell>
+                              {product?.cgst > 0
+                                ? product?.cgst + product?.sgst
+                                : product?.igst}
+                            </TableCell>
+
+                            {/* CGST */}
+                            <TableCell>{product?.cgst}</TableCell>
+
+                            {/* SGST */}
+                            <TableCell>{product?.sgst}</TableCell>
+
+                            {/* IGST */}
+                            <TableCell>{product?.igst}</TableCell>
+                          </>
+                        )}
+                        {/* Grand Total (product-wise) */}
+                        <TableCell>
+                          {product?.cgst > 0
+                            ? product?.price + product?.cgst + product?.sgst
+                            : product?.price + product?.igst}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </>
+              ) : (
+                <>
+                  <TableRow>
+                    <TableCell
+                      colSpan={20}
+                      align="center"
+                      sx={{ py: 5, fontSize: "24px" }}
+                    >
+                      No Data Found
                     </TableCell>
                   </TableRow>
-                ))
+                </>
               )}
             </TableBody>
           </Table>
