@@ -219,7 +219,7 @@ ${mainUser?.organization_id?.name || "Our Company"}`;
               onClick={handleOpen}
               ref={purchaseReturnInputRef}
             >
-              Create Purchase Return (Alt + P)
+              Create Purchase Return (Alt + P + R)
             </Button>
             <TextField
               label="Date"

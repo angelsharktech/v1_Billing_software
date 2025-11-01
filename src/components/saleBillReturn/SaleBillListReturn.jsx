@@ -193,7 +193,7 @@ const SaleBillList = () => {
               onClick={handleOpen}
               ref={saleReturnInputRef}
             >
-              Create Sale Return (Alt + S)
+              Create Sale Return (Alt + S + R)
             </Button>
             <TextField
               label="Start Date"
