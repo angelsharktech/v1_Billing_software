@@ -111,6 +111,11 @@ const AddProduct = ({ open, handleClose, refresh }) => {
       setSnackbarOpen(true);
       return;
     }
+    if (form?.hsnCode?.length > 6) {
+      setSnackbarMessage("Enter valid HSN Code!");
+      setSnackbarOpen(true);
+      return;
+    }
     const product = {
       ...form,
       // tags: form.tags ? form.tags.split(",").map((tag) => tag.trim()) : [],

@@ -396,6 +396,7 @@ const SaleBillForm = ({
       {
         productName: "",
         hsnCode: "",
+        productCode:"",
         qty: 1,
         price: 0,
         gst: 0,

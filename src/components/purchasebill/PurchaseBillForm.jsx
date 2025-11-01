@@ -55,7 +55,7 @@ const PurchaseBillForm = ({
       _id: "",
       productName: "",
       hsnCode: "",
-      productCode:'',
+      productCode: "",
       qty: 1,
       price: 0,
       gstPercent: 0,
@@ -192,8 +192,7 @@ const PurchaseBillForm = ({
       try {
         const data = await getAllProducts();
         const prod = (data?.data || []).filter(
-          (p) =>
-            p?.organization_id === mainUser?.organization_id?._id 
+          (p) => p?.organization_id === mainUser?.organization_id?._id
         );
         setProducts(prod);
       } catch (error) {
@@ -324,7 +323,7 @@ const PurchaseBillForm = ({
       {
         productName: "",
         hsnCode: "",
-        productCode:'',
+        productCode: "",
         qty: 1,
         price: 0,
         gstPercent: 0,
@@ -345,7 +344,11 @@ const PurchaseBillForm = ({
     try {
       let finalVendor = { ...vendor };
 
-      if (!vendor.phone_number || !vendor.name || vendor.phone_number?.length > 10) {
+      if (
+        !vendor.phone_number ||
+        !vendor.name ||
+        vendor.phone_number?.length > 10
+      ) {
         setSnackbarMessage("Please fill vendor details!");
         setSnackbarOpen(true);
         return;
@@ -362,28 +365,29 @@ const PurchaseBillForm = ({
           return;
         }
       }
- // ✅ GST number validation (before creating new customer)
-    if (billType === "gst") {
-      const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+      // ✅ GST number validation (before creating new customer)
+      if (billType === "gst") {
+        const gstRegex =
+          /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
-      if (!gstDetails.gstNumber) {
-        setSnackbarMessage("GST Number is required for GST Bill!");
-        setSnackbarOpen(true);
-        return;
-      }
+        if (!gstDetails.gstNumber) {
+          setSnackbarMessage("GST Number is required for GST Bill!");
+          setSnackbarOpen(true);
+          return;
+        }
 
-      if (!gstRegex.test(gstDetails.gstNumber)) {
-        setSnackbarMessage("Invalid GST Number format!");
-        setSnackbarOpen(true);
-        return;
-      }
+        if (!gstRegex.test(gstDetails.gstNumber)) {
+          setSnackbarMessage("Invalid GST Number format!");
+          setSnackbarOpen(true);
+          return;
+        }
 
-      if (!gstDetails.legalName || !gstDetails.state) {
-        setSnackbarMessage("Please fill Legal Name and State for GST!");
-        setSnackbarOpen(true);
-        return;
+        if (!gstDetails.legalName || !gstDetails.state) {
+          setSnackbarMessage("Please fill Legal Name and State for GST!");
+          setSnackbarOpen(true);
+          return;
+        }
       }
-    }
       // register vendor if not existing
       if (!isExistingVendor) {
         const vendorRole = roles.find(
@@ -429,6 +433,11 @@ const PurchaseBillForm = ({
 
       for (let prod of selectedProducts) {
         if (!prod.isExisting) {
+          if (prod.hsnCode.length > 6) {
+            setSnackbarMessage("Please fill HSN code correctly!");
+            setSnackbarOpen(true);
+            return;
+          }
           const newProductPayload = {
             name: prod.productName,
             category: prod.category,
@@ -598,7 +607,9 @@ const PurchaseBillForm = ({
           narration: "Purchase",
           balance: Number(finalTotals.grandTotal.toFixed(2)),
           closingAmount: Number(
-            (Number(finalVendor.openingAmount) + Number(finalTotals.grandTotal)).toFixed(2)
+            (
+              Number(finalVendor.openingAmount) + Number(finalTotals.grandTotal)
+            ).toFixed(2)
           ),
         };
         const paymentResult = await addPayment(paymentPayload);
@@ -626,7 +637,7 @@ const PurchaseBillForm = ({
           const res = await updateUser(finalVendor._id, {
             openingAmount: Number(
               (
-               Number( finalVendor.openingAmount) +
+                Number(finalVendor.openingAmount) +
                 (Number(finalTotals.grandTotal) - Number(advanceAmount))
               ).toFixed(2)
             ),
@@ -642,7 +653,7 @@ const PurchaseBillForm = ({
           {
             productName: "",
             hsnCode: "",
-            productCode:"",
+            productCode: "",
             qty: 0,
             price: 0,
             discountPercentage: "",
