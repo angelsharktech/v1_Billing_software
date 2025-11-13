@@ -53,7 +53,7 @@ const navItems = [
   {
     label: "Reports",
     icon: <AssessmentIcon />,
-    subItems: ["Purchase Report", "Sale Report"],
+    subItems: ["Purchase Report", "Sale Report","Expense","Income","Profit & Loss"],
   },
   {
     label: "Payment",

@@ -16,7 +16,6 @@ import HsnReport from "../components/reports/HsnReport";
 import Quotation from "../components/Quotation";
 import GlobalModals from "../components/shared/GlobalModals";
 
-
 import PaymentReceived from "../components/PaymentReceived";
 import PaymentGiven from "../components/PaymentGiven";
 import CustomerLedger from "../components/ledger/CustomerLedger";
@@ -24,18 +23,17 @@ import SupplierLedger from "../components/ledger/SupplierLedger";
 import SaleBillReturn from "../components/SaleBillReturn";
 import PurchaseBillReturn from "../components/PurchaseBillReturn";
 import Settings from "../components/setting/Settings";
-
-
-
+import ProfitAndLoss from "../components/reports/ProfitAndLoss";
+import Expenses from "../components/reports/Expenses";
+import Income from "../components/reports/Income";
 
 const Dashboard = () => {
   const [selectedTab, setSelectedTab] = useState("Dashboard");
 
   const renderContent = () => {
     switch (selectedTab) {
-
-      case "Dashboard":       
-        return <Home setSelectedTab={setSelectedTab}/>;
+      case "Dashboard":
+        return <Home setSelectedTab={setSelectedTab} />;
 
       case "Suppliers":
         return <Vendors />;
@@ -58,35 +56,44 @@ const Dashboard = () => {
       case "ALT+S:Sale Bill":
         return <SaleBill />;
 
-        case "ALT+S+R:Sale Return":
-          return <SaleBillReturn />
-          
+      case "ALT+S+R:Sale Return":
+        return <SaleBillReturn />;
+
       case "Sale Report":
-        return <SaleBillReport/>
+        return <SaleBillReport />;
 
       case "Purchase Report":
-        return <PurchaseBillReport/>
+        return <PurchaseBillReport />;
 
       case "HSN Report":
-        return <HsnReport />
+        return <HsnReport />;
+
+      case "Expense":
+        return <Expenses />;
+
+      case "Income":
+        return <Income />;
+
+      case "Profit & Loss":
+        return <ProfitAndLoss />;
 
       case "Quotation":
-        return <Quotation />
+        return <Quotation />;
 
       case "Payment Received":
-        return <PaymentReceived />
+        return <PaymentReceived />;
 
       case "Payment Given":
-        return <PaymentGiven />
-      
+        return <PaymentGiven />;
+
       case "Customer Ledger":
-        return <CustomerLedger />
+        return <CustomerLedger />;
 
       case "Supplier Ledger":
-        return <SupplierLedger />
-        
-        case "Settings":
-          return <Settings />
+        return <SupplierLedger />;
+
+      case "Settings":
+        return <Settings />;
 
       default:
         return <h2></h2>;
@@ -95,7 +102,7 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Navbar setSelectedTab={setSelectedTab}/>
+      <Navbar setSelectedTab={setSelectedTab} />
       <Sidebar selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
       <GlobalModals />
       <Box
@@ -105,14 +112,13 @@ const Dashboard = () => {
           p: 2,
           bgcolor: "#f9f9f9",
           minHeight: "80vh",
-           marginLeft: "230px", 
+          marginLeft: "230px",
         }}
       >
-      
         <Toolbar />
         {renderContent()}
       </Box>
-        {/* Global Modals always available */}
+      {/* Global Modals always available */}
     </Box>
   );
 };
