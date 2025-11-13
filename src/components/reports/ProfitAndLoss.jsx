@@ -130,12 +130,13 @@ const ProfitAndLoss = () => {
   };
 
   // Manual entries
-  const [openingStock, setOpeningStock] = useState(() => {
-    return JSON.parse(localStorage.getItem("openingStock")) || 0;
-  });
-  const [closingStock, setClosingStock] = useState(() => {
-    return JSON.parse(localStorage.getItem("closingStock"));
-  });
+  // Initial states
+  const [openingStock, setOpeningStock] = useState(
+    localStorage.getItem("openingStock") || 0
+  );
+  const [closingStock, setClosingStock] = useState(
+    localStorage.getItem("closingStock") || 0
+  );
 
   // Autosave
 
@@ -195,10 +196,10 @@ const ProfitAndLoss = () => {
                   type="text"
                   variant="outlined"
                   size="small"
-                  value={`${openingStock}`}
+                  value={openingStock}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, "");
-                    setOpeningStock(Number(value));
+                    const value = e.target.value.replace(/[^0-9.]/g, ""); // only numbers & decimal
+                    setOpeningStock(value);
                     localStorage.setItem("openingStock", value);
                   }}
                   sx={{
@@ -285,7 +286,7 @@ const ProfitAndLoss = () => {
                   {Number(salesReturnAccount).toFixed(2)}
                 </Typography>
               </Box>
-              <Divider sx={{ my: 3 ,mt:9}} />
+              <Divider sx={{ my: 3, mt: 9 }} />
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography fontWeight="bold">Net Sale</Typography>
                 <Typography fontWeight="bold">
@@ -325,10 +326,10 @@ const ProfitAndLoss = () => {
                   type="text"
                   variant="outlined"
                   size="small"
-                  value={`${closingStock}`}
+                  value={closingStock}
                   onChange={(e) => {
                     const value = e.target.value.replace(/[^0-9.]/g, "");
-                    setClosingStock(Number(value));
+                    setClosingStock(value);
                     localStorage.setItem("closingStock", value);
                   }}
                   sx={{
@@ -348,7 +349,7 @@ const ProfitAndLoss = () => {
           <Box display="flex" justifyContent="space-between">
             <Typography fontWeight="bold">Net Profit </Typography>
             <Typography fontWeight="bold" ml={38}>
-              {grossProfitBF.toFixed(2)}
+              {Number(grossProfitBF).toFixed(2)}
             </Typography>
             {/* Vertical Divider */}
             <Divider
@@ -357,7 +358,7 @@ const ProfitAndLoss = () => {
               sx={{ borderRightWidth: 2, mr: 52 }}
             />
             <Typography fontWeight="bold">
-              {grossProfitBF.toFixed(2)}
+              {Number(grossProfitBF).toFixed(2)}
             </Typography>
           </Box>
           <Divider sx={{ my: 3 }} />
@@ -410,7 +411,7 @@ const ProfitAndLoss = () => {
                 </Typography>
               </Box>
               <Divider sx={{ my: 2 }} />
-              <Typography fontWeight="bold" mb={3} >
+              <Typography fontWeight="bold" mb={3}>
                 Indirect Income
               </Typography>
               {indirectIncome.map((inc, i) => (
