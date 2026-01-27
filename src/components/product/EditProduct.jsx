@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Alert,
   Box,
@@ -9,6 +8,9 @@ import {
   Snackbar,
   TextField,
   Typography,
+  useTheme,
+  useMediaQuery,
+  IconButton,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { getAllCategories } from "../../services/CategoryService";
@@ -16,30 +18,20 @@ import {
   getProductById,
   updateProductById,
 } from "../../services/ProductService";
-import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
-import RemoveCircleOutlineOutlinedIcon from "@mui/icons-material/RemoveCircleOutlineOutlined";
 import { getUserById } from "../../services/UserService";
 import { useAuth } from "../../context/AuthContext";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  borderRadius: 2,
-  p: 3,
-  minWidth: 800,
-  maxHeight: "90vh",
-  overflowY: "auto",
-};
+import CloseIcon from "@mui/icons-material/Close";
 
 const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+  
   const [categories, setCategories] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const { webuser } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
     hsnCode: "",
@@ -48,33 +40,17 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
     price: 0,
     quantity: 0,
     productCode: "",
-
-    // tags: "",
-    // description: "",
-    // costPerItem: "",
-    // lowStockThreshold: "",
-    // weight: "",
-    // dimensions: {
-    //   length: "",
-    //   width: "",
-    //   height: "",
-    // },
   });
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // get user (normalize shape)
+        setLoading(true);
         const userRes = await getUserById(webuser.id);
-        const userData = userRes?.data || userRes; // adapt if service returns axios response
-        // setMainUser(userData);
-
-        // get categories (normalize to array)
+        const userData = userRes?.data || userRes;
         const catRes = await getAllCategories();
-        // catRes.data might be { success: true, data: [...] } or might be the array directly
         const allCats = catRes?.data?.data ?? catRes?.data ?? [];
 
-        // normalize user's organization id
         const userOrgId =
           userData?.organization_id?._id ?? userData?.organization_id ?? null;
 
@@ -86,6 +62,10 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
         setCategories(parentsOnly);
       } catch (err) {
         console.error("Error loading categories", err);
+        setSnackbarMessage("Failed to load categories");
+        setSnackbarOpen(true);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -95,16 +75,20 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        setLoading(true);
         const res = await getProductById(data?._id);
         const prod = res.data;
         setForm({
           ...form,
           ...prod,
-          // sku: '',
           category: prod.category?._id || "",
         });
       } catch (err) {
         console.error("Error loading product by ID", err);
+        setSnackbarMessage("Failed to load product data");
+        setSnackbarOpen(true);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -113,332 +97,201 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
     }
   }, [data]);
 
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    bgcolor: "background.paper",
+    boxShadow: 24,
+    borderRadius: 2,
+    p: isMobile ? 1.5 : 2,
+    width: isMobile ? "95vw" : isTablet ? "85vw" : 800,
+    maxWidth: "95vw",
+    maxHeight: "90vh",
+    overflowY: "auto",
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "price" || name === "quantity" ? Number(value) : value,
     }));
   };
 
-  // const handleVariantChange = (index, field, value) => {
-  //   const updatedVariants = [...form.variantOptions];
-  //   if (field === "values") {
-  //     updatedVariants[index][field] = value.split(",").map((v) => v.trim());
-  //   } else {
-  //     updatedVariants[index][field] = value;
-  //   }
-
-  //   setForm((prev) => ({
-  //     ...prev,
-  //     variantOptions: updatedVariants,
-  //   }));
-  // };
-
-  // const addVariantOption = () => {
-  //   setForm((prev) => ({
-  //     ...prev,
-  //     variantOptions: [...prev.variantOptions, { name: "", values: [] }],
-  //   }));
-  // };
-
-  // const removeVariantOption = (index) => {
-  //   const updated = [...form.variantOptions];
-  //   updated.splice(index, 1);
-  //   setForm((prev) => ({
-  //     ...prev,
-  //     variantOptions: updated,
-  //   }));
-  // };
-
   const updateProduct = async () => {
     try {
+      setLoading(true);
+      
+      // Validation
+      if (!form.name.trim()) {
+        setSnackbarMessage("Product Name is required!");
+        setSnackbarOpen(true);
+        return;
+      }
+      if (!form.hsnCode.trim()) {
+        setSnackbarMessage("HSN Code is required!");
+        setSnackbarOpen(true);
+        return;
+      }
+      if (form.hsnCode.length > 6) {
+        setSnackbarMessage("Enter valid HSN Code (max 6 characters)!");
+        setSnackbarOpen(true);
+        return;
+      }
+      if (!form.category) {
+        setSnackbarMessage("Please select a category!");
+        setSnackbarOpen(true);
+        return;
+      }
+
       const updatedData = {
         ...form,
         status: form.quantity > 0 ? "active" : "out_of_stock",
       };
 
       const res = await updateProductById(data._id, updatedData);
-      console.log(res)
+      
       if (res) {
-        setSnackbarMessage("Product Updated!");
+        setSnackbarMessage("Product Updated successfully!");
         setSnackbarOpen(true);
         refresh();
         handleCloseEdit();
       }
     } catch (err) {
+      console.error("Update error:", err);
       setSnackbarMessage(err?.response?.data?.error || "Update failed");
       setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // const updateProduct = async () => {
-  //   try {
-  //     const updatedData = {
-  //       ...form,
-  //       status: form.quantity > 0 ? "active" : "out_of_stock",
-  //       tags: form.tags.split(",").map((tag) => tag.trim()),
-  //       dimensions: {
-  //         length: parseFloat(form.dimensions.length),
-  //         width: parseFloat(form.dimensions.width),
-  //         height: parseFloat(form.dimensions.height),
-  //       },
-  //       costPerItem: parseFloat(form.costPerItem),
-  //       lowStockThreshold: parseInt(form.lowStockThreshold),
-  //       variantOptions: form.hasVariants
-  //         ? form.variantOptions.map((opt) => ({
-  //             name: opt.name,
-  //             values: opt.values,
-  //             _id: opt._id,
-  //             id: opt.id,
-  //           }))
-  //         : [],
-  //     };
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      height: 40,
+    },
+    '& .MuiInputLabel-root': {
+      fontSize: '0.875rem',
+    },
+    '& .MuiOutlinedInput-input': {
+      fontSize: '0.875rem',
+      padding: '8.5px 14px',
+    },
+  };
 
-  //     const res = await updateProductById(data._id, updatedData);
-  //     if (res) {
-  //       setSnackbarMessage("Product Updated!");
-  //       setSnackbarOpen(true);
-  //       refresh();
-  //       handleCloseEdit();
-  //     }
-  //   } catch (err) {
-  //     setSnackbarMessage(err?.response?.data?.error || "Update failed");
-  //     setSnackbarOpen(true);
-  //   }
-  // };
+  const formFields = [
+    { name: "name", label: "Product Name", required: true, type: "text", xs: 12, sm: 6 },
+    { name: "hsnCode", label: "HSN Code", required: true, type: "text", xs: 12, sm: 6 },
+    { name: "productCode", label: "Product Code", required: false, type: "text", xs: 12, sm: 6 },
+    { name: "price", label: "Price (₹)", required: true, type: "number", xs: 12, sm: 6 },
+    { name: "unit", label: "Unit", required: false, type: "text", xs: 12, sm: 6 },
+    { name: "quantity", label: "Quantity", required: false, type: "number", xs: 12, sm: 6 },
+  ];
 
   return (
     <>
       <Modal open={open} onClose={handleCloseEdit}>
         <Box sx={style}>
-          <Typography variant="h6" mb={2}>
-            Edit Product
-          </Typography>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+            <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontSize: isMobile ? '1.1rem' : '1.25rem' }}>
+              Edit Product
+            </Typography>
+            <IconButton
+              onClick={handleCloseEdit}
+              size="small"
+            >
+              <CloseIcon fontSize={isMobile ? "small" : "medium"} />
+            </IconButton>
+          </Box>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Product Name"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                sx={{ width: "200px" }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="HSN Number"
-                name="hsnCode"
-                value={form.hsnCode}
-                onChange={handleChange}
-                required
-                sx={{ width: "200px" }}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Product Code"
-                name="productCode"
-                value={form.productCode}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Price"
-                name="price"
-                value={form.price}
-                onChange={handleChange}
-              />
-            </Grid>
-            {/* <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Price (₹)"
-                name="price"
-                type="number"
-                value={form.price}
-                onChange={handleChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Unit"
-                name="unit"
-                value={form.unit}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="MRP (₹)"
-                name="compareAtPrice"
-                type="number"
-                value={form.compareAtPrice}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Quantity"
-                name="quantity"
-                type="number"
-                value={form.quantity}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="SKU"
-                name="sku"
-                value={form.sku}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Short Description"
-                name="shortDescription"
-                value={form.shortDescription}
-                onChange={handleChange}
-              />
-            </Grid> */}
-           
-              <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Unit"
-                name="unit"
-                value={form.unit}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Quantity"
-                name="quantity"
-                value={form.quantity}
-                onChange={handleChange}
-              />
-            </Grid>
-             <Grid item xs={12}>
-              <TextField
-                sx={{ width: "200px" }}
-                select
-                label="Category"
-                name="category"
-                value={form.category}
-                onChange={handleChange}
-              >
-                {categories.map((cat) => (
-                  <MenuItem key={cat._id} value={cat._id}>
-                    {cat.categoryName}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>          
-
-            {/* <Grid item xs={12}>
-              <TextField
-                sx={{ width: "200px" }}
-                label="Tags (comma separated)"
-                name="tags"
-                value={form.tags}
-                onChange={handleChange}
-              />
-            </Grid> */}
-            {/* <Grid></Grid> */}
-            {/* <Grid item xs={12}>
-              <Box display="flex" alignItems="center">
-                <Typography>Variants:</Typography>
-                <Button
-                  variant={form.hasVariants ? "contained" : "outlined"}
-                  color="primary"
-                  size="small"
-                  sx={{ ml: 2 }}
-                  onClick={() =>
-                    setForm((prev) => ({
-                      ...prev,
-                      hasVariants: !prev.hasVariants,
-                    }))
-                  }
-                >
-                  {form.hasVariants ? "Yes" : "No"}
-                </Button>
-
-                {form.hasVariants && (
-                  <Button
-                    sx={{ ml: "5px" }}
-                    variant="outlined"
-                    color="#324b84ff"
-                    onClick={addVariantOption}
-                  >
-                  
-                    <AddCircleOutlineOutlinedIcon />
-                  </Button>
-                )}
-              </Box>
-
-              {form.hasVariants &&
-                form.variantOptions.map((opt, index) => (
-                  <Grid item xs={12} key={index} mt={2}>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <TextField
-                        label="Option Name"
-                        value={opt.name}
-                        onChange={(e) =>
-                          handleVariantChange(index, "name", e.target.value)
-                        }
-                        sx={{ width: "200px" }}
-                      />
-                      <TextField
-                        label="Values (comma separated)"
-                        value={opt.values.join(", ")}
-                        onChange={(e) =>
-                          handleVariantChange(index, "values", e.target.value)
-                        }
-                        sx={{ width: "300px" }}
-                      />
-                      <Button
-                        sx={{ mb: 2 }}
-                        color="error"
-                        variant="outlined"
-                        onClick={() => removeVariantOption(index)}
-                      >
-                        <RemoveCircleOutlineOutlinedIcon />
-                      </Button>
-                    </Box>
+          {loading ? (
+            <Box display="flex" justifyContent="center" p={2}>
+              <Typography variant="body2">Loading product data...</Typography>
+            </Box>
+          ) : (
+            <>
+              {/* Product Information */}
+              <Typography variant="body1" fontWeight="bold" mb={0.5}>
+                Product Information
+              </Typography>
+              <Grid container spacing={1}>
+                {formFields.map((field) => (
+                  <Grid item xs={field.xs} sm={field.sm} key={field.name}>
+                    <TextField
+                      fullWidth
+                      label={field.label}
+                      name={field.name}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      required={field.required}
+                      type={field.type}
+                      size="small"
+                      sx={textFieldStyle}
+                      inputProps={field.type === "number" ? { min: 0 } : {}}
+                    />
                   </Grid>
                 ))}
-            </Grid>  */}
-          </Grid>
 
-          <Box mt={4} display="flex" justifyContent="flex-end">
-            <Button onClick={handleCloseEdit} sx={{ mr: 2 }}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              sx={{
-                background: "linear-gradient(135deg, #182848, #324b84ff)",
-                color: "#fff",
-              }}
-              onClick={updateProduct}
-            >
-              Update
-            </Button>
-          </Box>
+                {/* Category Select */}
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Category"
+                    name="category"
+                    value={form.category}
+                    onChange={handleChange}
+                    required
+                    size="small"
+                    sx={{ ...textFieldStyle, minWidth: 200 }}
+                  >
+                    <MenuItem value="">Select Category</MenuItem>
+                    {categories.map((cat) => (
+                      <MenuItem key={cat._id} value={cat._id}>
+                        {cat.categoryName || "Unnamed category"}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              </Grid>
+
+              {/* Action Buttons */}
+              <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
+                <Button
+                  onClick={handleCloseEdit}
+                  variant="outlined"
+                  size="small"
+                  disabled={loading}
+                  sx={{ 
+                    fontSize: '0.8125rem',
+                    py: 0.5,
+                    px: 1.5,
+                    minWidth: '70px'
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  disabled={loading}
+                  sx={{
+                    background: "linear-gradient(135deg, #182848, #324b84ff)",
+                    color: "#fff",
+                    fontSize: '0.8125rem',
+                    py: 0.5,
+                    px: 1.5,
+                    minWidth: '70px'
+                  }}
+                  onClick={updateProduct}
+                >
+                  {loading ? "Updating..." : "Update"}
+                </Button>
+              </Box>
+            </>
+          )}
         </Box>
       </Modal>
 
@@ -449,11 +302,10 @@ const EditProduct = ({ open, data, handleCloseEdit, refresh }) => {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
-          severity={
-            snackbarMessage === "Product Updated!" ? "success" : "error"
-          }
-          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarMessage.includes("successfully") ? "success" : "error"}
           variant="filled"
+          onClose={() => setSnackbarOpen(false)}
+          sx={{ fontSize: '0.875rem' }}
         >
           {snackbarMessage}
         </Alert>

@@ -1,63 +1,61 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Typography,
-  Chip,
-  Box,
-  Button,
-  IconButton,
-  Snackbar,
-  Alert,
-  Menu,
-  MenuItem,
-  useMediaQuery,
   useTheme,
+  useMediaQuery,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
   Card,
   CardContent,
-  CardActions,
+  Divider,
+  Stack,
+  Chip,
+  Grid,
   TextField,
   InputAdornment,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import PrintIcon from "@mui/icons-material/Print";
 import SearchIcon from "@mui/icons-material/Search";
+import GetAppOutlinedIcon from "@mui/icons-material/GetAppOutlined";
 import { deleteProduct, getAllProducts } from "../../services/ProductService";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
 import BarcodePrinter from "./BarcodePrinter";
 import PaginationComponent from "../shared/PaginationComponent";
 import { exportToExcel, exportToPDF } from "../shared/Export";
-import FilterData from "../shared/FilterData";
 import { useAuth } from "../../context/AuthContext";
 import { getUserById } from "../../services/UserService";
-import GetAppOutlinedIcon from "@mui/icons-material/GetAppOutlined";
 
 const exportColumns = [
   { label: "HSN Code", key: "hsnCode" },
   { label: "Name", key: "name" },
   { label: "Category", key: "category" },
   { label: "Product Code", key: "productCode" },
-  
 ];
 
 const ProductList = () => {
   const { webuser } = useAuth();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   
   const [mainUser, setMainUser] = useState();
   const [products, setProducts] = useState([]);
@@ -74,19 +72,16 @@ const ProductList = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const openExportMenu = Boolean(anchorEl);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleCloseEdit = () => setEdit(false);
-
-  const pageSize = 4;
-const productInputRef = useRef(null);
+  const pageSize = 6;
+  
+  const productInputRef = useRef(null);
 
   useEffect(() => {
     if (productInputRef.current) {
       productInputRef.current.focus();
     }
   }, []);
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -103,10 +98,17 @@ const productInputRef = useRef(null);
       );
       
       setProducts(org_prod);
+      setCurrentPage(1); // Reset to first page when data changes
     } catch (error) {
       console.error("Error fetching product data", error);
+      setSnackbarMessage("Failed to load products");
+      setSnackbarOpen(true);
     }
   };
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleCloseEdit = () => setEdit(false);
 
   const handleEdit = (rowData) => {
     setData(rowData);
@@ -155,11 +157,14 @@ const productInputRef = useRef(null);
     setCurrentPage(1); // Reset to first page when searching
   };
 
-  const filteredProducts = products?.filter(
-    (prod) =>
-      prod.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      prod.hsnCode?.toLowerCase().includes(searchQuery?.toLowerCase())
-  );
+  const filteredProducts = useMemo(() => {
+    return products?.filter(
+      (prod) =>
+        prod.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        prod.hsnCode?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        prod.productCode?.toLowerCase().includes(searchQuery?.toLowerCase())
+    );
+  }, [products, searchQuery]);
   
   useEffect(() => {
     if (filteredProducts) {
@@ -180,152 +185,300 @@ const productInputRef = useRef(null);
     setAnchorEl(null);
   };
 
-  // Mobile Card View for Products
-  const renderMobileCards = () => {
-    return paginatedProducts?.map((prod) => (
-      <Card key={prod._id} sx={{ mb: 2, boxShadow: 2 }}>
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+  // Mobile Card View Component
+  const MobileProductCard = ({ product, index }) => (
+    <Card 
+      sx={{ 
+        mb: 2, 
+        boxShadow: 2,
+        // Not clickable - removed hover cursor
+      }}
+    >
+      <CardContent>
+        <Stack spacing={1.5}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
             <Box>
-              <Typography variant="h6" fontWeight="bold">
-                {prod.name}
+              <Typography variant="subtitle1" fontWeight={600}>
+                #{index + 1} • {product.name || "N/A"}
               </Typography>
-              <Typography variant="body2" color="textSecondary">
-                HSN: {prod.hsnCode}
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Code: {product.productCode || "N/A"} | HSN: {product.hsnCode || "N/A"}
               </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Category: {prod.category?.categoryName}
-              </Typography>
-          
             </Box>
-            {/* <Chip
-              label={prod.status.charAt(0).toUpperCase() + prod.status.slice(1)}
-              color={prod.status === "active" ? "success" : "default"}
+            <Chip
+              label={`₹${product?.price?.toFixed(2) || "0.00"}`}
+              color="primary"
               size="small"
-            /> */}
+            />
           </Box>
-          
-          <Grid container spacing={1} sx={{ mt: 1 }}>
-            <Grid item xs={6}>
-              <Typography variant="body2">
-                <strong>Price:</strong> ₹{prod.price}
-              </Typography>
-            </Grid>
-            {/* <Grid item xs={6}>
-              <Typography variant="body2">
-                <strong>MRP:</strong> ₹{prod.compareAtPrice}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="body2">
-                <strong>Discount:</strong> {prod.discountPercentage}%
-              </Typography>
-            </Grid> */}
-            <Grid item xs={6}>
-              <Typography variant="body2">
-                <strong>Qty:</strong> {prod.quantity}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              {/* <Typography variant="body2">
-                <strong>Unit:</strong> {prod.unit}
-              </Typography> */}
-            </Grid>
-          </Grid>
-          
-          {/* <Box sx={{ mt: 1 }}>
-            <Typography variant="body2" component="span">
-              <strong>Tags: </strong>
+
+          <Divider />
+
+          <Box>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Category
             </Typography>
-            {prod.tags.map((tag, index) => (
-              <Chip
-                key={index}
-                label={tag}
-                size="small"
-                sx={{ m: 0.2, fontSize: '0.7rem' }}
-              />
-            ))}
-          </Box> */}
-        </CardContent>
-        <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
-          <IconButton color="primary" onClick={() => handleEdit(prod)} size="small">
-            <EditIcon />
-          </IconButton>
-          <IconButton color="error" onClick={() => handleDeleteClick(prod._id)} size="small">
-            <DeleteIcon />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => handlePrint(prod)} size="small">
-            <PrintIcon />
-          </IconButton>
-        </CardActions>
-      </Card>
-    ));
-  };
+            <Typography variant="body1" noWrap>
+              {product.category?.categoryName || "N/A"}
+            </Typography>
+          </Box>
+
+          <Box display="flex" justifyContent="space-between">
+            <Box>
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                Quantity
+              </Typography>
+              <Typography variant="body1">
+                {product.quantity || "0"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                Price
+              </Typography>
+              <Typography variant="body1">
+                ₹{product.price || "0.00"}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Divider />
+
+          {/* Action Buttons */}
+          <Box display="flex" justifyContent="space-between" mt={1}>
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={() => handleEdit(product)}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              color="inherit"
+              size="small"
+              onClick={() => handlePrint(product)}
+            >
+              <PrintIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              color="error"
+              size="small"
+              onClick={() => handleDeleteClick(product._id)}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+
+  // Desktop Table View
+  const DesktopTableView = () => (
+    <TableContainer
+      component={Paper}
+      sx={{
+        maxHeight: 550,
+        overflowY: "auto",
+        [theme.breakpoints.down("md")]: {
+          maxHeight: 500,
+        },
+      }}
+    >
+      <Table stickyHeader size={isTablet ? "small" : "medium"}>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>#</strong>
+            </TableCell>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>HSN Code</strong>
+            </TableCell>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>Product Code</strong>
+            </TableCell>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>Product Name</strong>
+            </TableCell>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>Category</strong>
+            </TableCell>
+            <TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
+              <strong>Price (₹)</strong>
+            </TableCell>
+            <TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
+              <strong>Quantity</strong>
+            </TableCell>
+            <TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
+              <strong>Actions</strong>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {paginatedProducts.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                <Typography color="textSecondary">
+                  {searchQuery ? 'No products found for your search' : 'No products available'}
+                </Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            paginatedProducts.map((product, index) => (
+              <TableRow key={product._id} hover>
+                <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {product.hsnCode || "N/A"}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {product.productCode || "N/A"}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" fontWeight="medium" noWrap sx={{ maxWidth: 150 }}>
+                    {product.name || "N/A"}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {product.category?.categoryName || "N/A"}
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography fontWeight={500}>
+                    ₹{product?.price?.toFixed(2) || "0.00"}
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography>
+                    {product.quantity || "0"}
+                  </Typography>
+                </TableCell>
+                <TableCell align="center" sx={{ minWidth: 150 }}>
+                  <Stack direction="row" spacing={1} justifyContent="center">
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={() => handleEdit(product)}
+                      title="Edit"
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    {/* <IconButton
+                      color="inherit"
+                      size="small"
+                      onClick={() => handlePrint(product)}
+                      title="Print Barcode"
+                    >
+                      <PrintIcon fontSize="small" />
+                    </IconButton> */}
+                    <IconButton
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeleteClick(product._id)}
+                      title="Delete"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
 
   return (
     <>
-      <Box>
-        <Box
-          display="flex"
-          flexDirection={isSmallMobile ? "column" : "row"}
-          justifyContent="space-between"
-          alignItems={isSmallMobile ? "flex-start" : "center"}
-          mb={2}
-          gap={isSmallMobile ? 2 : 0}
-        >
-          <Typography variant="h4" fontWeight={600}>
-            Products
-          </Typography>
+      <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+        <Grid container spacing={2} alignItems="center" justifyContent="space-between" mb={3}>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h5" fontWeight={600}>
+              Products
+            </Typography>
+            {paginatedProducts.length > 0 && (
+              <Typography variant="body2" color="textSecondary" mt={0.5}>
+                Total: {filteredProducts.length} products • Showing {paginatedProducts.length} on this page
+              </Typography>
+            )}
+          </Grid>
           
-          <Box 
-            display="flex" 
-            flexDirection={isSmallMobile ? "column" : "row"} 
-            gap={1} 
-            width={isSmallMobile ? "100%" : "auto"}
-           >
-            <Button
-                variant="contained"
+          <Grid item xs={12} sm={6}>
+            <Stack 
+              direction={{ xs: "column", sm: "row" }} 
+              spacing={2} 
+              alignItems={{ xs: "stretch", sm: "center" }}
+              justifyContent="flex-end"
+            >
+              <TextField
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                size="small"
+                fullWidth={isMobile}
                 sx={{ 
-                 background: "linear-gradient(135deg, #182848, #324b84ff)",color: "#fff",
-                  whiteSpace: 'nowrap',
-                  minWidth: 'auto',
-                  height:'40px',
-                  mr:'10px',
+                  minWidth: { xs: "100%", sm: 300 },
+                  maxWidth: { xs: "100%", sm: 400 },
+                  '& .MuiOutlinedInput-root': {
+                    height: 40,
+                    borderRadius: 2,
+                    backgroundColor: 'background.paper',
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    fontSize: '0.875rem',
+                    padding: '8.5px 14px',
+                  }
                 }}
-                onClick={handleOpen}
-                fullWidth={isSmallMobile}
-                ref={productInputRef}
-              >
-                {isSmallMobile ? 'Add Product' : 'Add Product (alt+r)'}
-              </Button>
-            <FilterData 
-                value={searchQuery} 
-                onChange={handleSearchChange} 
-                fullWidth={isSmallMobile}
-                autoFocusOnMount
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" color="action" />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            
-            <Box display="flex" gap={1} ml={isSmallMobile ? 0 : 1}>
-              
-
               <Button
                 variant="outlined"
                 onClick={handleExportClick}
-                fullWidth={isSmallMobile}
-                sx={{ whiteSpace: 'nowrap', minWidth: 'auto' ,height:'40px'}}
+                size="small"
+                sx={{ 
+                  height: 40,
+                  whiteSpace: 'nowrap',
+                  minWidth: '40px',
+                  px: isMobile ? 2 : 1,
+                }}
               >
-                <GetAppOutlinedIcon titleAccess="Download As" />
-                {isSmallMobile && ' Export'}
+                <GetAppOutlinedIcon />
+                {isMobile && ' Export'}
               </Button>
-            </Box>
-          </Box>
-        </Box>
+              <Button
+                variant="contained"
+                sx={{
+                  background: "linear-gradient(135deg, #182848, #324b84ff)",
+                  color: "#fff",
+                  whiteSpace: "nowrap",
+                  height: 40,
+                }}
+                onClick={handleOpen}
+                ref={productInputRef}
+                fullWidth={isMobile}
+              >
+                {isMobile ? "Add Product" : "Add Product (Alt + R)"}
+              </Button>
+            </Stack>
+          </Grid>
+        </Grid>
 
+        {/* Export Menu */}
         <Menu
           anchorEl={anchorEl}
           open={openExportMenu}
           onClose={handleExportClose}
-          
         >
           <MenuItem
             onClick={() => {
@@ -347,79 +500,45 @@ const productInputRef = useRef(null);
 
         {isMobile ? (
           <Box>
-            {renderMobileCards()}
+            {paginatedProducts.length === 0 ? (
+              <Box 
+                display="flex" 
+                justifyContent="center" 
+                alignItems="center" 
+                minHeight={200}
+              >
+                <Typography color="textSecondary">
+                  {searchQuery ? 'No products found for your search' : 'No products available'}
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ maxHeight: 500, overflowY: "auto" }}>
+                {paginatedProducts.map((product, index) => (
+                  <MobileProductCard 
+                    key={product._id} 
+                    product={product} 
+                    index={(currentPage - 1) * pageSize + index} 
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
         ) : (
-          <TableContainer
-            component={Paper}
-            sx={{
-              width: "100%",
-              overflowX: "auto",
-            }}
-          >
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead sx={{ backgroundColor: "lightgrey" }}>
-                <TableRow>
-                  <TableCell><strong>HSN Code</strong></TableCell>
-                  <TableCell><strong>Product Code</strong></TableCell>
-                  <TableCell><strong>Product Name</strong></TableCell>
-                  <TableCell><strong>Category</strong></TableCell>
-                  <TableCell><strong>Price</strong></TableCell>
-                  {/* <TableCell><strong>Unit</strong></TableCell> */}
-                  <TableCell><strong>Quantity</strong></TableCell>
-                  <TableCell width={120}><strong>Actions</strong></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedProducts?.map((prod) => (
-                  <TableRow key={prod._id}>
-                    <TableCell>{prod.hsnCode}</TableCell>
-                    <TableCell>{prod.productCode}</TableCell>
-                    <TableCell>{prod.name}</TableCell>                  
-                    <TableCell>{prod.category?.categoryName}</TableCell>
-                    <TableCell>{prod.price}</TableCell>
-                    {/* <TableCell>{prod.unit}</TableCell> */}
-                    <TableCell>{prod.quantity}</TableCell>
-                    {/* <TableCell>
-                      {prod.tags.map((tag, index) => (
-                        <Chip
-                          key={index}
-                          label={tag}
-                          size="small"
-                          sx={{ m: 0.2 }}
-                        />
-                      ))}
-                    </TableCell> */}
-                    <TableCell >
-                      <IconButton color="primary" onClick={() => handleEdit(prod)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton color="error" onClick={() => handleDeleteClick(prod._id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <DesktopTableView />
         )}
       </Box>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          severity={snackbarMessage === "Product Deleted!" ? "success" : "error"}
-          onClose={() => setSnackbarOpen(false)}
-          variant="filled"
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+      {/* Pagination */}
+      {filteredProducts && filteredProducts.length > 0 && totalPages > 1 && (
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', px: { xs: 1, sm: 2 } }}>
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            size={isMobile ? "small" : "medium"}
+          />
+        </Box>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
@@ -435,6 +554,25 @@ const productInputRef = useRef(null);
         </DialogActions>
       </Dialog>
 
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbarMessage.includes("Deleted") ? "error" : "success"}
+          onClose={() => setSnackbarOpen(false)}
+          variant="filled"
+          sx={{ 
+            width: '100%',
+            fontSize: '0.875rem'
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
       <AddProduct
         open={open}
         handleClose={handleClose}
@@ -447,14 +585,6 @@ const productInputRef = useRef(null);
         handleCloseEdit={handleCloseEdit}
         refresh={fetchProducts}
       />
-
-      {filteredProducts.length > 0 && (
-        <PaginationComponent
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-        />
-      )}
 
       <BarcodePrinter product={code} />
     </>

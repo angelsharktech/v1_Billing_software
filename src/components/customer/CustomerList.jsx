@@ -1,7 +1,9 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
   Button,
+  IconButton,
   Paper,
   Snackbar,
   Table,
@@ -10,15 +12,21 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  IconButton,
   Typography,
-  useMediaQuery,
   useTheme,
+  useMediaQuery,
+  Card,
+  CardContent,
+  Divider,
+  Stack,
+  Chip,
+  Grid,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FilterData from "../shared/FilterData";
+import SearchIcon from "@mui/icons-material/Search";
 import AddCustomer from "./AddCustomer";
 import { getAllUser, getUserById, updateUser } from "../../services/UserService";
 import { getAllPositions } from "../../services/Position";
@@ -29,32 +37,33 @@ import { useAuth } from "../../context/AuthContext";
 
 const CustomerList = () => {
   const { webuser } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState([]);
-  const [filteredCustomers, setFilteredCustomers] = useState([]);
-  const [positions, setPositions] = useState([]);
-  const [roles, setRoles] = useState([]);
-  const [data, setData] = useState();
   const [edit, setEdit] = useState(false);
+  const [data, setData] = useState();
+  const [searchQuery, setSearchQuery] = useState("");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [user, setUser] = useState([]);
+  const [mainUser, setMainUser] = useState();
+  const [roles, setRoles] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const [mainUser, setMainUser] = useState();
   const pageSize = 6;
+  
+  const customerInputRef = useRef(null);
 
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const isExtraSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  useEffect(() => {
+    if (customerInputRef.current) {
+      customerInputRef.current.focus();
+    }
+  }, []);
 
-const customerInputRef = useRef(null);
-
-useEffect(() => {
-  if (customerInputRef.current) {
-    customerInputRef.current.focus();
-  }
-}, []);
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -66,9 +75,10 @@ useEffect(() => {
         setPositions(posData);
         setRoles(roleData);
         setMainUser(user);
-    
       } catch (err) {
         console.error("Failed to fetch form data:", err);
+        setSnackbarMessage("Failed to load data");
+        setSnackbarOpen(true);
       }
     };
     fetchAll();
@@ -76,10 +86,10 @@ useEffect(() => {
   }, []);
   
   useEffect(() => {
-    if (roles && roles.length > 0) {
+    if (roles && roles.length > 0 && mainUser) {
       fetchUsers();
     }
-  }, [roles]);
+  }, [roles, mainUser]);
   
   const fetchUsers = async () => {
     try {
@@ -90,7 +100,7 @@ useEffect(() => {
         (r) => r.name?.toLowerCase() === "customer"
       );
       
-      if (customerRole) {
+      if (customerRole && mainUser) {
         const customersOnly = data.filter(
           (u) =>
             u.role_id?._id === customerRole?._id &&
@@ -99,25 +109,33 @@ useEffect(() => {
         );
 
         setFilteredCustomers(customersOnly);
+        setCurrentPage(1); // Reset to first page when data changes
       }
     } catch (error) {
-      console.error("Error fetching product data", error);
+      console.error("Error fetching customer data", error);
+      setSnackbarMessage("Failed to load customers");
+      setSnackbarOpen(true);
     }
   };
 
-  // Search bar code
-  const filteredCustomer = filteredCustomers?.filter(
-    (cust) =>
-      cust.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      cust.address?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      cust.city?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
-      cust.phone_number?.includes(searchQuery?.toLowerCase())
-  );
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleCloseEdit = () => setEdit(false);
+
+  const filteredCustomer = useMemo(() => {
+    return filteredCustomers?.filter(
+      (cust) =>
+        cust.name?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        cust.address?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        cust.city?.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+        cust.phone_number?.includes(searchQuery?.toLowerCase())
+    );
+  }, [filteredCustomers, searchQuery]);
   
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
   };
-  // --------------end of search
   
   useEffect(() => {
     if (filteredCustomer) {
@@ -130,17 +148,13 @@ useEffect(() => {
     currentPage * pageSize
   );
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleCloseEdit = () => setEdit(false);
-
   const handleEdit = (rowData) => {
     setData(rowData);
     setEdit(true);
   };
   
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this Customer?")) {
+    if (window.confirm("Are you sure you want to delete this customer?")) {
       try {
         const updatedUser = {
           status: "inactive",
@@ -154,160 +168,279 @@ useEffect(() => {
         }
       } catch (error) {
         console.error("Error deleting Customer", error);
-        alert("Failed to delete Customer.");
+        setSnackbarMessage("Failed to delete customer");
+        setSnackbarOpen(true);
       }
     }
   };
 
-  // Mobile-friendly customer card component
-  const MobileCustomerCard = ({ customer }) => (
-    <Paper sx={{ p: 2, mb: 2, borderRadius: 2, boxShadow: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-        <Typography variant="subtitle1" fontWeight="bold">
-          {customer.name} 
-        </Typography>
-        <Box>
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => handleEdit(customer)}
-            sx={{ mr: 0.5 }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => handleDelete(customer._id)}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      </Box>
-      <Typography variant="body2" sx={{ mb: 0.5 }}>
-        <strong>Contact:</strong> {customer.phone_number}
-      </Typography>
-      <Typography variant="body2">
-        <strong>Address:</strong> {customer.address} {customer.city}
-      </Typography>
-    </Paper>
+  // Mobile Card View Component - NOT clickable
+  const MobileCustomerCard = ({ customer, index }) => (
+    <Card 
+      sx={{ 
+        mb: 2, 
+        boxShadow: 2,
+        // Removed hover cursor style to indicate non-clickable
+      }}
+    >
+      <CardContent>
+        <Stack spacing={1.5}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600}>
+                #{index + 1} • {customer.name || "N/A"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                {customer.phone_number || "No contact"}
+              </Typography>
+            </Box>
+            <Chip
+              label={`₹${customer?.openingAmount?.toFixed(2) || "0.00"}`}
+              color="primary"
+              size="small"
+            />
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              Address
+            </Typography>
+            <Typography variant="body1" noWrap>
+              {customer.address || "N/A"}, {customer.city || ""}
+            </Typography>
+          </Box>
+
+          <Divider />
+
+          {/* Action Buttons */}
+          <Box display="flex" justifyContent="space-between" mt={1}>
+            <IconButton
+              color="primary"
+              size="small"
+              onClick={() => handleEdit(customer)}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              color="error"
+              size="small"
+              onClick={() => handleDelete(customer._id)}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </Stack>
+      </CardContent>
+    </Card>
   );
-  
+
+  // Desktop Table View
+  const DesktopTableView = () => (
+    <TableContainer
+      component={Paper}
+      sx={{
+        maxHeight: 550,
+        overflowY: "auto",
+        [theme.breakpoints.down("md")]: {
+          maxHeight: 500,
+        },
+      }}
+    >
+      <Table stickyHeader size={isTablet ? "small" : "medium"}>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>#</strong>
+            </TableCell>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>Customer Name</strong>
+            </TableCell>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>Contact Number</strong>
+            </TableCell>
+            <TableCell sx={{ background: "#e0e0e0ff" }}>
+              <strong>Address</strong>
+            </TableCell>
+            <TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
+              <strong>Closing Balance (₹)</strong>
+            </TableCell>
+            <TableCell align="center" sx={{ background: "#e0e0e0ff" }}>
+              <strong>Actions</strong>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {paginatedCustomers.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                <Typography color="textSecondary">
+                  {searchQuery ? 'No customers found for your search' : 'No customers available'}
+                </Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            paginatedCustomers.map((customer, index) => (
+              <TableRow key={customer._id} hover>
+                <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+                <TableCell>
+                  <Typography variant="body2" fontWeight="medium" noWrap sx={{ maxWidth: 150 }}>
+                    {customer.name || "N/A"}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {customer.phone_number || "N/A"}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ maxWidth: 200 }}>
+                    {customer.address || "N/A"} {customer.city || ""}
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography fontWeight={500}>
+                    ₹{customer?.openingAmount?.toFixed(2) || "0.00"}
+                  </Typography>
+                </TableCell>
+                <TableCell align="center" sx={{ minWidth: 150 }}>
+                  <Stack direction="row" spacing={1} justifyContent="center">
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={() => handleEdit(customer)}
+                      title="Edit"
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      size="small"
+                      onClick={() => handleDelete(customer._id)}
+                      title="Delete"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
   return (
     <>
-      <Box sx={{ p: isExtraSmallScreen ? 1 : 2 }}>
-        <Box
-          display="flex"
-          flexDirection={isSmallScreen ? "column" : "row"}
-          justifyContent="space-between"
-          alignItems={isSmallScreen ? "flex-start" : "center"}
-          mb={2}
-          gap={isSmallScreen ? 2 : 0}
-        >
-          <Typography variant={isSmallScreen ? "h5" : "h4"} fontWeight={600}>
-            Customers
-          </Typography>
+      <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+        <Grid container spacing={2} alignItems="center" justifyContent="space-between" mb={3}>
+          <Grid item xs={12} sm={6}>
+            <Typography variant="h5" fontWeight={600}>
+              Customers
+            </Typography>
+            {paginatedCustomers.length > 0 && (
+              <Typography variant="body2" color="textSecondary" mt={0.5}>
+                Total: {filteredCustomer.length} customers • Showing {paginatedCustomers.length} on this page
+              </Typography>
+            )}
+          </Grid>
           
-          {/* Combined search and button container */}
-          <Box 
-            display="flex" 
-            flexDirection={isSmallScreen ? "column" : "row"} 
-            alignItems={isSmallScreen ? "stretch" : "center"}
-            gap={2}
-            width={isSmallScreen ? "100%" : "auto"}
-          >
-            <Box flexGrow={1} width={isSmallScreen ? "100%" : "auto"}>
-              <Button
-              variant="contained"
-              sx={{ 
-                background: "linear-gradient(135deg, #182848, #324b84ff)", 
-                color: "#fff",
-                whiteSpace: 'nowrap',
-                mr:'10px',
-                width: isSmallScreen ? "100%" : "auto"
-              }}
-              onClick={handleOpen}
-              ref={customerInputRef}
+          <Grid item xs={12} sm={6}>
+            <Stack 
+              direction={{ xs: "column", sm: "row" }} 
+              spacing={2} 
+              alignItems={{ xs: "stretch", sm: "center" }}
+              justifyContent="flex-end"
             >
-              {isSmallScreen ? "Add Customer" : "Add Customer (alt+c)"}
-            </Button>
-              <FilterData 
-                value={searchQuery} 
-                onChange={handleSearchChange} 
-                fullWidth={isSmallScreen}
-                // autoFocusOnMount
+              <TextField
+                placeholder="Search customers..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                size="small"
+                fullWidth={isMobile}
+                sx={{ 
+                  minWidth: { xs: "100%", sm: 300 },
+                  maxWidth: { xs: "100%", sm: 400 },
+                  '& .MuiOutlinedInput-root': {
+                    height: 40,
+                    borderRadius: 2,
+                    backgroundColor: 'background.paper',
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    fontSize: '0.875rem',
+                    padding: '8.5px 14px',
+                  }
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" color="action" />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </Box>
-            
-          </Box>
-        </Box>
+              <Button
+                variant="contained"
+                sx={{
+                  background: "linear-gradient(135deg, #182848, #324b84ff)",
+                  color: "#fff",
+                  whiteSpace: "nowrap",
+                }}
+                onClick={handleOpen}
+                ref={customerInputRef}
+                fullWidth={isMobile}
+              >
+                {isMobile ? "Add Customer" : "Add Customer (Alt + C)"}
+              </Button>
+            </Stack>
+          </Grid>
+        </Grid>
 
-        {isSmallScreen ? (
-          // Mobile view with cards
+        {isMobile ? (
           <Box>
-            {paginatedCustomers.map((customer) => (
-              <MobileCustomerCard key={customer._id} customer={customer} />
-            ))}
+            {paginatedCustomers.length === 0 ? (
+              <Box 
+                display="flex" 
+                justifyContent="center" 
+                alignItems="center" 
+                minHeight={200}
+              >
+                <Typography color="textSecondary">
+                  {searchQuery ? 'No customers found for your search' : 'No customers available'}
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ maxHeight: 500, overflowY: "auto" }}>
+                {paginatedCustomers.map((customer, index) => (
+                  <MobileCustomerCard 
+                    key={customer._id} 
+                    customer={customer} 
+                    index={(currentPage - 1) * pageSize + index} 
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
         ) : (
-          // Desktop view with table
-          <TableContainer
-            component={Paper}
-            sx={{
-              width: "100%",
-              overflowX: "auto",
-            }}
-          >
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead sx={{ backgroundColor: "lightgrey" }}>
-                <TableRow>
-                  <TableCell>
-                    <strong>Name</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Contact Number</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Address</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Closing Balance</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Actions</strong>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedCustomers.map((customer) => (
-                  <TableRow key={customer._id}>
-                    <TableCell>
-                      {customer.name}
-                    </TableCell>
-                    <TableCell>{customer.phone_number}</TableCell>
-                    <TableCell>{customer.address}  {customer.city}</TableCell>
-                    <TableCell>{customer.openingAmount}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEdit(customer)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDelete(customer._id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <DesktopTableView />
         )}
       </Box>
+
+      {/* Removed mobile view dialog since cards are not clickable */}
+
+      {/* Pagination */}
+      {filteredCustomer && filteredCustomer.length > 0 && totalPages > 1 && (
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', px: { xs: 1, sm: 2 } }}>
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            size={isMobile ? "small" : "medium"}
+          />
+        </Box>
+      )}
 
       <Snackbar
         open={snackbarOpen}
@@ -316,11 +449,13 @@ useEffect(() => {
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
-          severity={
-            snackbarMessage === "Customer Deleted!" ? "success" : "error"
-          }
+          severity={snackbarMessage === "Customer Deleted!" ? "error" : "success"}
           onClose={() => setSnackbarOpen(false)}
           variant="filled"
+          sx={{ 
+            width: '100%',
+            fontSize: '0.875rem'
+          }}
         >
           {snackbarMessage}
         </Alert>
@@ -334,14 +469,6 @@ useEffect(() => {
         handleCloseEdit={handleCloseEdit}
         refresh={fetchUsers}
       />
-
-      {filteredCustomer && filteredCustomer.length > 0 && (
-        <PaginationComponent
-          totalPages={totalPages}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-        />
-      )}
     </>
   );
 };

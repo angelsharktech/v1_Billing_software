@@ -9,6 +9,8 @@ import {
   Snackbar,
   TextField,
   Typography,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
@@ -18,28 +20,16 @@ import {
   createUser,
   getAllUser,
   getUserById,
-  registerUser,
 } from "../../services/UserService";
-import { createGstDetails } from "../../services/GstService";
 import { addPayment } from "../../services/PaymentModeService";
 import CloseIcon from "@mui/icons-material/Close";
 import { getAllStates } from "../../services/StatesService";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  borderRadius: 2,
-  p: 3,
-  minWidth: 800,
-  maxHeight: "90vh",
-  overflowY: "auto",
-};
-
 const AddVendor = ({ open, handleClose, refresh }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+  
   const { webuser } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
@@ -56,13 +46,14 @@ const AddVendor = ({ open, handleClose, refresh }) => {
     ifscCode: "",
     upiId: "",
   });
+  
   const [gstDetails, setGstDetails] = useState({
     gstNumber: "",
     legalName: "",
     state: "",
     stateCode: "",
   });
-  // const [isGstApplicable, setIsGstApplicable] = useState(false);
+  
   const [positions, setPositions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [users, setUsers] = useState([]);
@@ -75,12 +66,14 @@ const AddVendor = ({ open, handleClose, refresh }) => {
     accountNumber: "",
     ifscCode: "",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
+        setLoading(true);
         const [posData, roleData, userData, user, stateData] =
-          await Promise.all([
+          awaitPromise.all([
             getAllPositions(),
             getAllRoles(),
             getAllUser(),
@@ -94,16 +87,35 @@ const AddVendor = ({ open, handleClose, refresh }) => {
         setState(stateData);
       } catch (err) {
         console.error("Failed to fetch form data:", err);
+        setSnackbarMessage("Failed to load form data");
+        setSnackbarOpen(true);
+      } finally {
+        setLoading(false);
       }
     };
     fetchAll();
   }, []);
 
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    bgcolor: "background.paper",
+    boxShadow: 24,
+    borderRadius: 2,
+    p: isMobile ? 1.5 : 2,
+    width: isMobile ? "95vw" : isTablet ? "85vw" : 800,
+    maxWidth: "95vw",
+    maxHeight: "90vh",
+    overflowY: "auto",
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "phone_number") {
       const phoneRegex = /^[6-9]\d{9}$/;
-      if (!phoneRegex.test(value)) {
+      if (value && !phoneRegex.test(value)) {
         setErrors((prev) => ({
           ...prev,
           phone_number: "Invalid mobile number",
@@ -124,10 +136,9 @@ const AddVendor = ({ open, handleClose, refresh }) => {
 
   const handleBankChange = (e) => {
     const { name, value } = e.target;
-    // Validation rules
     if (name === "accountNumber") {
       const accountRegex = /^[0-9]{9,18}$/;
-      if (!accountRegex.test(value)) {
+      if (value && !accountRegex.test(value)) {
         setBankErrors((prev) => ({
           ...prev,
           accountNumber: "Account number must be 9–18 digits",
@@ -139,7 +150,7 @@ const AddVendor = ({ open, handleClose, refresh }) => {
 
     if (name === "ifscCode") {
       const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-      if (!ifscRegex.test(value.toUpperCase())) {
+      if (value && !ifscRegex.test(value.toUpperCase())) {
         setBankErrors((prev) => ({
           ...prev,
           ifscCode: "Invalid IFSC code format (e.g., HDFC0001234)",
@@ -153,16 +164,14 @@ const AddVendor = ({ open, handleClose, refresh }) => {
       [name]: value,
     }));
   };
-  const handleRefreshClose = async () => {
-    handleClose();
+
+  const resetForm = () => {
     setFormData({
       name: "",
       phone_number: "",
-      country: "",
       address: "",
       city: "",
       openingAmount: 0,
-      // bio: "",
     });
     setBankDetails({
       bankName: "",
@@ -171,14 +180,21 @@ const AddVendor = ({ open, handleClose, refresh }) => {
       ifscCode: "",
       upiId: "",
     });
-    // setIsGstApplicable(false);
     setGstDetails({
       gstNumber: "",
       legalName: "",
       state: "",
       stateCode: "",
     });
+    setErrors({ phone_number: "" });
+    setBankErrors({ accountNumber: "", ifscCode: "" });
   };
+
+  const handleRefreshClose = async () => {
+    resetForm();
+    handleClose();
+  };
+
   const handleSubmit = async () => {
     try {
       if (bankErrors.accountNumber || bankErrors.ifscCode) {
@@ -193,41 +209,51 @@ const AddVendor = ({ open, handleClose, refresh }) => {
         setSnackbarOpen(true);
         return;
       }
-      if (!formData.name) {
-        setSnackbarMessage("First Name is Required!");
+      if (!formData.name.trim()) {
+        setSnackbarMessage("Firm Name is Required!");
         setSnackbarOpen(true);
         return;
       }
-      if (formData.phone_number.length > 10) {
-        setSnackbarMessage("Enter Valid Phone Number!");
+      if (formData.phone_number && formData.phone_number.length !== 10) {
+        setSnackbarMessage("Enter Valid 10-digit Phone Number!");
         setSnackbarOpen(true);
         return;
       }
+      
       const vendorRole = roles.find(
         (role) => role.name.toLowerCase() === "vendor"
       );
-      const vendorposition = positions.find(
+      const vendorPosition = positions.find(
         (pos) => pos.name.toLowerCase() === "vendor"
       );
-      const phoneExists = users.find(
-        (u) => u.phone_number === formData.phone_number
-      );
-      if (phoneExists) {
-        setSnackbarMessage("Contact number already exists!");
+      
+      if (!vendorRole || !vendorPosition) {
+        setSnackbarMessage("Required roles/positions not found!");
         setSnackbarOpen(true);
         return;
       }
+
+      if (formData.phone_number) {
+        const phoneExists = users.find(
+          (u) => u.phone_number === formData.phone_number
+        );
+        if (phoneExists) {
+          setSnackbarMessage("Contact number already exists!");
+          setSnackbarOpen(true);
+          return;
+        }
+      }
+
       const payload = {
         ...formData,
         bankDetails,
         gstDetails,
         organization_id: mainUser.organization_id?._id,
-        email: formData.name + "@example.com",
-        password: formData.name + "@example.com",
+        email: `${formData.name.replace(/\s+/g, '_')}@example.com`,
+        password: `${formData.name.replace(/\s+/g, '_')}@example.com`,
         role_id: vendorRole._id,
-        position_id: vendorposition._id,
+        position_id: vendorPosition._id,
         openingAmount: Number(formData.openingAmount || 0).toFixed(2),
-        // gstRegistered: isGstApplicable
       };
 
       const result = await createUser(payload);
@@ -240,209 +266,295 @@ const AddVendor = ({ open, handleClose, refresh }) => {
           closingAmount: Number(result.data.data.openingAmount).toFixed(2),
         };
 
-        const res = await addPayment(paymentPayload);
-
-        setSnackbarMessage("Supplier Added successful!");
+        await addPayment(paymentPayload);
+        setSnackbarMessage("Supplier Added successfully!");
         setSnackbarOpen(true);
         refresh();
+        resetForm();
         handleClose();
       }
-
-      // Optionally reset
-      setFormData({
-        name: "",
-        phone_number: "",
-        country: "",
-        address: "",
-        city: "",
-        openingAmount: 0,
-        // bio: "",
-      });
-      setBankDetails({
-        bankName: "",
-        accountNumber: "",
-        accountName: "",
-        ifscCode: "",
-        upiId: "",
-      });
-      // setIsGstApplicable(false);
-      setGstDetails({
-        gstNumber: "",
-        legalName: "",
-        state: "",
-        stateCode: "",
-      });
-      setErrors({ phone_number: "" });
     } catch (error) {
       console.log("Error adding vendor:", error);
-      setSnackbarMessage(error?.message || "Something went wrong");
+      setSnackbarMessage(error?.response?.data?.message || "Something went wrong");
       setSnackbarOpen(true);
     }
   };
+
   return (
     <>
-      <Modal open={open} onClose={handleClose}>
+      <Modal open={open} onClose={handleRefreshClose}>
         <Box sx={style}>
-          <IconButton
-            aria-label="close"
-            onClick={handleRefreshClose}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <Typography variant="h6" mb={2}>
-            Add Supplier
-          </Typography>
-
-          <Grid container spacing={2}>
-            {Object.entries(formData).map(([key, value]) => (
-              <Grid item xs={12} sm={6} key={key}>
-                <TextField
-                  fullWidth
-                  label={
-                    key === "phone_number"
-                      ? "Contact Number"
-                      : key === "name"
-                      ? "Firm Name"
-                      : key
-                          .replace(/_/g, " ")
-                          .replace(/\b\w/g, (l) => l.toUpperCase())
-                  }
-                  name={key}
-                  value={value}
-                  onChange={handleChange}
-                  required={["name", "address", "phone_number"].includes(key)}
-                  error={Boolean(errors[key])}
-                  helperText={errors[key]}
-                />
-              </Grid>
-            ))}
-          </Grid>
-
-          <Typography variant="h6" mt={2} mb={2}>
-            GST Details
-          </Typography>
-          {/* {isGstApplicable && ( */}
-          <Grid container spacing={2} mt={1}>
-            {/* GST Number */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Gst Number"
-                name="gstNumber"
-                value={gstDetails.gstNumber}
-                onChange={(e) =>
-                  setGstDetails({ ...gstDetails, gstNumber: e.target.value })
-                }
-              />
-            </Grid>
-
-            {/* Legal Name */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Legal Name"
-                name="legalName"
-                value={gstDetails.legalName}
-                onChange={(e) =>
-                  setGstDetails({ ...gstDetails, legalName: e.target.value })
-                }
-              />
-            </Grid>
-
-            {/* State and statecode with Autocomplete */}
-            <Grid item xs={12} sm={6}>
-              <Autocomplete
-                freeSolo
-                options={state.map((s) => s.name)}
-                value={gstDetails.state}
-                onChange={(event, newValue) => {
-                  const selectedState = state.find((s) => s.name === newValue);
-                  setGstDetails((prev) => ({
-                    ...prev,
-                    state: newValue || "",
-                    stateCode: selectedState ? selectedState.stateCode : "",
-                  }));
-                }}
-                onInputChange={(event, newInputValue) => {
-                  setGstDetails((prev) => ({ ...prev, state: newInputValue }));
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="State"
-                    sx={{ width: "200px" }}
-                  />
-                )}
-              />
-            </Grid>
-
-            {/* State Code (read-only) */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="State Code"
-                name="stateCode"
-                value={gstDetails.stateCode}
-                InputProps={{ readOnly: true }}
-              />
-            </Grid>
-          </Grid>
-
-          <Typography variant="h6" mt={2} mb={2}>
-            Bank Details
-          </Typography>
-
-          <Grid container spacing={2}>
-            {Object.entries(bankDetails).map(([key, value]) => (
-              <Grid item xs={12} sm={6} key={key}>
-                <TextField
-                  fullWidth
-                  label={
-                    key === "ifscCode"
-                      ? "IFSC Code"
-                      : key === "upiId"
-                      ? "UPI Id"
-                      : key
-                          .replace(/_/g, " ")
-                          .replace(/([A-Z])/g, " $1")
-                          .replace(/^./, (str) => str.toUpperCase())
-                  }
-                  name={key}
-                  value={value}
-                  onChange={handleBankChange}
-                  error={Boolean(bankErrors[key])}
-                  helperText={bankErrors[key]}
-                />
-              </Grid>
-            ))}
-          </Grid>
-
-          <Box mt={3} display="flex" justifyContent="flex-end">
-            <Button
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+            <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontSize: isMobile ? '1.1rem' : '1.25rem' }}>
+              Add Supplier
+            </Typography>
+            <IconButton
               onClick={handleRefreshClose}
-              sx={{ mr: 2, color: "#182848" }}
+              size="small"
             >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              sx={{
-                background: "linear-gradient(135deg, #182848, #324b84ff)",
-                color: "#fff",
-              }}
-              onClick={handleSubmit}
-            >
-              Save
-            </Button>
+              <CloseIcon fontSize={isMobile ? "small" : "medium"} />
+            </IconButton>
           </Box>
+
+          {loading ? (
+            <Box display="flex" justifyContent="center" p={2}>
+              <Typography variant="body2">Loading form data...</Typography>
+            </Box>
+          ) : (
+            <>
+              {/* Basic Information */}
+              <Typography variant="body1" fontWeight="bold" mb={0.5}>
+                Basic Information
+              </Typography>
+              <Grid container spacing={1}>
+                {Object.entries(formData).map(([key, value]) => (
+                  <Grid item xs={12} sm={6} key={key}>
+                    <TextField
+                      fullWidth
+                      label={
+                        key === "phone_number"
+                          ? "Contact Number"
+                          : key === "name"
+                          ? "Firm Name"
+                          : key
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (l) => l.toUpperCase())
+                      }
+                      name={key}
+                      value={value}
+                      onChange={handleChange}
+                      required={["name", "address", "phone_number"].includes(key)}
+                      error={Boolean(errors[key])}
+                      helperText={errors[key]}
+                      size="small"
+                      type={key === "openingAmount" ? "number" : "text"}
+                      inputProps={key === "phone_number" ? { maxLength: 10 } : {}}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          height: 40,
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontSize: '0.875rem',
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          fontSize: '0.875rem',
+                          padding: '8.5px 14px',
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontSize: '0.75rem',
+                          marginTop: '2px',
+                        }
+                      }}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+
+              {/* GST Details */}
+              <Box mt={2}>
+                <Typography variant="body1" fontWeight="bold" mb={0.5}>
+                  GST Details
+                </Typography>
+                <Grid container spacing={1}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="GST Number"
+                      name="gstNumber"
+                      value={gstDetails.gstNumber}
+                      onChange={(e) =>
+                        setGstDetails({ ...gstDetails, gstNumber: e.target.value })
+                      }
+                      size="small"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          height: 40,
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontSize: '0.875rem',
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          fontSize: '0.875rem',
+                          padding: '8.5px 14px',
+                        },
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Legal Name"
+                      name="legalName"
+                      value={gstDetails.legalName}
+                      onChange={(e) =>
+                        setGstDetails({ ...gstDetails, legalName: e.target.value })
+                      }
+                      size="small"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          height: 40,
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontSize: '0.875rem',
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          fontSize: '0.875rem',
+                          padding: '8.5px 14px',
+                        },
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <Autocomplete
+                      freeSolo
+                      options={state.map((s) => s.name)}
+                      value={gstDetails.state}
+                      onChange={(event, newValue) => {
+                        const selectedState = state.find((s) => s.name === newValue);
+                        setGstDetails((prev) => ({
+                          ...prev,
+                          state: newValue || "",
+                          stateCode: selectedState ? selectedState.stateCode : "",
+                        }));
+                      }}
+                      onInputChange={(event, newInputValue) => {
+                        setGstDetails((prev) => ({ ...prev, state: newInputValue }));
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="State"
+                          size="small"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              height: 40,
+                            },
+                            '& .MuiInputLabel-root': {
+                              fontSize: '0.875rem',
+                            },
+                            '& .MuiOutlinedInput-input': {
+                              fontSize: '0.875rem',
+                              padding: '8.5px 14px',
+                            },
+                          }}
+                        />
+                      )}
+                      size="small"
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="State Code"
+                      name="stateCode"
+                      value={gstDetails.stateCode}
+                      InputProps={{ readOnly: true }}
+                      size="small"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          height: 40,
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontSize: '0.875rem',
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          fontSize: '0.875rem',
+                          padding: '8.5px 14px',
+                        },
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Bank Details */}
+              <Box mt={2}>
+                <Typography variant="body1" fontWeight="bold" mb={0.5}>
+                  Bank Details
+                </Typography>
+                <Grid container spacing={1}>
+                  {Object.entries(bankDetails).map(([key, value]) => (
+                    <Grid item xs={12} sm={6} key={key}>
+                      <TextField
+                        fullWidth
+                        label={
+                          key === "ifscCode"
+                            ? "IFSC Code"
+                            : key === "upiId"
+                            ? "UPI ID"
+                            : key
+                                .replace(/_/g, " ")
+                                .replace(/([A-Z])/g, " $1")
+                                .replace(/^./, (str) => str.toUpperCase())
+                        }
+                        name={key}
+                        value={value}
+                        onChange={handleBankChange}
+                        error={Boolean(bankErrors[key])}
+                        helperText={bankErrors[key]}
+                        size="small"
+                        inputProps={key === "accountNumber" ? { maxLength: 18 } : {}}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            height: 40,
+                          },
+                          '& .MuiInputLabel-root': {
+                            fontSize: '0.875rem',
+                          },
+                          '& .MuiOutlinedInput-input': {
+                            fontSize: '0.875rem',
+                            padding: '8.5px 14px',
+                          },
+                          '& .MuiFormHelperText-root': {
+                            fontSize: '0.75rem',
+                            marginTop: '2px',
+                          }
+                        }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+
+              {/* Action Buttons */}
+              <Box mt={2} display="flex" justifyContent="flex-end" gap={1}>
+                <Button
+                  onClick={handleRefreshClose}
+                  variant="outlined"
+                  size="small"
+                  sx={{ 
+                    fontSize: '0.8125rem',
+                    py: 0.5,
+                    px: 1.5,
+                    minWidth: '70px'
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    background: "linear-gradient(135deg, #182848, #324b84ff)",
+                    color: "#fff",
+                    fontSize: '0.8125rem',
+                    py: 0.5,
+                    px: 1.5,
+                    minWidth: '70px'
+                  }}
+                  onClick={handleSubmit}
+                >
+                  Save
+                </Button>
+              </Box>
+            </>
+          )}
         </Box>
       </Modal>
+      
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
@@ -451,12 +563,11 @@ const AddVendor = ({ open, handleClose, refresh }) => {
       >
         <Alert
           severity={
-            snackbarMessage === "Supplier Added successful!"
-              ? "success"
-              : "error"
+            snackbarMessage.includes("successfully") ? "success" : "error"
           }
           variant="filled"
           onClose={() => setSnackbarOpen(false)}
+          sx={{ fontSize: '0.875rem' }}
         >
           {snackbarMessage}
         </Alert>

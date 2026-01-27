@@ -9,11 +9,22 @@ import {
   Divider,
   Button,
   Paper,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  useMediaQuery,
+  useTheme,
+  InputAdornment,
+  Chip,
+  Collapse,
+  Card,
+  CardContent,
+  Stack,
 } from "@mui/material";
-import { Delete } from "@mui/icons-material";
+import { Delete, Add, ExpandMore, ExpandLess } from "@mui/icons-material";
 
 const ProductDetails = ({
   products,
@@ -30,8 +41,12 @@ const ProductDetails = ({
   paymentMode,
   setPaymentMode,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+  
   const productRefs = useRef([]);
-  const [paymentType, setPaymentType] = useState("full"); // full | advance
+  const [expandedRow, setExpandedRow] = useState(null);
 
   // ✅ Sanitize number input
   const sanitizeNumber = (v) => {
@@ -41,6 +56,7 @@ const ProductDetails = ({
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
   };
+
   // Calculate discounted taxable value for one product
   const getDiscountedAmount = (item) => {
     const price = sanitizeNumber(item.price);
@@ -126,25 +142,25 @@ const ProductDetails = ({
   const handleAddAndFocus = () => {
     handleAddProduct();
     setTimeout(() => {
-        const lastIndex = selectedProducts.length; // after push
-        if (productRefs.current[lastIndex]) {
-          productRefs.current[lastIndex].focus(); // Focus the new dropdown
-        }
-      }, 10);
+      const lastIndex = selectedProducts.length;
+      if (productRefs.current[lastIndex]) {
+        productRefs.current[lastIndex].focus();
+      }
+    }, 10);
   };
 
   // ✅ GST Calculation
   const calculateGST = (item) => {
     const gstRate = Number(item.gstPercent || 0);
-    const discountStr = item.discountPercentage.toString();
-    let base = 0 ;
-  if (discountStr.includes("%")) {
-    const percent = parseFloat(discountStr) || 0;
-     base = Number(item.price || 0) * (item.qty) - percent;
-  } else {
-    const flat = parseFloat(discountStr) || 0;
-     base = Number(item.price || 0) * (item.qty) - flat ;
-  }
+    const discountStr = item.discountPercentage?.toString() || "0";
+    let base = 0;
+    if (discountStr.includes("%")) {
+      const percent = parseFloat(discountStr) || 0;
+      base = Number(item.price || 0) * (item.qty) - (Number(item.price || 0) * (item.qty) * percent) / 100;
+    } else {
+      const flat = parseFloat(discountStr) || 0;
+      base = Number(item.price || 0) * (item.qty) - flat;
+    }
     const gstAmount = +(base * (gstRate / 100)).toFixed(2);
 
     if (isWithinState) {
@@ -155,314 +171,785 @@ const ProductDetails = ({
     }
   };
 
-  return (
-    <Box mt={3}>
-      <Typography variant="h6">Products</Typography>
-      <Divider />
+  // Mobile Product Card Component
+  const MobileProductCard = ({ item, index }) => {
+    const { cgst, sgst, igst } = calculateGST(item);
+    const isExpanded = expandedRow === index;
 
-      {selectedProducts.map((item, index) => {
-        const { cgst, sgst, igst } = calculateGST(item);
-
-        return (
-          <Grid container spacing={2} key={index} mt={4}>
-            {/* Product Dropdown */}
-            <Grid item xs={12} sm={3}>
-              <TextField
-                sx={{ width: "200px" }}
-                select
-                value={item.productName}
-                onChange={(e) =>
-                  handleProductChange(index, "productName", e.target.value)
-                }
-                label="Select Product"
-               inputRef={(el) => (productRefs.current[index] = el)} 
-              >
-                {products?.map((prod) => (
-                  <MenuItem key={prod._id} value={prod.name}>
-                    {prod.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-
-            {/* ProductCode */}
-            <Grid item xs={12} sm={1}>
-              <TextField
-                select
-                label="Product Code"
-                value={item.productCode}
-                onChange={(e) =>
-                  handleProductChange(index, "productCode", e.target.value)
-                }
-                sx={{ width: "150px" }}
-              >
-                {[...new Set(products?.map((prod) => prod.productCode))].map(
-                  (pcode) => (
-                    <MenuItem key={pcode} value={pcode}>
-                      {pcode}
-                    </MenuItem>
-                  )
+    return (
+      <Card sx={{ mb: 2, borderLeft: '4px solid', borderColor: 'primary.main' }}>
+        <CardContent>
+          <Stack spacing={1.5}>
+            {/* Header Row */}
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="subtitle1" fontWeight={600}>
+                {item.productName || "Select Product"}
+              </Typography>
+              <Box display="flex" gap={1}>
+                <IconButton
+                  size="small"
+                  onClick={() => setExpandedRow(isExpanded ? null : index)}
+                >
+                  {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                </IconButton>
+                {selectedProducts.length > 1 && (
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemoveProduct(index)}
+                    color="error"
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
                 )}
-              </TextField>
-            </Grid>
-            {/* HSN */}
-            <Grid item xs={12} sm={1}>
-              <TextField
-                select
-                label="HSN"
-                value={item.hsnCode}
-                onChange={(e) =>
-                  handleProductChange(index, "hsnCode", e.target.value)
-                }
-                sx={{ width: "150px" }}
-              >
-                {[...new Set(products?.map((prod) => prod.hsnCode))].map(
-                  (hsn) => (
-                    <MenuItem key={hsn} value={hsn}>
-                      {hsn}
-                    </MenuItem>
-                  )
-                )}
-              </TextField>
-            </Grid>
+              </Box>
+            </Box>
 
-            {/* Qty */}
-            <Grid item xs={12} sm={1}>
+            {/* Basic Info */}
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="body2" color="textSecondary">
+                Qty:
+              </Typography>
               <TextField
-                label="Qty"
+                size="small"
                 type="number"
-                sx={{ width: "80px" }}
                 value={item.qty}
-                onChange={(e) =>
-                  handleProductChange(index, "qty", e.target.value)
-                }
+                onChange={(e) => handleProductChange(index, "qty", e.target.value)}
+                sx={{ width: '80px' }}
               />
-            </Grid>
+            </Box>
 
-            {/* MRP */}
-            <Grid item xs={12} sm={2}>
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="body2" color="textSecondary">
+                Rate:
+              </Typography>
               <TextField
-                label="Rate"
+                size="small"
                 type="number"
-                sx={{ width: "90px" }}
                 value={item.price}
-                onChange={(e) =>
-                  handleProductChange(index, "price", e.target.value)
-                }
-              />
-            </Grid>
-
-            {/* Discount % */}
-            <Grid item xs={12} sm={2}>
-              <TextField
-                label="Discount"
-                type="text"
-                sx={{ width: "100px" }}
-                value={item.discountPercentage || ""}
-                onChange={(e) => {
-                  handleProductChange(
-                    index,
-                    "discountPercentage",
-                    e.target.value
-                  );
+                onChange={(e) => handleProductChange(index, "price", e.target.value)}
+                sx={{ width: '100px' }}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">₹</InputAdornment>,
                 }}
-                placeholder="e.g. 2%, 100 rs"
               />
-            </Grid>
+            </Box>
 
-            {/* Selling Price */}
-            {billType === "gst" && ( <>
-            <Grid item xs={12} sm={2}>
-              <TextField
-                label="Taxable Value"
-                type="number"
-                sx={{ width: "120px" }}
-                value={getDiscountedAmount(item)}
-                onChange={(e) =>
-                  handleProductChange(index, "discountedPrice", e.target.value)
-                }
+            {/* Expandable Details */}
+            <Collapse in={isExpanded}>
+              <Stack spacing={1.5} mt={2}>
+                {/* Product Selection */}
+                <Box>
+                  <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                    Product
+                  </Typography>
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    value={item.productName}
+                    onChange={(e) => handleProductChange(index, "productName", e.target.value)}
+                  >
+                    {products?.map((prod) => (
+                      <MenuItem key={prod._id} value={prod.name}>
+                        {prod.name} (₹{prod.price})
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+
+                {/* Product Code */}
+                <Box>
+                  <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                    Product Code
+                  </Typography>
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    value={item.productCode}
+                    onChange={(e) => handleProductChange(index, "productCode", e.target.value)}
+                  >
+                    {[...new Set(products?.map((prod) => prod.productCode))].map((pcode) => (
+                      <MenuItem key={pcode} value={pcode}>
+                        {pcode}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+
+                {/* HSN Code */}
+                <Box>
+                  <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                    HSN Code
+                  </Typography>
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    value={item.hsnCode}
+                    onChange={(e) => handleProductChange(index, "hsnCode", e.target.value)}
+                  >
+                    {[...new Set(products?.map((prod) => prod.hsnCode))].map((hsn) => (
+                      <MenuItem key={hsn} value={hsn}>
+                        {hsn}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+
+                {/* Discount */}
+                <Box>
+                  <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                    Discount
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={item.discountPercentage || ""}
+                    onChange={(e) => handleProductChange(index, "discountPercentage", e.target.value)}
+                    placeholder="e.g. 2%, 100 rs"
+                  />
+                </Box>
+
+                {/* GST Details */}
+                {billType === "gst" && (
+                  <>
+                    <Box>
+                      <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                        GST %
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        value={item.gstPercent || ""}
+                        onChange={(e) => handleProductChange(index, "gstPercent", e.target.value)}
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption" color="textSecondary" display="block" mb={0.5}>
+                        Taxable Value
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        value={getDiscountedAmount(item).toFixed(2)}
+                        InputProps={{
+                          readOnly: true,
+                          startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+                        }}
+                      />
+                    </Box>
+
+                    {isWithinState ? (
+                      <Grid container spacing={1}>
+                        <Grid item xs={6}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="CGST"
+                            value={cgst.toFixed(2)}
+                            InputProps={{ readOnly: true }}
+                          />
+                        </Grid>
+                        <Grid item xs={6}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            label="SGST"
+                            value={sgst.toFixed(2)}
+                            InputProps={{ readOnly: true }}
+                          />
+                        </Grid>
+                      </Grid>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="IGST"
+                        value={igst.toFixed(2)}
+                        InputProps={{ readOnly: true }}
+                      />
+                    )}
+                  </>
+                )}
+              </Stack>
+            </Collapse>
+
+            {/* Total & Summary */}
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mt={1}
+              pt={1}
+              borderTop="1px solid #e0e0e0"
+            >
+              <Typography variant="subtitle2" fontWeight={600}>
+                Total:
+              </Typography>
+              <Chip
+                label={`₹${(getDiscountedAmount(item) + (isWithinState ? cgst + sgst : igst)).toFixed(2)}`}
+                color="primary"
+                size="small"
+                variant="outlined"
               />
-            </Grid>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
+    );
+  };
 
-            {/* GST % */}
-            
-              <Grid item xs={12} sm={1.5}>
-                <TextField
-                  label="GST %"
-                  type="number"
-                  sx={{ width: "80px" }}
-                  value={item.gstPercent || ""}
-                  onChange={(e) =>
-                    handleProductChange(index, "gstPercent", e.target.value)
-                  }
-                />
-              </Grid>
-            </>
-            )}
-
-            {billType === "gst" && isWithinState && (
+  // Desktop Table View
+  const DesktopTableView = () => (
+    <TableContainer
+      component={Paper}
+      sx={{
+        maxHeight: isTablet ? "400px" : "450px",
+        overflow: "auto",
+        "& .MuiTable-root": {
+          minWidth: isMobile ? "1000px" : "auto",
+        },
+      }}
+    >
+      <Table size="small" stickyHeader>
+        <TableHead>
+          <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+            <TableCell sx={{ width: "20%", fontWeight: "bold", padding: "8px" }}>
+              Product Name
+            </TableCell>
+            <TableCell sx={{ width: "8%", fontWeight: "bold", padding: "8px" }}>
+              Product Code
+            </TableCell>
+            <TableCell sx={{ width: "8%", fontWeight: "bold", padding: "8px" }}>
+              HSN
+            </TableCell>
+            <TableCell sx={{ width: "6%", fontWeight: "bold", padding: "8px" }}>
+              Qty
+            </TableCell>
+            <TableCell sx={{ width: "10%", fontWeight: "bold", padding: "8px" }}>
+              Rate
+            </TableCell>
+            <TableCell sx={{ width: "8%", fontWeight: "bold", padding: "8px" }}>
+              Discount
+            </TableCell>
+            {billType === "gst" && (
               <>
-                <Grid item xs={12} sm={1.5} width={100}>
-                  <TextField
-                    label="CGST"
-                    value={cgst}
-                    InputProps={{ readOnly: true }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={1.5} width={100}>
-                  <TextField
-                    label="SGST"
-                    value={sgst}
-                    InputProps={{ readOnly: true }}
-                  />
-                </Grid>
+                <TableCell sx={{ width: "7%", fontWeight: "bold", padding: "8px" }}>
+                  GST %
+                </TableCell>
+                <TableCell sx={{ width: "10%", fontWeight: "bold", padding: "8px" }}>
+                  Taxable Value
+                </TableCell>
+                {isWithinState ? (
+                  <>
+                    <TableCell sx={{ width: "7%", fontWeight: "bold", padding: "8px" }}>
+                      CGST
+                    </TableCell>
+                    <TableCell sx={{ width: "7%", fontWeight: "bold", padding: "8px" }}>
+                      SGST
+                    </TableCell>
+                  </>
+                ) : (
+                  <TableCell sx={{ width: "10%", fontWeight: "bold", padding: "8px" }}>
+                    IGST
+                  </TableCell>
+                )}
               </>
             )}
+            <TableCell sx={{ width: "10%", fontWeight: "bold", padding: "8px" }}>
+              Total
+            </TableCell>
+            <TableCell sx={{ width: "5%", fontWeight: "bold", padding: "8px" }}>
+              Action
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {selectedProducts.map((item, index) => {
+            const { cgst, sgst, igst } = calculateGST(item);
+            const total = getDiscountedAmount(item) + (isWithinState ? cgst + sgst : igst);
 
-            {billType === "gst" && !isWithinState && (
-              <Grid item xs={12} sm={2} width={100}>
-                <TextField
-                  label="IGST"
-                  value={igst}
-                  InputProps={{ readOnly: true }}
-                />
-              </Grid>
-            )}
+            return (
+              <TableRow key={index} hover>
+                {/* Product Name */}
+                <TableCell sx={{ padding: "4px" }}>
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    value={item.productName}
+                    onChange={(e) => handleProductChange(index, "productName", e.target.value)}
+                    inputRef={(el) => (productRefs.current[index] = el)}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: "36px",
+                        minHeight: "36px",
+                      },
+                      "& .MuiSelect-select": {
+                        padding: "8px 12px",
+                        lineHeight: "20px",
+                      },
+                    }}
+                  >
+                    {products?.map((prod) => (
+                      <MenuItem key={prod._id} value={prod.name}>
+                        {prod.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </TableCell>
 
-            {/* Total */}
-            <Grid item xs={12} sm={2} width={150}>
-              <TextField
-                label="Total"
-                value={
-                   getDiscountedAmount(item) +
-                  (isWithinState ? cgst + sgst : igst)
-                }
-                InputProps={{ readOnly: true }}
-              />
-            </Grid>
+                {/* Product Code */}
+                <TableCell sx={{ padding: "4px" }}>
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    value={item.productCode}
+                    onChange={(e) => handleProductChange(index, "productCode", e.target.value)}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: "36px",
+                        minHeight: "36px",
+                      },
+                    }}
+                  >
+                    {[...new Set(products?.map((prod) => prod.productCode))].map((pcode) => (
+                      <MenuItem key={pcode} value={pcode}>
+                        {pcode}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </TableCell>
 
-            {/* Delete Button */}
-            <Grid item xs={12} sm={1}>
-              <IconButton onClick={() => handleRemoveProduct(index)}>
-                <Delete color="error" />
-              </IconButton>
-            </Grid>
-          </Grid>
-        );
-      })}
+                {/* HSN Code */}
+                <TableCell sx={{ padding: "4px" }}>
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    value={item.hsnCode}
+                    onChange={(e) => handleProductChange(index, "hsnCode", e.target.value)}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: "36px",
+                        minHeight: "36px",
+                      },
+                    }}
+                  >
+                    {[...new Set(products?.map((prod) => prod.hsnCode))].map((hsn) => (
+                      <MenuItem key={hsn} value={hsn}>
+                        {hsn}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </TableCell>
 
+                {/* Quantity */}
+                <TableCell sx={{ padding: "4px" }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    size="small"
+                    value={item.qty}
+                    onChange={(e) => handleProductChange(index, "qty", e.target.value)}
+                    InputProps={{
+                      inputProps: {
+                        min: 1,
+                        style: { textAlign: "center" },
+                      },
+                    }}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: "36px",
+                        minHeight: "36px",
+                      },
+                    }}
+                  />
+                </TableCell>
+
+                {/* Rate */}
+                <TableCell sx={{ padding: "4px" }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    size="small"
+                    value={item.price}
+                    onChange={(e) => handleProductChange(index, "price", e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start" sx={{ mr: 0.5 }}>
+                          ₹
+                        </InputAdornment>
+                      ),
+                      inputProps: {
+                        min: 0,
+                        step: 0.01,
+                        style: { textAlign: "right" },
+                      },
+                    }}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: "36px",
+                        minHeight: "36px",
+                        pl: 1,
+                      },
+                    }}
+                  />
+                </TableCell>
+
+                {/* Discount */}
+                <TableCell sx={{ padding: "4px" }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={item.discountPercentage || ""}
+                    onChange={(e) => handleProductChange(index, "discountPercentage", e.target.value)}
+                    placeholder="2% or ₹100"
+                    InputProps={{
+                      inputProps: {
+                        style: { textAlign: "center" },
+                      },
+                    }}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: "36px",
+                        minHeight: "36px",
+                      },
+                    }}
+                  />
+                </TableCell>
+
+                {/* GST Percentage */}
+                {billType === "gst" && (
+                  <TableCell sx={{ padding: "4px" }}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      size="small"
+                      value={item.gstPercent || ""}
+                      onChange={(e) => handleProductChange(index, "gstPercent", e.target.value)}
+                      InputProps={{
+                        inputProps: {
+                          min: 0,
+                          max: 100,
+                          step: 0.01,
+                          style: { textAlign: "center" },
+                        },
+                      }}
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: "36px",
+                          minHeight: "36px",
+                        },
+                      }}
+                    />
+                  </TableCell>
+                )}
+
+                {/* Taxable Value */}
+                {billType === "gst" && (
+                  <TableCell sx={{ padding: "4px" }}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      value={getDiscountedAmount(item).toFixed(2)}
+                      InputProps={{
+                        readOnly: true,
+                        startAdornment: (
+                          <InputAdornment position="start" sx={{ mr: 0.5 }}>
+                            ₹
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: "36px",
+                          minHeight: "36px",
+                          backgroundColor: "#f9f9f9",
+                        },
+                      }}
+                    />
+                  </TableCell>
+                )}
+
+                {/* CGST & SGST or IGST */}
+                {billType === "gst" && isWithinState && (
+                  <>
+                    <TableCell sx={{ padding: "4px" }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={cgst.toFixed(2)}
+                        InputProps={{
+                          readOnly: true,
+                          startAdornment: (
+                            <InputAdornment position="start" sx={{ mr: 0.5 }}>
+                              ₹
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiInputBase-root": {
+                            height: "36px",
+                            minHeight: "36px",
+                            backgroundColor: "#f0f7ff",
+                          },
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ padding: "4px" }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={sgst.toFixed(2)}
+                        InputProps={{
+                          readOnly: true,
+                          startAdornment: (
+                            <InputAdornment position="start" sx={{ mr: 0.5 }}>
+                              ₹
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiInputBase-root": {
+                            height: "36px",
+                            minHeight: "36px",
+                            backgroundColor: "#f0f7ff",
+                          },
+                        }}
+                      />
+                    </TableCell>
+                  </>
+                )}
+
+                {billType === "gst" && !isWithinState && (
+                  <TableCell sx={{ padding: "4px" }}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      value={igst.toFixed(2)}
+                      InputProps={{
+                        readOnly: true,
+                        startAdornment: (
+                          <InputAdornment position="start" sx={{ mr: 0.5 }}>
+                            ₹
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: "36px",
+                          minHeight: "36px",
+                          backgroundColor: "#fff3e0",
+                        },
+                      }}
+                    />
+                  </TableCell>
+                )}
+
+                {/* Total */}
+                <TableCell sx={{ padding: "4px" }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={`₹${total.toFixed(2)}`}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        height: "36px",
+                        minHeight: "36px",
+                        backgroundColor: "#f9f9f9",
+                        pl: 1,
+                      },
+                      "& .MuiInputBase-input": {
+                        fontWeight: "medium",
+                        textAlign: "right",
+                        color: "#1976d2",
+                      },
+                    }}
+                  />
+                </TableCell>
+
+                {/* Action */}
+                <TableCell sx={{ padding: "4px", textAlign: "center" }}>
+                  {selectedProducts.length > 1 && (
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRemoveProduct(index)}
+                      color="error"
+                      sx={{
+                        width: "32px",
+                        height: "32px",
+                        "& svg": { fontSize: "18px" },
+                      }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
+  return (
+    <Box mt={3}>
+      <Typography variant="h6" gutterBottom>
+        Product Details
+      </Typography>
+      <Divider sx={{ mb: 2 }} />
+
+      {isMobile ? (
+        <Box>
+          {selectedProducts.map((item, index) => (
+            <MobileProductCard key={index} item={item} index={index} />
+          ))}
+        </Box>
+      ) : (
+        <DesktopTableView />
+      )}
+
+      {/* Add Product Button */}
       <Button
         onClick={handleAddAndFocus}
         variant="contained"
-        sx={{ mt: 2, backgroundColor: "#182848" }}
+        startIcon={<Add />}
+        sx={{ mt: 2, backgroundColor: "#182848", height: "36px" }}
       >
-        + Add Product
+        Add Product
       </Button>
 
-      {/* GST Summary */}
-      {billType === "gst" && (
-        <Paper elevation={2} sx={{ p: 2, mt: 3, backgroundColor: "#f5f5f5" }}>
-          <Typography variant="h6" gutterBottom>
-            GST Summary
-          </Typography>
-          <Grid container spacing={2}>
-            {isWithinState ? (
-              <>
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    label={`Total CGST`}
-                    type="number"
-                    fullWidth
-                    value={totalsMemo.cgst}
-                    InputProps={{ readOnly: true }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    label={`Total SGST`}
-                    type="number"
-                    fullWidth
-                    value={totalsMemo.sgst}
-                    InputProps={{ readOnly: true }}
-                  />
-                </Grid>
-              </>
-            ) : (
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  label={`Total IGST`}
-                  type="number"
-                  fullWidth
-                  value={totalsMemo.igst}
-                  InputProps={{ readOnly: true }}
-                />
-              </Grid>
-            )}
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Total GST Amount"
-                type="number"
-                fullWidth
-                value={totalsMemo.gstTotal}
-                InputProps={{ readOnly: true }}
-                sx={{ fontWeight: "bold" }}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Total Grand Amount"
-                type="number"
-                fullWidth
-                value={totalsMemo.grandTotal}
-                InputProps={{ readOnly: true }}
-                sx={{ fontWeight: "bold" }}
-              />
-            </Grid>
-          </Grid>
-        </Paper>
-      )}
-
-      {/* ✅ Payment Details Section */}
-      <Paper elevation={2} sx={{ p: 2, mt: 3, backgroundColor: "#e8f0fe" }}>
+      {/* ✅ Totals Summary */}
+      <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, mt: 3, backgroundColor: "#f5f5f5" }}>
         <Typography variant="h6" gutterBottom>
-          Payment Details
+          Bill Summary
         </Typography>
-        <Grid container spacing={2} mt={1}>
-          {/* <Grid item xs={12} sm={6}>
-            <TextField
-              label="Received Amount"
-              type="number"
-              fullWidth
-              value={advanceAmount}
-              // onChange={(e) => handlePayment(e.target.value)}
-              onChange={(e) => setAdvanceAmount(sanitizeNumber(e.target.value))}
-            />
-          </Grid> */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Payment Amount"
-              type="number"
-              fullWidth
-              value={Math.max(
-                totalsMemo.grandTotal - sanitizeNumber(advanceAmount),
-                0
+        
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <Stack spacing={2}>
+              {/* Subtotal */}
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="body1">Subtotal:</Typography>
+                <Chip
+                  label={`₹${totalsMemo.subtotal.toFixed(2)}`}
+                  color="default"
+                  variant="outlined"
+                  size="medium"
+                />
+              </Box>
+
+              {/* GST Summary */}
+              {billType === "gst" && (
+                <>
+                  {isWithinState ? (
+                    <>
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="body1">CGST:</Typography>
+                        <Chip
+                          label={`₹${totalsMemo.cgst.toFixed(2)}`}
+                          color="info"
+                          variant="outlined"
+                          size="medium"
+                        />
+                      </Box>
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="body1">SGST:</Typography>
+                        <Chip
+                          label={`₹${totalsMemo.sgst.toFixed(2)}`}
+                          color="info"
+                          variant="outlined"
+                          size="medium"
+                        />
+                      </Box>
+                    </>
+                  ) : (
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body1">IGST:</Typography>
+                      <Chip
+                        label={`₹${totalsMemo.igst.toFixed(2)}`}
+                        color="warning"
+                        variant="outlined"
+                        size="medium"
+                      />
+                    </Box>
+                  )}
+                  
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="body1" fontWeight={600}>Total GST:</Typography>
+                    <Chip
+                      label={`₹${totalsMemo.gstTotal.toFixed(2)}`}
+                      color="primary"
+                      size="medium"
+                    />
+                  </Box>
+                </>
               )}
-              InputProps={{ readOnly: true }}
-            />
+            </Stack>
           </Grid>
-          {/* <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              label="Payment Mode"
-              fullWidth
-              value={paymentMode}
-              onChange={(e) => setPaymentMode(e.target.value)}
+
+          <Grid item xs={12} md={6}>
+            <Paper
+              variant="outlined"
+              sx={{ p: 2, backgroundColor: "#e8f0fe", height: "100%" }}
             >
-              <MenuItem value="cash">Cash</MenuItem>
-              <MenuItem value="online">Online</MenuItem>
-            </TextField>
-          </Grid> */}
+              <Stack spacing={2}>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="h6">Grand Total:</Typography>
+                  <Chip
+                    label={`₹${totalsMemo.grandTotal.toFixed(2)}`}
+                    color="primary"
+                    size="large"
+                    sx={{ fontSize: "1.1rem", fontWeight: "bold" }}
+                  />
+                </Box>
+
+                {/* Payment Details */}
+                <Divider />
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Payment Details
+                </Typography>
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      select
+                      fullWidth
+                      size="small"
+                      label="Payment Mode"
+                      value={paymentMode}
+                      onChange={(e) => setPaymentMode(e.target.value)}
+                    >
+                      <MenuItem value="">Select Mode</MenuItem>
+                      <MenuItem value="cash">Cash</MenuItem>
+                      <MenuItem value="online">Online</MenuItem>
+                      <MenuItem value="cheque">Cheque</MenuItem>
+                    </TextField>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Amount Due"
+                      value={`₹${Math.max(totalsMemo.grandTotal - sanitizeNumber(advanceAmount), 0).toFixed(2)}`}
+                      InputProps={{ readOnly: true }}
+                    />
+                  </Grid>
+                </Grid>
+              </Stack>
+            </Paper>
+          </Grid>
         </Grid>
       </Paper>
     </Box>
