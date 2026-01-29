@@ -13,8 +13,13 @@ import {
   Divider,
   Snackbar,
   Alert,
+  Box,
+  Stack,
+  useMediaQuery,
+  useTheme,
+  Paper,
 } from "@mui/material";
-import { Delete, Add } from "@mui/icons-material";
+import { Delete, Add, Close } from "@mui/icons-material";
 import {
   addQuotation,
   generateQuotationNoByOrganization,
@@ -25,26 +30,26 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import CloseIcon from "@mui/icons-material/Close";
 import { useAuth } from "../../context/AuthContext";
 import { getUserById } from "../../services/UserService";
-import moment from "moment";
 
 const AddQuotationDialog = ({ open, handleClose, refresh }) => {
   const { webuser } = useAuth();
   const [mainUser, setMainUser] = useState(null);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  
   const today = new Date();
   const dd = String(today.getDate()).padStart(2, "0");
-  const mm = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
   const yyyy = today.getFullYear();
-
   const formatted = `${dd}/${mm}/${yyyy}`;
 
   const [formData, setFormData] = useState({
     quotationNo: "",
-    // date: new Date().toLocaleDateString("en-GB"),
     date: formatted,
-    // date: moment(new Date()).format('DD/MM/YYYY'),
     validUpTo: "",
     customer: {
       name: "",
@@ -77,7 +82,6 @@ const AddQuotationDialog = ({ open, handleClose, refresh }) => {
         const res = await generateQuotationNoByOrganization(
           mainUser?.organization_id?._id
         );
-
         setFormData((prev) => ({
           ...prev,
           quotationNo: res.quoteNo,
@@ -88,7 +92,7 @@ const AddQuotationDialog = ({ open, handleClose, refresh }) => {
     };
     if (open) fetchQuotation();
   }, [open, mainUser]);
-  // handle customer field changes
+
   const handleCustomerChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -99,6 +103,7 @@ const AddQuotationDialog = ({ open, handleClose, refresh }) => {
       },
     }));
   };
+
   const handleRefresh = async () => {
     setFormData({
       quotationNo: "",
@@ -106,18 +111,15 @@ const AddQuotationDialog = ({ open, handleClose, refresh }) => {
       status: "Draft",
       products: [{ productName: "", quantity: 1, unitPrice: 0, tax: 18 }],
     });
-
     handleClose();
   };
 
-  // handle product field changes
   const handleProductChange = (index, field, value) => {
     const updatedProducts = [...formData.products];
     updatedProducts[index][field] = value;
     setFormData((prev) => ({ ...prev, products: updatedProducts }));
   };
 
-  // add a new product row
   const handleAddProduct = () => {
     setFormData((prev) => ({
       ...prev,
@@ -128,13 +130,12 @@ const AddQuotationDialog = ({ open, handleClose, refresh }) => {
     }));
   };
 
-  // delete a product row
   const handleDeleteProduct = (index) => {
     const updatedProducts = formData.products.filter((_, i) => i !== index);
     setFormData((prev) => ({ ...prev, products: updatedProducts }));
   };
 
-  // totals calculation
+  // Totals calculation
   const subtotal = formData.products.reduce(
     (acc, p) => acc + p.quantity * p.unitPrice,
     0
@@ -145,7 +146,6 @@ const AddQuotationDialog = ({ open, handleClose, refresh }) => {
   );
   const grandTotal = subtotal + taxTotal;
 
-  // form submit
   const handleSubmit = async () => {
     const newErrors = {
       customerName: formData.customer.name.trim() === "",
@@ -169,18 +169,17 @@ const AddQuotationDialog = ({ open, handleClose, refresh }) => {
           createdBy: mainUser?._id,
         };
 
-        const response = await addQuotation(payload); // ✅ Call API
+        const response = await addQuotation(payload);
 
         if (response.status === true) {
           setSnackbarOpen(true);
           setSnackbarMessage(response.message);
           const quotationData = await getQuotationById(response.quotation._id);
-         
           setPrintData(quotationData);
-          setShowPrint(true); // Show bill for printing
+          setShowPrint(true);
           setTimeout(() => {
             window.print();
-            setShowPrint(false); // Optional
+            setShowPrint(false);
           }, 500);
           setFormData({
             quotationNo: "",
@@ -188,316 +187,498 @@ const AddQuotationDialog = ({ open, handleClose, refresh }) => {
             status: "Draft",
             products: [{ productName: "", quantity: 1, unitPrice: 0, tax: 18 }],
           });
-
-          handleClose(); //  close dialog after success
-          refresh(); //  Refresh the list after adding
+          handleClose();
+          refresh();
         } else {
           setSnackbarOpen(true);
           setSnackbarMessage(response.message);
           return;
         }
-
-        // reset form after success
       } catch (err) {
         console.error("Error adding quotation:", err);
       }
     }
   };
 
+  // Compact Product Row for Desktop
+  const CompactProductRow = ({ product, index }) => {
+    return (
+      <Grid container spacing={1} alignItems="center" sx={{ mb: 1 }}>
+        <Grid item xs={4}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Product name"
+            value={product.productName}
+            onChange={(e) => handleProductChange(index, "productName", e.target.value)}
+            error={errors.products && product.productName.trim() === ""}
+            helperText={errors.products && product.productName.trim() === "" ? "Required" : ""}
+            sx={{ '& .MuiInputBase-root': { height: '40px' } }}
+          />
+        </Grid>
+        <Grid item xs={2}>
+          <TextField
+            fullWidth
+            type="number"
+            size="small"
+            placeholder="Qty"
+            value={product.quantity}
+            onChange={(e) => handleProductChange(index, "quantity", Number(e.target.value))}
+            sx={{ '& .MuiInputBase-root': { height: '40px' } }}
+          />
+        </Grid>
+        <Grid item xs={2}>
+          <TextField
+            fullWidth
+            type="number"
+            size="small"
+            placeholder="Price"
+            value={product.unitPrice}
+            onChange={(e) => handleProductChange(index, "unitPrice", Number(e.target.value))}
+            sx={{ '& .MuiInputBase-root': { height: '40px' } }}
+          />
+        </Grid>
+        <Grid item xs={2}>
+          <TextField
+            select
+            fullWidth
+            size="small"
+            value={product.tax}
+            onChange={(e) => handleProductChange(index, "tax", Number(e.target.value))}
+            sx={{ '& .MuiInputBase-root': { height: '40px' } }}
+          >
+            {[0, 3, 5, 6, 9, 12, 18].map((t) => (
+              <MenuItem key={t} value={t} sx={{ py: 0.5 }}>
+                {t}%
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={1}>
+          <Typography variant="body2" sx={{ textAlign: 'center', fontWeight: 500 }}>
+            ₹ {(product.quantity * product.unitPrice * (1 + product.tax / 100)).toFixed(2)}
+          </Typography>
+        </Grid>
+        <Grid item xs={1}>
+          <IconButton
+            size="small"
+            color="error"
+            onClick={() => handleDeleteProduct(index)}
+            disabled={formData.products.length === 1}
+            sx={{ height: '40px', width: '40px' }}
+          >
+            <Delete fontSize="small" />
+          </IconButton>
+        </Grid>
+      </Grid>
+    );
+  };
+
   return (
     <>
-      <Dialog open={open} handleClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Add Quotation</DialogTitle>
-        <IconButton
-          aria-label="close"
-          onClick={handleClose}
-          sx={{
-            position: "absolute",
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-        <DialogContent dividers>
+      <Dialog 
+        open={open} 
+        onClose={handleClose} 
+        fullWidth 
+        maxWidth="md"
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ 
+          p: 2,
+          position: 'relative',
+          backgroundColor: theme.palette.grey[50],
+          borderBottom: `1px solid ${theme.palette.divider}`
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant={isMobile ? "h6" : "h5"} fontWeight={600}>
+              Create Quotation
+            </Typography>
+            <IconButton
+              onClick={handleClose}
+              size="small"
+            >
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent dividers sx={{ 
+          p: 2,
+          '& .MuiTextField-root': {
+            marginBottom: '8px',
+          }
+        }}>
           <Grid container spacing={2}>
-            {/* Quotation Number + Date */}
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Quotation No"
-                value={formData.quotationNo || ""}
-                disabled
-              />
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                // type="date"
-                label="Date"
-                value={formData.date}
-                InputLabelProps={{ shrink: true }}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Valid Up To"
-                  value={formData.validUpTo ? dayjs(formData.validUpTo) : null}
-                  format="DD/MM/YYYY" // display format
-                  onChange={(newValue) => {
-                    setFormData({
-                      ...formData,
-                      // store as YYYY-MM-DD if you need backend compatibility
-                      validUpTo: newValue ? newValue.format("YYYY-MM-DD") : "",
-                    });
-                  }}
-                  slotProps={{
-                    textField: { fullWidth: true },
-                  }}
-                />
-              </LocalizationProvider>
-            </Grid>
-
-            {/* Customer Details */}
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={2}>
-                <Typography variant="h6">Customer Details</Typography>
-                <Divider sx={{ my: 1 }} />
+            {/* Header Section - Compact */}
+            <Grid item xs={12}>
+              <Grid container spacing={1} alignItems="center">
+                <Grid item xs={12} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Quotation No"
+                    size="small"
+                    value={formData.quotationNo || ""}
+                    disabled
+                    sx={{ '& .MuiInputBase-root': { height: '40px' } }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Date"
+                    size="small"
+                    value={formData.date}
+                    InputLabelProps={{ shrink: true }}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    sx={{ '& .MuiInputBase-root': { height: '40px' } }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Valid Up To"
+                      value={formData.validUpTo ? dayjs(formData.validUpTo) : null}
+                      format="DD/MM/YYYY"
+                      onChange={(newValue) => {
+                        setFormData({
+                          ...formData,
+                          validUpTo: newValue ? newValue.format("YYYY-MM-DD") : "",
+                        });
+                      }}
+                      slotProps={{
+                        textField: { 
+                          fullWidth: true,
+                          size: 'small',
+                          sx: { '& .MuiInputBase-root': { height: '40px' } }
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Status"
+                    size="small"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    sx={{ '& .MuiInputBase-root': { height: '40px' } }}
+                  >
+                    <MenuItem value="Draft" sx={{ py: 0.5 }}>Draft</MenuItem>
+                    <MenuItem value="Sent" sx={{ py: 0.5 }}>Sent</MenuItem>
+                    <MenuItem value="Accepted" sx={{ py: 0.5 }}>Accepted</MenuItem>
+                    <MenuItem value="Rejected" sx={{ py: 0.5 }}>Rejected</MenuItem>
+                  </TextField>
+                </Grid>
               </Grid>
-              <Grid container spacing={2} alignItems="flex-start">
-                <Grid item xs={12}>
+            </Grid>
+
+            {/* Customer Section - Compact */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ mt: 1 }}>
+                Customer Information
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={1}>
+                <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Customer Name"
                     name="name"
+                    size="small"
                     value={formData.customer.name}
                     onChange={handleCustomerChange}
                     error={errors.customerName}
-                    helperText={
-                      errors.customerName ? "Customer name is required" : ""
-                    }
+                    helperText={errors.customerName ? "Required" : ""}
+                    sx={{ '& .MuiInputBase-root': { height: '40px' } }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Contact Number"
                     name="phone"
+                    size="small"
                     value={formData.customer.phone}
                     onChange={handleCustomerChange}
-                    error={
-                      errors.customerPhone ||
-                      (formData.customer.phone.trim() !== "" &&
-                        formData.customer.phone.trim().length !== 10)
-                    }
+                    error={errors.customerPhone || (formData.customer.phone.trim() !== "" && formData.customer.phone.trim().length !== 10)}
                     helperText={
                       errors.customerPhone
-                        ? "Customer phone is required"
-                        : formData.customer.phone.trim() !== "" &&
-                          formData.customer.phone.trim().length !== 10
-                        ? "Invalid Phone Number"
+                        ? "Required"
+                        : formData.customer.phone.trim() !== "" && formData.customer.phone.trim().length !== 10
+                        ? "Invalid Phone"
                         : ""
                     }
+                    sx={{ '& .MuiInputBase-root': { height: '40px' } }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Email"
                     name="email"
+                    size="small"
                     value={formData.customer.email}
                     onChange={handleCustomerChange}
+                    sx={{ '& .MuiInputBase-root': { height: '40px' } }}
                   />
                 </Grid>
-
-                <Grid item xs={12}>
+                <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    multiline
-                    rows={2}
                     label="Address"
                     name="address"
+                    size="small"
+                    multiline
+                    rows={1}
                     value={formData.customer.address}
                     onChange={handleCustomerChange}
+                    sx={{ '& .MuiInputBase-root': { minHeight: '40px' } }}
                   />
                 </Grid>
               </Grid>
             </Grid>
 
-            {/* Products Section */}
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="h6">Products</Typography>
-                <Divider sx={{ my: 1 }} />
-              </Grid>
-
-              <Grid container spacing={2} alignItems="flex-start">
-                {formData.products.map((product, index) => (
-                  <>
-                    <Grid item xs={3}>
-                      <TextField
-                        fullWidth
-                        label="Product Name"
-                        value={product.productName}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "productName",
-                            e.target.value
-                          )
-                        }
-                        error={
-                          errors.products && product.productName.trim() === ""
-                        }
-                        helperText={
-                          errors.products && product.productName.trim() === ""
-                            ? "Product name is required"
-                            : ""
-                        }
-                      />
-                    </Grid>
-                    <Grid item xs={2}>
-                      <TextField
-                        sx={{ width: "150px" }}
-                        type="number"
-                        label="Quantity"
-                        value={product.quantity}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "quantity",
-                            Number(e.target.value)
-                          )
-                        }
-                      />
-                    </Grid>
-                    <Grid item xs={2}>
-                      <TextField
-                        sx={{ width: "150px" }}
-                        type="number"
-                        label="Unit Price"
-                        value={product.unitPrice}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "unitPrice",
-                            Number(e.target.value)
-                          )
-                        }
-                      />
-                    </Grid>
-                    <Grid item xs={2}>
-                      <TextField
-                        select
-                        sx={{ width: "120px" }}
-                        label="Tax %"
-                        value={product.tax}
-                        onChange={(e) =>
-                          handleProductChange(
-                            index,
-                            "tax",
-                            Number(e.target.value)
-                          )
-                        }
-                      >
-                        {[0, 3, 5, 6, 9, 12, 18].map((t) => (
-                          <MenuItem key={t} value={t}>
-                            {t}%
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-                    <Grid item xs={2}>
-                      <Typography variant="body1" sx={{ mt: 2 }}>
-                        {(
-                          product.quantity *
-                          product.unitPrice *
-                          (1 + product.tax / 100)
-                        ).toFixed(2)}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={1}>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDeleteProduct(index)}
-                        disabled={formData.products.length === 1}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </Grid>
-                  </>
-                ))}
-              </Grid>
-
-              <Grid item xs={12}>
+            {/* Products Section - Very Compact */}
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Products & Services
+                </Typography>
                 <Button
                   startIcon={<Add />}
                   onClick={handleAddProduct}
-                  sx={{ color: "#182848" }}
+                  size="small"
+                  sx={{ color: "#182848", minWidth: 'auto', px: 1 }}
                 >
-                  Add Product
+                  Add Item
                 </Button>
-              </Grid>
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+              
+              {/* Product Table Header - Compact */}
+              {!isMobile && (
+                <Grid container spacing={1} sx={{ mb: 1 }}>
+                  <Grid item xs={4}>
+                    <Typography variant="caption" fontWeight={600} color="text.secondary">
+                      PRODUCT NAME
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={2}>
+                    <Typography variant="caption" fontWeight={600} color="text.secondary">
+                      QTY
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={2}>
+                    <Typography variant="caption" fontWeight={600} color="text.secondary">
+                      PRICE
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={2}>
+                    <Typography variant="caption" fontWeight={600} color="text.secondary">
+                      TAX
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Typography variant="caption" fontWeight={600} color="text.secondary">
+                      AMOUNT
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Typography variant="caption" fontWeight={600} color="text.secondary">
+                      ACTION
+                    </Typography>
+                  </Grid>
+                </Grid>
+              )}
+
+              {/* Product Rows */}
+              {isMobile ? (
+                // Mobile Product View
+                <Stack spacing={1}>
+                  {formData.products.map((product, index) => (
+                    <Paper key={index} sx={{ p: 1.5, border: `1px solid ${theme.palette.divider}` }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                        <Box sx={{ flex: 1 }}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Product name"
+                            value={product.productName}
+                            onChange={(e) => handleProductChange(index, "productName", e.target.value)}
+                            error={errors.products && product.productName.trim() === ""}
+                            helperText={errors.products && product.productName.trim() === "" ? "Required" : ""}
+                            sx={{ mb: 1 }}
+                          />
+                          <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                            <TextField
+                              fullWidth
+                              type="number"
+                              size="small"
+                              placeholder="Qty"
+                              value={product.quantity}
+                              onChange={(e) => handleProductChange(index, "quantity", Number(e.target.value))}
+                            />
+                            <TextField
+                              fullWidth
+                              type="number"
+                              size="small"
+                              placeholder="Price"
+                              value={product.unitPrice}
+                              onChange={(e) => handleProductChange(index, "unitPrice", Number(e.target.value))}
+                            />
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <TextField
+                              select
+                              fullWidth
+                              size="small"
+                              value={product.tax}
+                              onChange={(e) => handleProductChange(index, "tax", Number(e.target.value))}
+                            >
+                              {[0, 3, 5, 6, 9, 12, 18].map((t) => (
+                                <MenuItem key={t} value={t} sx={{ py: 0.5 }}>
+                                  {t}%
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                            <Typography variant="body2" sx={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
+                              ₹ {(product.quantity * product.unitPrice * (1 + product.tax / 100)).toFixed(2)}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeleteProduct(index)}
+                          disabled={formData.products.length === 1}
+                          sx={{ ml: 1 }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Paper>
+                  ))}
+                </Stack>
+              ) : (
+                // Desktop Product View
+                <Box sx={{ maxHeight: '300px', overflowY: 'auto', pr: 1 }}>
+                  {formData.products.map((product, index) => (
+                    <CompactProductRow key={index} product={product} index={index} />
+                  ))}
+                </Box>
+              )}
             </Grid>
-            {/* Totals */}
+
+            {/* Summary Section - Compact */}
             <Grid item xs={12}>
-              <Divider />
-              <Typography>Subtotal: {subtotal.toFixed(2)}</Typography>
-              <Typography>Tax Total: {taxTotal.toFixed(2)}</Typography>
-              <Typography variant="h6">
-                Grand Total: {grandTotal.toFixed(2)}
-              </Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'flex-end',
+                mt: 2,
+                p: 2,
+                backgroundColor: theme.palette.grey[50],
+                borderRadius: 1,
+                border: `1px solid ${theme.palette.divider}`
+              }}>
+                <Stack spacing={0.5} sx={{ width: '300px' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2" color="text.secondary">Subtotal:</Typography>
+                    <Typography variant="body2" fontWeight={500}>₹ {subtotal.toFixed(2)}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2" color="text.secondary">Tax Total:</Typography>
+                    <Typography variant="body2" fontWeight={500}>₹ {taxTotal.toFixed(2)}</Typography>
+                  </Box>
+                  <Divider sx={{ my: 0.5 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="subtitle1" fontWeight={600}>Grand Total:</Typography>
+                    <Typography variant="h6" fontWeight={700} color="primary">
+                      ₹ {grandTotal.toFixed(2)}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
             </Grid>
-            <Divider />
-          </Grid>
-          <Grid item xs={12} mt={4}>
-            <Typography>Terms and Conditions :</Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={2}
-              // label="Address"
-              name="terms"
-              value={formData.terms}
-              onChange={(e) =>
-                setFormData({ ...formData, terms: e.target.value })
-              }
-            />
+
+            {/* Terms and Conditions - Compact */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                Terms & Conditions
+              </Typography>
+              <TextField
+                fullWidth
+                size="small"
+                multiline
+                rows={2}
+                placeholder="Enter terms and conditions (optional)"
+                value={formData.customer.terms}
+                onChange={(e) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    customer: {
+                      ...prev.customer,
+                      terms: e.target.value,
+                    },
+                  }));
+                }}
+                sx={{ '& .MuiInputBase-root': { minHeight: '60px' } }}
+              />
+            </Grid>
           </Grid>
         </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleRefresh} sx={{ color: "#182848" }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            sx={{ backgroundColor: "#182848", color: "#fff" }}
-          >
-            Save
-          </Button>
+        <DialogActions sx={{ 
+          p: 2,
+          backgroundColor: theme.palette.grey[50],
+          borderTop: `1px solid ${theme.palette.divider}`
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <Button 
+              onClick={handleRefresh} 
+              variant="outlined"
+              size="small"
+              sx={{ 
+                borderColor: theme.palette.grey[400],
+                color: theme.palette.text.primary,
+                minWidth: '80px'
+              }}
+            >
+              Cancel
+            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                onClick={handleSubmit}
+                variant="contained"
+                size="small"
+                sx={{ 
+                  backgroundColor: "#182848", 
+                  color: "#fff",
+                  minWidth: '120px',
+                  '&:hover': {
+                    backgroundColor: "#0d1c3a",
+                  }
+                }}
+              >
+                Save Quotation
+              </Button>
+            </Box>
+          </Box>
         </DialogActions>
       </Dialog>
 
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={1000}
-        handleClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
-          severity={
-            snackbarMessage.includes("successful") ? "success" : "error"
-          }
+          severity={snackbarMessage.includes("successful") ? "success" : "error"}
           variant="filled"
           onClose={() => setSnackbarOpen(false)}
+          sx={{ width: '100%' }}
         >
           {snackbarMessage}
         </Alert>
