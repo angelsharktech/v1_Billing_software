@@ -16,7 +16,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import IncomeNameAutocomplete from "./IncomeNameAutocomplete"; // ✅ reuse autocomplete
+import IncomeNameAutocomplete from "./IncomeNameAutocomplete";
 import { updateIncome } from "../../services/IncomeService";
 
 const style = {
@@ -27,9 +27,9 @@ const style = {
   bgcolor: "background.paper",
   boxShadow: 24,
   borderRadius: 2,
-  p: 3,
-  minWidth: 800,
-  maxHeight: "90vh",
+  p: 2,
+  width: { xs: "90%", sm: 600, md: 700 },
+  maxHeight: "85vh",
   overflowY: "auto",
 };
 
@@ -44,6 +44,48 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  // Custom styles for consistent height
+  const textFieldStyles = {
+    '& .MuiOutlinedInput-root': {
+      height: 40, // Fixed height for all text fields
+    },
+    '& .MuiInputBase-input': {
+      padding: '8px 14px',
+      fontSize: '0.875rem',
+    },
+    '& .MuiInputLabel-root': {
+      fontSize: '0.875rem',
+      lineHeight: '1.2',
+    },
+    '& .MuiSelect-select': {
+      padding: '8px 14px',
+      fontSize: '0.875rem',
+    },
+  };
+
+  const datePickerStyles = {
+    '& .MuiOutlinedInput-root': {
+      height: 40,
+    },
+    '& .MuiInputBase-input': {
+      padding: '8px 14px',
+      fontSize: '0.875rem',
+      height: '100%',
+    },
+  };
+
+  const autocompleteStyles = {
+    '& .MuiAutocomplete-inputRoot': {
+      height: 40,
+      padding: '0 14px',
+    },
+    '& .MuiInputBase-input': {
+      padding: '8px 4px',
+      fontSize: '0.875rem',
+    },
+  };
+
   // ✅ Pre-fill form when modal opens
   useEffect(() => {
     if (data) {
@@ -64,7 +106,7 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle submit (API call placeholder)
+  // ✅ Handle submit
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
@@ -120,7 +162,11 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
                     }));
                   }}
                   slotProps={{
-                    textField: { fullWidth: true, required: true },
+                    textField: { 
+                      fullWidth: true, 
+                      required: true,
+                      sx: datePickerStyles
+                    },
                   }}
                 />
               </LocalizationProvider>
@@ -136,6 +182,7 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
                 value={formData.amount}
                 onChange={handleChange}
                 required
+                sx={textFieldStyles}
               />
             </Grid>
 
@@ -149,6 +196,7 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
                 value={formData.paymentType}
                 onChange={handleChange}
                 required
+                sx={textFieldStyles}
               >
                 <MenuItem value="Cash">Cash</MenuItem>
                 <MenuItem value="UPI">UPI</MenuItem>
@@ -157,10 +205,12 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
 
             {/* Name of Income (with autocomplete) */}
             <Grid item xs={12} sm={6}>
-              <IncomeNameAutocomplete
-                formData={formData}
-                setFormData={setFormData}
-              />
+              <Box sx={autocompleteStyles}>
+                <IncomeNameAutocomplete
+                  formData={formData}
+                  setFormData={setFormData}
+                />
+              </Box>
             </Grid>
 
             {/* Group of Income */}
@@ -173,6 +223,7 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
                 value={formData.groupOfIncome}
                 onChange={handleChange}
                 required
+                sx={textFieldStyles}
               >
                 <MenuItem value="Direct Income">Direct Income</MenuItem>
                 <MenuItem value="Indirect Income">Indirect Income</MenuItem>
@@ -184,21 +235,35 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
               <TextField
                 fullWidth
                 multiline
-                rows={3}
+                rows={2}
                 label="Description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: 80, // Taller for multiline
+                    alignItems: 'flex-start',
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '8px 14px',
+                    fontSize: '0.875rem',
+                  },
+                }}
               />
             </Grid>
 
-            {/* Save Button */}
+            {/* Update Button */}
             <Grid item xs={12} textAlign="right">
               <Button
                 variant="contained"
                 sx={{
                   background: "linear-gradient(135deg, #182848, #324b84ff)",
                   color: "#fff",
+                  height: 40, // Same as input fields
+                  fontSize: "0.875rem",
+                  padding: "8px 24px",
+                  minWidth: 120,
                 }}
                 onClick={handleSubmit}
               >
@@ -208,6 +273,7 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
           </Grid>
         </Box>
       </Modal>
+      
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
@@ -222,6 +288,10 @@ const EditIncome = ({ open, data, handleCloseEdit, refresh }) => {
           }
           variant="filled"
           onClose={() => setSnackbarOpen(false)}
+          sx={{ 
+            width: '100%',
+            fontSize: '0.875rem'
+          }}
         >
           {snackbarMessage}
         </Alert>

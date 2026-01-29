@@ -27,9 +27,9 @@ const style = {
   bgcolor: "background.paper",
   boxShadow: 24,
   borderRadius: 2,
-  p: 3,
-  minWidth: 800,
-  maxHeight: "90vh",
+  p: 2,
+  width: { xs: "90%", sm: 600, md: 700 },
+  maxHeight: "85vh",
   overflowY: "auto",
 };
 
@@ -82,33 +82,74 @@ const CreateIncome = ({ user, open, handleClose, refresh }) => {
       groupOfIncome: "",
     });
   };
+
+  // Custom styles for consistent height
+  const textFieldStyles = {
+    '& .MuiOutlinedInput-root': {
+      height: 40, // Fixed height for all text fields
+    },
+    '& .MuiInputBase-input': {
+      padding: '8px 14px',
+      fontSize: '0.875rem',
+    },
+    '& .MuiInputLabel-root': {
+      fontSize: '0.875rem',
+      lineHeight: '1.2',
+    },
+    '& .MuiSelect-select': {
+      padding: '8px 14px',
+      fontSize: '0.875rem',
+    },
+  };
+
+  const datePickerStyles = {
+    '& .MuiOutlinedInput-root': {
+      height: 40,
+    },
+    '& .MuiInputBase-input': {
+      padding: '8px 14px',
+      fontSize: '0.875rem',
+      height: '100%',
+    },
+  };
+
+  const autocompleteStyles = {
+    '& .MuiAutocomplete-inputRoot': {
+      height: 40,
+      padding: '0 14px',
+    },
+    '& .MuiInputBase-input': {
+      padding: '8px 4px',
+      fontSize: '0.875rem',
+    },
+  };
+
   return (
     <>
-    <Modal open={open} onClose={handleRefreshClose}>
-      <Box sx={style}>
-        {/* Close Button */}
-        <IconButton
-          aria-label="close"
-          onClick={handleRefreshClose}
-          sx={{
-            position: "absolute",
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
+      <Modal open={open} onClose={handleRefreshClose}>
+        <Box sx={style}>
+          {/* Close Button */}
+          <IconButton
+            aria-label="close"
+            onClick={handleRefreshClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
 
-        <Typography variant="h6" mb={2}>
-          Add Income
-        </Typography>
+          <Typography variant="h6" mb={2}>
+            Add Income
+          </Typography>
 
-        {/* Form Fields */}
-        {/* Date */}
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <Box mb={4}>
+          {/* Form Fields */}
+          <Grid container spacing={2}>
+            {/* Date */}
+            <Grid item xs={12} sm={6}>
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
                   label="Date"
@@ -123,106 +164,138 @@ const CreateIncome = ({ user, open, handleClose, refresh }) => {
                     }));
                   }}
                   slotProps={{
-                    textField: { fullWidth: true, required: true },
+                    textField: { 
+                      fullWidth: true, 
+                      required: true,
+                      sx: datePickerStyles
+                    },
                   }}
                 />
               </LocalizationProvider>
-            </Box>
-          </Grid>
-          {/* Amount */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Amount"
-              name="amount"
-              type="number"
-              value={formData.amount}
-              onChange={handleChange}
-              required
-            />
-          </Grid>
-          {/* Payment Type */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              sx={{ width: "200px" }}
-              label="Payment Type"
-              name="paymentType"
-              value={formData.paymentType}
-              onChange={handleChange}
-            >
-              <MenuItem value="Cash">Cash</MenuItem>
-              <MenuItem value="UPI">UPI</MenuItem>
-            </TextField>
-          </Grid>
-          {/*  Name of Income*/}
-          <Grid item xs={12} sm={6}>
-            <IncomeNameAutocomplete
-              formData={formData}
-              setFormData={setFormData}
-            />
-          </Grid>
-          {/* Group of Income */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              select
-              sx={{ width: "200px" }}
-              label="Group of Income"
-              name="groupOfIncome"
-              value={formData.groupOfIncome}
-              onChange={handleChange}
-              placeholder="e.g. Office, Travel, Maintenance"
-            >
-              <MenuItem value="Direct Income">Direct Income</MenuItem>
-              <MenuItem value="Indirect Income">Indirect Income</MenuItem>
-            </TextField>
-          </Grid>
-          {/* Description */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-            />
-          </Grid>
+            </Grid>
+            
+            {/* Amount */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Amount"
+                name="amount"
+                type="number"
+                value={formData.amount}
+                onChange={handleChange}
+                required
+                sx={textFieldStyles}
+              />
+            </Grid>
+            
+            {/* Payment Type */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Payment Type"
+                name="paymentType"
+                value={formData.paymentType}
+                onChange={handleChange}
+                sx={{ ...textFieldStyles, minWidth: 150 }}
+              >
+                <MenuItem value="Cash">Cash</MenuItem>
+                <MenuItem value="UPI">UPI</MenuItem>
+              </TextField>
+            </Grid>
+            
+            {/* Name of Income */}
+            <Grid item xs={12} sm={6}>
+              <Box sx={autocompleteStyles}>
+                <IncomeNameAutocomplete
+                  formData={formData}
+                  setFormData={setFormData}
+                />
+              </Box>
+            </Grid>
+            
+            {/* Group of Income */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Group of Income"
+                name="groupOfIncome"
+                value={formData.groupOfIncome}
+                onChange={handleChange}
+                sx={{ ...textFieldStyles, minWidth: 200 }}
+                placeholder="e.g. Direct Income, Indirect Income"
+              >
+                <MenuItem value="Direct Income">Direct Income</MenuItem>
+                <MenuItem value="Indirect Income">Indirect Income</MenuItem>
+              </TextField>
+            </Grid>
+            
+            {/* Description - Different height */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: 80, // Taller for multiline
+                    alignItems: 'flex-start',
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '8px 14px',
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            </Grid>
 
-          <Grid item xs={12} textAlign="right">
-            <Button
-              variant="contained"
-              sx={{
-                background: "linear-gradient(135deg, #182848, #324b84ff)",
-                color: "#fff",
-              }}
-              onClick={handleSubmit}
-            >
-              Save Income
-            </Button>
+            <Grid item xs={12} textAlign="right">
+              <Button
+                variant="contained"
+                sx={{
+                  background: "linear-gradient(135deg, #182848, #324b84ff)",
+                  color: "#fff",
+                  height: 40, // Same as input fields
+                  fontSize: "0.875rem",
+                  padding: "8px 24px",
+                  minWidth: 120,
+                }}
+                onClick={handleSubmit}
+              >
+                Save Income
+              </Button>
+            </Grid>
           </Grid>
-        </Grid>
-      </Box>
-    </Modal>
-     <Snackbar
-            open={snackbarOpen}
-            autoHideDuration={3000}
-            onClose={() => setSnackbarOpen(false)}
-            anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          >
-            <Alert
-              severity={
-                snackbarMessage === "Income Added successful!"
-                  ? "success"
-                  : "error"
-              }
-              variant="filled"
-              onClose={() => setSnackbarOpen(false)}
-            >
-              {snackbarMessage}
-            </Alert>
-          </Snackbar>
+        </Box>
+      </Modal>
+      
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity={
+            snackbarMessage === "Income Added successful!"
+              ? "success"
+              : "error"
+          }
+          variant="filled"
+          onClose={() => setSnackbarOpen(false)}
+          sx={{ 
+            width: '100%',
+            fontSize: '0.875rem'
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

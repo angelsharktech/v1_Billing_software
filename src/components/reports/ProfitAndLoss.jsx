@@ -1,23 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Grid,
-  Typography,
-  TextField,
-  IconButton,
-  Button,
-  Divider,
-  Paper,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import { Add, Delete } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 import { getUserById } from "../../services/UserService";
 import { useAuth } from "../../context/AuthContext";
 import { getSaleBillByOrganization } from "../../services/SaleBillService";
 import { getPurchaseBillByOrganization } from "../../services/PurchaseBillService";
-import { getAllProducts } from "../../services/ProductService";
-import { useNavigate } from "react-router-dom";
 import { getAllExpensesByOrganization } from "../../services/ExpenseService";
 import { getAllIncomesByOrganization } from "../../services/IncomeService";
 
@@ -27,18 +13,25 @@ const ProfitAndLoss = () => {
 
   const [salesAccount, setSalesAccount] = useState(0);
   const [salesReturnAccount, setSalesReturnAccount] = useState(0);
-  // const [closingStock, setClosingStock] = useState(0);
   const [purchaseAccount, setPurchaseAccount] = useState(0);
   const [purchaseReturnAccount, setPurchaseReturnAccount] = useState(0);
 
   const [indirectExpense, setIndirectExpense] = useState([]);
   const [directExpense, setDirectExpense] = useState([]);
-
   const [directIncome, setDirectIncome] = useState([]);
   const [indirectIncome, setIndirectIncome] = useState([]);
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Manual entries
+  const [openingStock, setOpeningStock] = useState(
+    localStorage.getItem("openingStock") || 0
+  );
+  const [closingStock, setClosingStock] = useState(
+    localStorage.getItem("closingStock") || 0
+  );
 
   useEffect(() => {
     fetchCounts();
@@ -46,6 +39,7 @@ const ProfitAndLoss = () => {
 
   const fetchCounts = async () => {
     try {
+      setLoading(true);
       const user = await getUserById(webuser.id);
       const saleBillsRes = await getSaleBillByOrganization(
         user.organization_id._id
@@ -57,7 +51,9 @@ const ProfitAndLoss = () => {
         setTimeout(() => {
           navigate("/login");
         }, 2000);
+        return;
       }
+
       const saleBills = saleBillsRes?.data?.docs || [];
       const sale = saleBills.filter((sale) => sale?.isReturn === false);
       const saleReturn = saleBills.filter(
@@ -114,31 +110,20 @@ const ProfitAndLoss = () => {
 
       setIndirectExpense(indirectExpense);
       setDirectExpense(directExpense);
-
       setDirectIncome(directIncome);
       setIndirectIncome(indirectIncome);
-
       setSalesAccount(totalSales);
       setSalesReturnAccount(totalSalesReturn);
-
       setPurchaseAccount(totalPurchases);
       setPurchaseReturnAccount(totalPurchasesReturn);
-      // setClosingStock(totalClosing);
     } catch (error) {
       console.error("Error fetching sale/purchase data:", error);
+      setSnackbarMessage("Error fetching data. Please try again.");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
     }
   };
-
-  // Manual entries
-  // Initial states
-  const [openingStock, setOpeningStock] = useState(
-    localStorage.getItem("openingStock") || 0
-  );
-  const [closingStock, setClosingStock] = useState(
-    localStorage.getItem("closingStock") || 0
-  );
-
-  // Autosave
 
   const getTotal = (arr) =>
     arr.reduce((sum, item) => sum + Number(item.amount || 0), 0);
@@ -158,314 +143,438 @@ const ProfitAndLoss = () => {
   const total = grossProfitCO + totalIndirectIncome;
   const netProfit = total - totalIndirectExpense;
 
+  const formatNumber = (num) => {
+    return Number(num).toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const handleOpeningStockChange = (e) => {
+    const value = e.target.value.replace(/[^0-9.]/g, "");
+    setOpeningStock(value);
+    localStorage.setItem("openingStock", value);
+  };
+
+  const handleClosingStockChange = (e) => {
+    const value = e.target.value.replace(/[^0-9.]/g, "");
+    setClosingStock(value);
+    localStorage.setItem("closingStock", value);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <Box p={3} sx={{ backgroundColor: "#fafafa", minHeight: "100vh" }}>
-        <Typography variant="h5" fontWeight={600} mb={2}>
+    <div className="min-h-screen bg-gray-50 p-3 md:p-6">
+      {/* Header */}
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
           Profit & Loss Account
-        </Typography>
+        </h1>
+      </div>
 
-        <Paper
-          elevation={5}
-          sx={{
-            p: 3,
-            borderRadius: 3,
-            maxWidth: 1100,
-            mx: "auto",
-            boxShadow: 10,
-            background: "#fff",
-          }}
-        >
-          <Box display="flex" justifyContent="space-between">
-            {/* ===== Debit Side ===== */}
-            <Box flex={1} pr={3}>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
-                Debit Side (Expenses)
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
+      {/* Mobile View - Separate Cards */}
+      <div className="block lg:hidden space-y-6">
+        {/* Debit Card (Mobile) */}
+        <div className="bg-white rounded-xl shadow-lg p-4">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+            Debit Side (Expenses)
+          </h2>
+          <div className="space-y-3">
+            {/* Opening Stock */}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-700">Opening Stock</span>
+              <input
+                type="text"
+                value={openingStock}
+                onChange={handleOpeningStockChange}
+                className="w-28 text-right border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              />
+            </div>
 
-              {/* Opening Stock */}
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={1}
-              >
-                <Typography>Opening Stock</Typography>
-                <TextField
-                  type="text"
-                  variant="outlined"
-                  size="small"
-                  value={openingStock}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, ""); // only numbers & decimal
-                    setOpeningStock(value);
-                    localStorage.setItem("openingStock", value);
-                  }}
-                  sx={{
-                    width: 120,
-                    "& .MuiInputBase-input": {
-                      textAlign: "right",
-                      fontWeight: 500,
-                    },
-                  }}
-                />
-              </Box>
+            <div className="flex justify-between">
+              <span className="text-gray-700">Purchases</span>
+              <span className="font-semibold">{formatNumber(purchaseAccount)}</span>
+            </div>
 
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography>Purchases</Typography>
-                <Typography fontWeight="bold">
-                  {Number(purchaseAccount).toFixed(2)}
-                </Typography>
-              </Box>
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography>Purchases Return</Typography>
-                <Typography fontWeight="bold">
-                  {Number(purchaseReturnAccount).toFixed(2)}
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 3 }} />
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography fontWeight="bold">Net Purchase</Typography>
-                <Typography fontWeight="bold">
-                  {Number(netPurchase).toFixed(2)}
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 3 }} />
-              {/* Direct Expenses */}
-              <Typography mt={2} mb={3} fontWeight="bold">
-                Direct Expenses
-              </Typography>
+            <div className="flex justify-between">
+              <span className="text-gray-700">Purchases Return</span>
+              <span className="font-semibold">{formatNumber(purchaseReturnAccount)}</span>
+            </div>
+
+            <div className="border-t border-gray-300 my-3"></div>
+
+            <div className="flex justify-between font-bold">
+              <span>Net Purchase</span>
+              <span>{formatNumber(netPurchase)}</span>
+            </div>
+
+            <div className="border-t border-gray-300 my-3"></div>
+
+            {/* Direct Expenses */}
+            <h3 className="font-bold text-gray-800 mt-3 mb-2">Direct Expenses</h3>
+            <div className="space-y-2">
               {directExpense.map((exp, i) => (
-                <Box
-                  key={i}
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mt={1}
-                >
-                  <Typography>{exp.name}</Typography>
-                  <Typography sx={{ textAlign: "right" }}>
-                    {Number(exp.amount).toFixed(2)}
-                  </Typography>
-                </Box>
+                <div key={i} className="flex justify-between items-center">
+                  <span className="text-gray-700">{exp.name}</span>
+                  <span className="text-right">{formatNumber(exp.amount)}</span>
+                </div>
               ))}
+            </div>
 
-              <Divider sx={{ my: 3 }} />
-              <Box display="flex" justifyContent="space-between">
-                <Typography fontWeight="bold">Gross Profit C/O</Typography>
-                <Typography fontWeight="bold" ml={25}>
-                  {grossProfitCO.toFixed(2)}
-                </Typography>
-              </Box>
-            </Box>
+            <div className="border-t border-gray-300 my-3"></div>
 
-            {/* Vertical Divider */}
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ borderRightWidth: 2, mx: 2 }}
-            />
+            <div className="flex justify-between font-bold">
+              <span>Gross Profit C/O</span>
+              <span>{formatNumber(grossProfitCO)}</span>
+            </div>
+          </div>
+        </div>
 
-            {/* ===== Credit Side ===== */}
-            <Box flex={1} pl={3}>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
-                Credit Side (Income)
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
+        {/* Credit Card (Mobile) */}
+        <div className="bg-white rounded-xl shadow-lg p-4">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">
+            Credit Side (Income)
+          </h2>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-700">Sales Account</span>
+              <span className="font-semibold">{formatNumber(salesAccount)}</span>
+            </div>
 
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography>Sales Account</Typography>
-                <Typography fontWeight="bold">
-                  {Number(salesAccount).toFixed(2)}
-                </Typography>
-              </Box>
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography>Sales Return</Typography>
-                <Typography fontWeight="bold">
-                  {Number(salesReturnAccount).toFixed(2)}
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 3, mt: 9 }} />
-              <Box display="flex" justifyContent="space-between" mb={1}>
-                <Typography fontWeight="bold">Net Sale</Typography>
-                <Typography fontWeight="bold">
-                  {Number(netSale).toFixed(2)}
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 3 }} />
-              {/* Direct Income */}
-              <Typography mt={2} mb={3} fontWeight="bold">
-                Direct Income
-              </Typography>
+            <div className="flex justify-between">
+              <span className="text-gray-700">Sales Return</span>
+              <span className="font-semibold">{formatNumber(salesReturnAccount)}</span>
+            </div>
+
+            <div className="border-t border-gray-300 my-3"></div>
+
+            <div className="flex justify-between font-bold">
+              <span>Net Sale</span>
+              <span>{formatNumber(netSale)}</span>
+            </div>
+
+            <div className="border-t border-gray-300 my-3"></div>
+
+            {/* Direct Income */}
+            <h3 className="font-bold text-gray-800 mt-3 mb-2">Direct Income</h3>
+            <div className="space-y-2">
               {directIncome.map((inc, i) => (
-                <Box
-                  key={i}
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mt={1}
-                >
-                  <Typography>{inc.name}</Typography>
-                  <Typography sx={{ textAlign: "right" }}>
-                    {Number(inc.amount).toFixed(2)}
-                  </Typography>
-                </Box>
+                <div key={i} className="flex justify-between items-center">
+                  <span className="text-gray-700">{inc.name}</span>
+                  <span className="text-right">{formatNumber(inc.amount)}</span>
+                </div>
               ))}
+            </div>
 
-              <Divider sx={{ my: 3 }} />
+            <div className="border-t border-gray-300 my-3"></div>
 
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={1}
-              >
-                <Typography>closing Stock</Typography>
-                <TextField
-                  type="text"
-                  variant="outlined"
-                  size="small"
-                  value={closingStock}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, "");
-                    setClosingStock(value);
-                    localStorage.setItem("closingStock", value);
-                  }}
-                  sx={{
-                    width: 120,
-                    "& .MuiInputBase-input": {
-                      textAlign: "right",
-                      fontWeight: 500,
-                    },
-                  }}
-                />
-              </Box>
-            </Box>
-          </Box>
+            {/* Closing Stock */}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-700">Closing Stock</span>
+              <input
+                type="text"
+                value={closingStock}
+                onChange={handleClosingStockChange}
+                className="w-28 text-right border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              />
+            </div>
+          </div>
+        </div>
 
-          {/* ===== Middle Line: Gross Profit c/o and b/f ===== */}
-          <Divider sx={{ my: 3 }} />
-          <Box display="flex" justifyContent="space-between">
-            <Typography fontWeight="bold">Net Profit </Typography>
-            <Typography fontWeight="bold" ml={38}>
-              {Number(grossProfitBF).toFixed(2)}
-            </Typography>
-            {/* Vertical Divider */}
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ borderRightWidth: 2, mr: 52 }}
-            />
-            <Typography fontWeight="bold">
-              {Number(grossProfitBF).toFixed(2)}
-            </Typography>
-          </Box>
-          <Divider sx={{ my: 3 }} />
+        {/* Middle Section - Gross Profit (Mobile) */}
+        <div className="bg-white rounded-xl shadow-lg p-4">
+          <div className="flex justify-between items-center mb-3">
+            <span className="font-bold text-gray-800">Net Profit</span>
+            <span className="font-bold">{formatNumber(grossProfitBF)}</span>
+          </div>
+          <div className="border-t border-gray-300 my-3"></div>
+          <div className="flex justify-between items-center">
+            <span className="font-bold text-gray-800">Net Profit</span>
+            <span className="font-bold">{formatNumber(grossProfitBF)}</span>
+          </div>
+        </div>
 
-          {/* ===== Indirect Expenses and Net Profit ===== */}
-          <Box display="flex" justifyContent="space-between">
-            {/* Left: Indirect Expenses */}
-            <Box flex={1} pr={3}>
-              <Typography fontWeight="bold" mb={3} mt={7}>
-                Indirect Expenses
-              </Typography>
+        {/* Bottom Sections (Mobile) */}
+        <div className="space-y-6">
+          {/* Indirect Expenses Card (Mobile) */}
+          <div className="bg-white rounded-xl shadow-lg p-4">
+            <h3 className="text-lg font-bold text-gray-800 mb-3">Indirect Expenses</h3>
+            <div className="space-y-2">
               {indirectExpense.map((exp, i) => (
-                <Box
-                  key={i}
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mt={1}
-                >
-                  <Typography>{exp.name}</Typography>
-                  <Typography sx={{ textAlign: "right" }}>
-                    {Number(exp.amount).toFixed(2)}
-                  </Typography>
-                </Box>
+                <div key={i} className="flex justify-between items-center">
+                  <span className="text-gray-700">{exp.name}</span>
+                  <span className="text-right">{formatNumber(exp.amount)}</span>
+                </div>
               ))}
+            </div>
 
-              <Divider sx={{ my: 2 }} />
-              <Box display="flex" justifyContent="space-between">
-                <Typography fontWeight="bold">Net Profit</Typography>
-                <Typography fontWeight="bold">
-                  {netProfit.toFixed(2)}
-                </Typography>
-              </Box>
-            </Box>
+            <div className="border-t border-gray-300 my-3"></div>
 
-            {/* Vertical Divider */}
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ borderRightWidth: 2, mx: 2 }}
-            />
+            <div className="flex justify-between font-bold">
+              <span>Net Profit</span>
+              <span>{formatNumber(netProfit)}</span>
+            </div>
+          </div>
 
-            {/* Right: Indirect Income */}
+          {/* Indirect Income Card (Mobile) */}
+          <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="flex justify-between font-bold mb-3">
+              <span>Gross Profit B/F</span>
+              <span>{formatNumber(grossProfitCO)}</span>
+            </div>
 
-            <Box flex={1} pl={3}>
-              <Box display="flex" justifyContent="space-between">
-                <Typography fontWeight="bold">Gross Profit B/F</Typography>
-                <Typography fontWeight="bold">
-                  {grossProfitCO.toFixed(2)}
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 2 }} />
-              <Typography fontWeight="bold" mb={3}>
-                Indirect Income
-              </Typography>
+            <div className="border-t border-gray-300 my-3"></div>
+
+            <h3 className="text-lg font-bold text-gray-800 mb-3">Indirect Income</h3>
+            <div className="space-y-2">
               {indirectIncome.map((inc, i) => (
-                <Box
-                  key={i}
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mt={1}
-                >
-                  <Typography>{inc.name}</Typography>
-                  <Typography sx={{ textAlign: "right" }}>
-                    {Number(inc.amount).toFixed(2)}
-                  </Typography>
-                </Box>
+                <div key={i} className="flex justify-between items-center">
+                  <span className="text-gray-700">{inc.name}</span>
+                  <span className="text-right">{formatNumber(inc.amount)}</span>
+                </div>
               ))}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
-          {/* ===== Last Line: total ===== */}
-          <Divider sx={{ my: 3 }} />
-          <Box display="flex" justifyContent="space-between">
-            <Typography fontWeight="bold">Total</Typography>
-            <Typography fontWeight="bold" ml={40}>
-              {total.toFixed(2)}
-            </Typography>
-            {/* Vertical Divider */}
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ borderRightWidth: 2, mr: 50 }}
-            />
-            <Typography fontWeight="bold">{total.toFixed(2)}</Typography>
-          </Box>
+          {/* Total Card (Mobile) */}
+          <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-gray-800">Total</span>
+              <span className="font-bold">{formatNumber(total)}</span>
+            </div>
+            <div className="border-t border-gray-300 my-3"></div>
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-gray-800">Total</span>
+              <span className="font-bold">{formatNumber(total)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <Divider sx={{ my: 3 }} />
-        </Paper>
-      </Box>
+      {/* Desktop View - Original Layout */}
+      <div className="hidden lg:block bg-white rounded-2xl shadow-xl p-6 max-w-6xl mx-auto">
+        {/* Top Section - Debit & Credit Sides */}
+        <div className="flex gap-8">
+          {/* Debit Side */}
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">
+              Debit Side (Expenses)
+            </h2>
+            <div className="space-y-3">
+              {/* Opening Stock */}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Opening Stock</span>
+                <input
+                  type="text"
+                  value={openingStock}
+                  onChange={handleOpeningStockChange}
+                  className="w-32 text-right border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          severity={snackbarMessage === " " ? "success" : "error"}
-          variant="filled"
-          onClose={() => setSnackbarOpen(false)}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </>
+              <div className="flex justify-between">
+                <span className="text-gray-700">Purchases</span>
+                <span className="font-semibold">{formatNumber(purchaseAccount)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-700">Purchases Return</span>
+                <span className="font-semibold">{formatNumber(purchaseReturnAccount)}</span>
+              </div>
+
+              <div className="border-t border-gray-300 my-4"></div>
+
+              <div className="flex justify-between font-bold">
+                <span>Net Purchase</span>
+                <span>{formatNumber(netPurchase)}</span>
+              </div>
+
+              <div className="border-t border-gray-300 my-4"></div>
+
+              {/* Direct Expenses */}
+              <h3 className="font-bold text-gray-800 mt-3 mb-2">Direct Expenses</h3>
+              <div className="space-y-2">
+                {directExpense.map((exp, i) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <span className="text-gray-700">{exp.name}</span>
+                    <span className="text-right">{formatNumber(exp.amount)}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-gray-300 my-4"></div>
+
+              <div className="flex justify-between font-bold">
+                <span>Gross Profit C/O</span>
+                <span>{formatNumber(grossProfitCO)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Vertical Divider */}
+          <div className="border-l-2 border-gray-300 mx-2"></div>
+
+          {/* Credit Side */}
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">
+              Credit Side (Income)
+            </h2>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-700">Sales Account</span>
+                <span className="font-semibold">{formatNumber(salesAccount)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-700">Sales Return</span>
+                <span className="font-semibold">{formatNumber(salesReturnAccount)}</span>
+              </div>
+
+              <div className="border-t border-gray-300 my-4"></div>
+
+              <div className="flex justify-between font-bold">
+                <span>Net Sale</span>
+                <span>{formatNumber(netSale)}</span>
+              </div>
+
+              <div className="border-t border-gray-300 my-4"></div>
+
+              {/* Direct Income */}
+              <h3 className="font-bold text-gray-800 mt-3 mb-2">Direct Income</h3>
+              <div className="space-y-2">
+                {directIncome.map((inc, i) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <span className="text-gray-700">{inc.name}</span>
+                    <span className="text-right">{formatNumber(inc.amount)}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-gray-300 my-4"></div>
+
+              {/* Closing Stock */}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Closing Stock</span>
+                <input
+                  type="text"
+                  value={closingStock}
+                  onChange={handleClosingStockChange}
+                  className="w-32 text-right border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Middle Section - Gross Profit */}
+        <div className="border-t border-gray-300 my-4"></div>
+        
+        <div className="flex justify-between items-center">
+          <div className="flex-1">
+            <span className="font-bold text-gray-800">Net Profit </span>
+          </div>
+          <div className="flex-1 text-center">
+            <span className="font-bold">{formatNumber(grossProfitBF)}</span>
+          </div>
+          <div className="border-l-2 border-gray-300 h-6 mx-4"></div>
+          <div className="flex-1 text-right">
+            <span className="font-bold">{formatNumber(grossProfitBF)}</span>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-300 my-4"></div>
+
+        {/* Bottom Section - Indirect Expenses/Income */}
+        <div className="flex gap-8">
+          {/* Left: Indirect Expenses */}
+          <div className="flex-1">
+            <h3 className="font-bold text-gray-800 mb-3 mt-3">Indirect Expenses</h3>
+            <div className="space-y-2">
+              {indirectExpense.map((exp, i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <span className="text-gray-700">{exp.name}</span>
+                  <span className="text-right">{formatNumber(exp.amount)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-gray-300 my-3"></div>
+
+            <div className="flex justify-between font-bold">
+              <span>Net Profit</span>
+              <span>{formatNumber(netProfit)}</span>
+            </div>
+          </div>
+
+          {/* Vertical Divider */}
+          <div className="border-l-2 border-gray-300 mx-2"></div>
+
+          {/* Right: Indirect Income */}
+          <div className="flex-1">
+            <div className="flex justify-between font-bold mb-3">
+              <span>Gross Profit B/F</span>
+              <span>{formatNumber(grossProfitCO)}</span>
+            </div>
+
+            <div className="border-t border-gray-300 my-3"></div>
+
+            <h3 className="font-bold text-gray-800 mb-3">Indirect Income</h3>
+            <div className="space-y-2">
+              {indirectIncome.map((inc, i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <span className="text-gray-700">{inc.name}</span>
+                  <span className="text-right">{formatNumber(inc.amount)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Final Total */}
+        <div className="border-t border-gray-300 my-4"></div>
+        
+        <div className="flex justify-between items-center">
+          <div className="flex-1">
+            <span className="font-bold text-gray-800">Total</span>
+          </div>
+          <div className="flex-1 text-center">
+            <span className="font-bold">{formatNumber(total)}</span>
+          </div>
+          <div className="border-l-2 border-gray-300 h-6 mx-4"></div>
+          <div className="flex-1 text-right">
+            <span className="font-bold">{formatNumber(total)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Snackbar/Toast Notification */}
+      {snackbarOpen && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
+          <div className={`p-4 rounded-lg shadow-lg ${
+            snackbarMessage.includes("Error") || snackbarMessage.includes("expired")
+              ? "bg-red-100 border-red-400 text-red-700"
+              : "bg-green-100 border-green-400 text-green-700"
+          } border`}>
+            <div className="flex justify-between items-center">
+              <span>{snackbarMessage}</span>
+              <button
+                onClick={() => setSnackbarOpen(false)}
+                className="ml-4 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
