@@ -4,38 +4,32 @@ import {
   Toolbar,
   Typography,
   IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
   Box,
-  Button,
   Avatar,
   Menu,
   MenuItem,
   Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../context/AuthContext";
-import Settings from "../components/setting/Settings";
-import { PersonOffOutlined, SettingsApplications } from "@mui/icons-material";
+import { SettingsApplications } from "@mui/icons-material";
 
-const Navbar = ({ setSelectedTab }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
+const Navbar = ({ setSelectedTab, onMenuClick }) => {
   const { webuser, logoutUser } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [openSettings, setOpenSettings] = useState(false);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
+  
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
@@ -47,26 +41,6 @@ const Navbar = ({ setSelectedTab }) => {
     console.log("Logged out");
   };
 
-  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-
-  const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        BillingApp
-      </Typography>
-    </Box>
-  );
-  const drawerWidth = 100;
-  const handleNavClick = () => {
-    logoutUser();
-    navigate("/login");
-  };
-  const handleOpenSettings = () => {
-    handleMenuClose();
-    setOpenSettings(true);
-  };
-
-  const handleCloseSettings = () => setOpenSettings(false);
   return (
     <>
       <AppBar
@@ -75,17 +49,46 @@ const Navbar = ({ setSelectedTab }) => {
           background: "linear-gradient(135deg, #182848, #324b84ff)",
           color: "#fff",
           borderBottomRightRadius: 40,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
-        <Toolbar sx={{ justifyContent: "flex-end" }}>
-          <Typography fontSize={28} noWrap component="div" mr={2}>
+        <Toolbar>
+          {/* Menu Icon for Mobile - Left Side */}
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={onMenuClick}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+
+          {/* Flexible Spacer */}
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Title - Right Side */}
+          <Typography 
+            fontSize={28} 
+            noWrap 
+            component="div" 
+            sx={{ 
+              mr: 2,
+              display: { xs: isMobile ? 'none' : 'block', sm: 'block' }
+            }}
+          >
             Angel Bill
           </Typography>
+
+          {/* Avatar - Right Side */}
           <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-            <Avatar sx={{ width: 35, height: 35, marginRight: "35px" }}>
-              U
+            <Avatar sx={{ width: 35, height: 35 }}>
+              {webuser?.name?.charAt(0)?.toUpperCase() || 'U'}
             </Avatar>
           </IconButton>
+          
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -102,7 +105,7 @@ const Navbar = ({ setSelectedTab }) => {
             <Typography
               fontWeight="bold"
               fontSize={14}
-              align="ceter"
+              align="center"
               padding={2}
             >
               {webuser.name + " "}
@@ -125,20 +128,6 @@ const Navbar = ({ setSelectedTab }) => {
           </Menu>
         </Toolbar>
       </AppBar>
-
-      <Drawer
-        anchor="left"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        sx={{
-          display: { xs: "block", sm: "none" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: 240 },
-        }}
-      >
-        {drawer}
-      </Drawer>
-      {/* ✅ Settings Dialog */}
-      {/* <Settings openSettings={openSettings} handleCloseSettings={handleCloseSettings}/> */}
     </>
   );
 };
